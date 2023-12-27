@@ -1,0 +1,5 @@
+{
+    "files": ["./dist/*.js", "./styles/*.css", "./*.html"],
+    "server": { "baseDir": "./" },
+    "reloadDelay": 2000
+}

@@ -13,12 +13,8 @@ const STROKE_COLOR = 'black';
 // For debugging
 function toString(node: DataNode, depth: number = 0) {
   let out = "\t".repeat(depth) + node.displayNode.value.toString() + "\n";
-  if (node.left != null) {
-    out += toString(node.left, depth + 1);
-  }
-  if (node.right != null) {
-    out += toString(node.right, depth + 1);
-  }
+  out += toString(node.left, depth + 1) ?? '';
+  out += toString(node.right, depth + 1) ?? '';
   return out;
 }
 
@@ -37,7 +33,9 @@ export default class BinarySearchTree implements Tree {
       this.insertIntoSubtree(value, this.root);
     }
     this.setTargetPositions();
-    if (value === 4) {
+    if (value === 4) 
+    
+    {
       debugger;
     }
   }

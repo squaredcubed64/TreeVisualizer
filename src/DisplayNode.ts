@@ -1,11 +1,14 @@
 const FRAMES_TO_MOVE = 300;
 
-class TreeNode {
+export default class DisplayNode {
   x: number;
   y: number;
+  targetX: number;
+  targetY: number;
   radius: number;
   fillColor: string;
   strokeColor: string;
+  value: number;
   private speedX: number;
   private speedY: number;
   private framesUntilStop: number;
@@ -15,13 +18,17 @@ class TreeNode {
     y: number,
     radius: number,
     fillColor: string,
-    strokeColor: string
+    strokeColor: string,
+    value: number
   ) {
     this.x = x;
     this.y = y;
+    this.targetX = x;
+    this.targetY = y;
     this.radius = radius;
     this.fillColor = fillColor;
     this.strokeColor = strokeColor;
+    this.value = value;
     this.speedX = 0;
     this.speedY = 0;
     this.framesUntilStop = 0;
@@ -44,6 +51,13 @@ class TreeNode {
     context.fill();
     context.strokeStyle = this.strokeColor;
     context.stroke();
+
+    // Add text
+    context.fillStyle = 'black';
+    context.textAlign = 'center';
+    context.textBaseline = 'middle';
+    context.font = '20px Arial';
+    context.fillText(this.value.toString(), this.x, this.y);
   }
 
   drawAndUpdate (context: CanvasRenderingContext2D) {
@@ -60,7 +74,7 @@ class TreeNode {
     this.framesUntilStop = FRAMES_TO_MOVE;
     this.speedX = (targetX - this.x) / FRAMES_TO_MOVE;
     this.speedY = (targetY - this.y) / FRAMES_TO_MOVE;
+    this.targetX = targetX;
+    this.targetY = targetY;
   }
 }
-
-export default TreeNode;

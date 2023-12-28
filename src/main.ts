@@ -7,7 +7,10 @@ if (insertButton == null) {
   throw new Error('insertButton not found')
 }
 insertButton.addEventListener('click', () => {
-  const insertInput = document.getElementById('insertInput') as HTMLInputElement
+  const insertInput = document.getElementById('insertInput')
+  if (!(insertInput instanceof HTMLInputElement)) {
+    throw new Error('insertInput must be an HTMLInputElement')
+  }
   const value = parseInt(insertInput.value)
   tree.insert(value)
 })

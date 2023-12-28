@@ -86,7 +86,7 @@ export default class BinarySearchTree implements Tree {
     return nodeToTargetX
   }
 
-  // Each layer of nodes has its own target y
+  // Layers are equally spaced vertically based on their depth
   targetYs (): Map<DataNode, number> {
     const nodeToTargetY = new Map<DataNode, number>()
     if (this.root == null) {

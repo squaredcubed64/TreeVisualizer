@@ -1,14 +1,23 @@
 import DisplayNode from './DisplayNode.js'
 import DataNode from './DataNode.js'
 import type Tree from './Tree.js'
-
-const ROOT_TARGET_X = 400
-const ROOT_TARGET_Y = 50
-const TARGET_X_GAP = 100
-const TARGET_Y_GAP = 100
-const RADIUS = 10
-const FILL_COLOR = 'red'
-const STROKE_COLOR = 'black'
+import {
+  ROOT_TARGET_X,
+  ROOT_TARGET_Y,
+  TARGET_X_GAP,
+  TARGET_Y_GAP,
+  RADIUS,
+  FILL_COLOR,
+  STROKE_COLOR,
+  ARROW_HEAD_ANGLE,
+  ARROW_HEAD_LENGTH,
+  ARROW_LINE_WIDTH,
+  FRAMES_BETWEEN_HIGHLIGHTS,
+  FRAMES_BEFORE_FIRST_HIGHLIGHT,
+  FRAMES_AFTER_LAST_HIGHLIGHT,
+  MOVE_DURATION_FRAMES,
+  HIGHLIGHT_DURATION_FRAMES
+} from './constants.js'
 
 // For debugging
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -22,39 +31,99 @@ function toString (node: DataNode | null, depth: number = 0): string {
   return out
 }
 
+function drawArrow (fromX: number, fromY: number, toX: number, toY: number, context: CanvasRenderingContext2D): void {
+  const dx = toX - fromX
+  const dy = toY - fromY
+  const angle = Math.atan2(dy, dx)
+
+  context.beginPath()
+  context.lineWidth = ARROW_LINE_WIDTH
+  context.moveTo(fromX, fromY)
+  context.lineTo(toX, toY)
+  context.lineTo(toX - ARROW_HEAD_LENGTH * Math.cos(angle - ARROW_HEAD_ANGLE), toY - ARROW_HEAD_LENGTH * Math.sin(angle - ARROW_HEAD_ANGLE))
+  context.moveTo(toX, toY)
+  context.lineTo(toX - ARROW_HEAD_LENGTH * Math.cos(angle + ARROW_HEAD_ANGLE), toY - ARROW_HEAD_LENGTH * Math.sin(angle + ARROW_HEAD_ANGLE))
+  context.stroke()
+}
+
+function drawArrowFromNodeToNode (fromNode: DataNode, toNode: DataNode, context: CanvasRenderingContext2D): void {
+  const dx = toNode.displayNode.x - fromNode.displayNode.x
+  const dy = toNode.displayNode.y - fromNode.displayNode.y
+  const dist = Math.sqrt(dx * dx + dy * dy)
+  const xOffsetFromCenter = dx * RADIUS / dist
+  const yOffsetFromCenter = dy * RADIUS / dist
+  drawArrow(fromNode.displayNode.x, fromNode.displayNode.y, toNode.displayNode.x - xOffsetFromCenter, toNode.displayNode.y - yOffsetFromCenter, context)
+}
+
 export default class BinarySearchTree implements Tree {
   root: DataNode | null
+  timeUntilSetupInsertionAnimation: number
+  setupInsertionAnimationValue: number
+  setupInsertionAnimationParent: DataNode | null
 
   constructor () {
     this.root = null
+    this.timeUntilSetupInsertionAnimation = -1
+    this.setupInsertionAnimationValue = -1
+    this.setupInsertionAnimationParent = null
   }
 
+  // Equivalent values are inserted to the right
   insert (value: number): void {
+    // If the tree is empty, insert without any animation
     if (this.root == null) {
       this.root = new DataNode(new DisplayNode(ROOT_TARGET_X, ROOT_TARGET_Y, RADIUS, FILL_COLOR, STROKE_COLOR, value))
+      return
+    }
+
+    const path = this.pathToNode(value)
+    this.setupInsertionPathAnimation(path)
+
+    // Save args to call setupInsertionAnimation later
+    this.timeUntilSetupInsertionAnimation = FRAMES_BEFORE_FIRST_HIGHLIGHT + (path.length - 1) * FRAMES_BETWEEN_HIGHLIGHTS + (path.length) * HIGHLIGHT_DURATION_FRAMES + FRAMES_AFTER_LAST_HIGHLIGHT
+    this.setupInsertionAnimationValue = value
+    this.setupInsertionAnimationParent = path[path.length - 1]
+  }
+
+  // Tells nodes to highlight after a delay
+  setupInsertionPathAnimation (path: DataNode[]): void {
+    for (let i = 0; i < path.length; i++) {
+      const node = path[i]
+      node.displayNode.highlightAfterDelay(FRAMES_BEFORE_FIRST_HIGHLIGHT + i * (HIGHLIGHT_DURATION_FRAMES + FRAMES_BETWEEN_HIGHLIGHTS))
+    }
+  }
+
+  // Tells nodes to start moving to new target positions
+  setupInsertionAnimation (value: number, parent: DataNode): void {
+    if (parent == null) {
+      this.root = new DataNode(new DisplayNode(ROOT_TARGET_X, ROOT_TARGET_Y, RADIUS, FILL_COLOR, STROKE_COLOR, value))
+    } else if (value < parent.displayNode.value) {
+      parent.left = new DataNode(new DisplayNode(parent.displayNode.targetX - TARGET_X_GAP, parent.displayNode.targetY + TARGET_Y_GAP, RADIUS, FILL_COLOR, STROKE_COLOR, value))
     } else {
-      this.insertIntoSubtree(value, this.root)
+      parent.right = new DataNode(new DisplayNode(parent.displayNode.targetX + TARGET_X_GAP, parent.displayNode.targetY + TARGET_Y_GAP, RADIUS, FILL_COLOR, STROKE_COLOR, value))
     }
     this.setTargetPositions()
   }
 
-  insertIntoSubtree (value: number, node: DataNode): void {
-    if (value < node.displayNode.value) {
-      if (node.left == null) {
-        node.left = new DataNode(new DisplayNode(node.displayNode.targetX - TARGET_X_GAP, node.displayNode.targetY + TARGET_Y_GAP, RADIUS, FILL_COLOR, STROKE_COLOR, value))
+  pathToNode (value: number): DataNode[] {
+    const path: DataNode[] = []
+    let currNode: DataNode | null = this.root
+    while (currNode != null) {
+      path.push(currNode)
+      if (value < currNode.displayNode.value) {
+        currNode = currNode.left
       } else {
-        this.insertIntoSubtree(value, node.left)
-      }
-    } else {
-      if (node.right == null) {
-        node.right = new DataNode(new DisplayNode(node.displayNode.targetX + TARGET_X_GAP, node.displayNode.targetY + TARGET_Y_GAP, RADIUS, FILL_COLOR, STROKE_COLOR, value))
-      } else {
-        this.insertIntoSubtree(value, node.right)
+        currNode = currNode.right
       }
     }
+    return path
   }
 
-  remove (value: number): void {
+  delete (value: number): boolean {
+    return false
+  }
+
+  deleteFromSubtree (value: number, node: DataNode): void {
 
   }
 
@@ -64,8 +133,30 @@ export default class BinarySearchTree implements Tree {
 
   animate (canvas: HTMLCanvasElement, context: CanvasRenderingContext2D): void {
     context.clearRect(0, 0, canvas.width, canvas.height)
+
+    // Insert a new node and have other nodes move to accomodate
+    if (this.timeUntilSetupInsertionAnimation === 0) {
+      if (this.setupInsertionAnimationParent == null) {
+        throw new Error('setupInsertionAnimationParent is null')
+      }
+      this.setupInsertionAnimation(this.setupInsertionAnimationValue, this.setupInsertionAnimationParent)
+      this.timeUntilSetupInsertionAnimation = -1
+    } else if (this.timeUntilSetupInsertionAnimation > 0) {
+      this.timeUntilSetupInsertionAnimation--
+    }
+
     if (this.root != null) {
-      this.root.inorderTraversal().forEach((node) => { node.displayNode.drawAndUpdate(context) })
+      const inorderTraversal = this.root.inorderTraversal()
+
+      inorderTraversal.forEach((node) => {
+        if (node.left != null) {
+          drawArrowFromNodeToNode(node, node.left, context)
+        }
+        if (node.right != null) {
+          drawArrowFromNodeToNode(node, node.right, context)
+        }
+        node.displayNode.drawAndUpdate(context)
+      })
     }
     requestAnimationFrame(() => { this.animate(canvas, context) })
   }

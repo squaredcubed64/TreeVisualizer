@@ -12,6 +12,9 @@ insertButton.addEventListener('click', () => {
     throw new Error('insertInput must be an HTMLInputElement')
   }
   const value = parseInt(insertInput.value)
+  if (isNaN(value)) {
+    throw new Error('value must be a number')
+  }
   tree.insert(value)
 })
 

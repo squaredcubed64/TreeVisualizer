@@ -1,4 +1,10 @@
-const FRAMES_TO_MOVE = 300
+import {
+  MOVE_DURATION_FRAMES,
+  HIGHLIGHT_DURATION_FRAMES,
+  HIGHLIGHT_COLOR,
+  LINE_WIDTH,
+  HIGHLIGHT_RADIUS
+} from './constants.js'
 
 export default class DisplayNode {
   x: number
@@ -12,6 +18,8 @@ export default class DisplayNode {
   private speedX: number
   private speedY: number
   private framesUntilStop: number
+  private framesUntilHighlighted: number
+  private framesUntilUnhighlighted: number
 
   constructor (
     x: number,
@@ -40,15 +48,37 @@ export default class DisplayNode {
     } else if (this.framesUntilStop > 0) {
       this.framesUntilStop--
     }
+
+    if (this.framesUntilHighlighted === 0) {
+      this.framesUntilUnhighlighted = HIGHLIGHT_DURATION_FRAMES
+      this.framesUntilHighlighted = -1
+    } else if (this.framesUntilHighlighted > 0) {
+      this.framesUntilHighlighted--
+    }
+
+    if (this.framesUntilUnhighlighted > 0) {
+      this.framesUntilUnhighlighted--
+    }
+
     this.x += this.speedX
     this.y += this.speedY
   }
 
   draw (context: CanvasRenderingContext2D): void {
+    // Highlight
+    if (this.framesUntilUnhighlighted > 0) {
+      context.beginPath()
+      context.arc(this.x, this.y, HIGHLIGHT_RADIUS, 0, Math.PI * 2, false)
+      context.fillStyle = HIGHLIGHT_COLOR
+      context.fill()
+    }
+
+    // Draw circle
     context.beginPath()
     context.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false)
     context.fillStyle = this.fillColor
     context.fill()
+    context.lineWidth = LINE_WIDTH
     context.strokeStyle = this.strokeColor
     context.stroke()
 
@@ -71,10 +101,14 @@ export default class DisplayNode {
   }
 
   moveTo (targetX: number, targetY: number): void {
-    this.framesUntilStop = FRAMES_TO_MOVE
-    this.speedX = (targetX - this.x) / FRAMES_TO_MOVE
-    this.speedY = (targetY - this.y) / FRAMES_TO_MOVE
+    this.framesUntilStop = MOVE_DURATION_FRAMES
+    this.speedX = (targetX - this.x) / MOVE_DURATION_FRAMES
+    this.speedY = (targetY - this.y) / MOVE_DURATION_FRAMES
     this.targetX = targetX
     this.targetY = targetY
+  }
+
+  highlightAfterDelay (delayFrames: number): void {
+    this.framesUntilHighlighted = delayFrames
   }
 }

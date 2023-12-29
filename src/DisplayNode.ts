@@ -2,8 +2,12 @@ import {
   MOVE_DURATION_FRAMES,
   HIGHLIGHT_DURATION_FRAMES,
   HIGHLIGHT_COLOR,
-  LINE_WIDTH,
-  HIGHLIGHT_RADIUS
+  BORDER_WIDTH,
+  HIGHLIGHT_WIDTH,
+  GROW_DURATION_FRAMES,
+  TEXT_COLOR,
+  TEXT_FONT,
+  TEXT_Y_OFFSET
 } from './constants.js'
 
 export default class DisplayNode {
@@ -11,7 +15,8 @@ export default class DisplayNode {
   y: number
   targetX: number
   targetY: number
-  radius: number
+  currentRadius: number
+  maxRadius: number
   fillColor: string
   strokeColor: string
   value: number
@@ -24,7 +29,7 @@ export default class DisplayNode {
   constructor (
     x: number,
     y: number,
-    radius: number,
+    maxRadius: number,
     fillColor: string,
     strokeColor: string,
     value: number
@@ -33,13 +38,14 @@ export default class DisplayNode {
     this.y = y
     this.targetX = x
     this.targetY = y
-    this.radius = radius
+    this.maxRadius = maxRadius
     this.fillColor = fillColor
     this.strokeColor = strokeColor
     this.value = value
     this.speedX = 0
     this.speedY = 0
     this.framesUntilStop = 0
+    this.currentRadius = 0
   }
 
   update (): void {
@@ -60,6 +66,10 @@ export default class DisplayNode {
       this.framesUntilUnhighlighted--
     }
 
+    if (this.currentRadius < this.maxRadius) {
+      this.currentRadius += this.maxRadius / GROW_DURATION_FRAMES
+    }
+
     this.x += this.speedX
     this.y += this.speedY
   }
@@ -68,26 +78,26 @@ export default class DisplayNode {
     // Highlight
     if (this.framesUntilUnhighlighted > 0) {
       context.beginPath()
-      context.arc(this.x, this.y, HIGHLIGHT_RADIUS, 0, Math.PI * 2, false)
+      context.arc(this.x, this.y, this.currentRadius + HIGHLIGHT_WIDTH, 0, Math.PI * 2, false)
       context.fillStyle = HIGHLIGHT_COLOR
       context.fill()
     }
 
     // Draw circle
     context.beginPath()
-    context.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false)
+    context.arc(this.x, this.y, this.currentRadius, 0, Math.PI * 2, false)
     context.fillStyle = this.fillColor
     context.fill()
-    context.lineWidth = LINE_WIDTH
+    context.lineWidth = BORDER_WIDTH
     context.strokeStyle = this.strokeColor
     context.stroke()
 
     // Add text
-    context.fillStyle = 'black'
+    context.fillStyle = TEXT_COLOR
     context.textAlign = 'center'
     context.textBaseline = 'middle'
-    context.font = '20px Arial'
-    context.fillText(this.value.toString(), this.x, this.y)
+    context.font = TEXT_FONT
+    context.fillText(this.value.toString(), this.x, this.y + TEXT_Y_OFFSET)
   }
 
   drawAndUpdate (context: CanvasRenderingContext2D): void {

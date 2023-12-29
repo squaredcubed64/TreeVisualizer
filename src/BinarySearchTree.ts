@@ -15,7 +15,7 @@ import {
   FRAMES_BETWEEN_HIGHLIGHTS,
   FRAMES_BEFORE_FIRST_HIGHLIGHT,
   FRAMES_AFTER_LAST_HIGHLIGHT,
-  MOVE_DURATION_FRAMES,
+  // MOVE_DURATION_FRAMES,
   HIGHLIGHT_DURATION_FRAMES
 } from './constants.js'
 
@@ -50,8 +50,8 @@ function drawArrowFromNodeToNode (fromNode: DataNode, toNode: DataNode, context:
   const dx = toNode.displayNode.x - fromNode.displayNode.x
   const dy = toNode.displayNode.y - fromNode.displayNode.y
   const dist = Math.sqrt(dx * dx + dy * dy)
-  const xOffsetFromCenter = dx * RADIUS / dist
-  const yOffsetFromCenter = dy * RADIUS / dist
+  const xOffsetFromCenter = dx * toNode.displayNode.currentRadius / dist
+  const yOffsetFromCenter = dy * toNode.displayNode.currentRadius / dist
   drawArrow(fromNode.displayNode.x, fromNode.displayNode.y, toNode.displayNode.x - xOffsetFromCenter, toNode.displayNode.y - yOffsetFromCenter, context)
 }
 
@@ -148,6 +148,7 @@ export default class BinarySearchTree implements Tree {
     if (this.root != null) {
       const inorderTraversal = this.root.inorderTraversal()
 
+      // Draw arrows first
       inorderTraversal.forEach((node) => {
         if (node.left != null) {
           drawArrowFromNodeToNode(node, node.left, context)
@@ -155,6 +156,9 @@ export default class BinarySearchTree implements Tree {
         if (node.right != null) {
           drawArrowFromNodeToNode(node, node.right, context)
         }
+      })
+
+      inorderTraversal.forEach((node) => {
         node.displayNode.drawAndUpdate(context)
       })
     }

@@ -1,8 +1,12 @@
 export const MOVE_DURATION_FRAMES = 150
 export const HIGHLIGHT_DURATION_FRAMES = 60
 export const HIGHLIGHT_COLOR = 'blue'
-export const LINE_WIDTH = 2
-export const HIGHLIGHT_RADIUS = 15
+export const BORDER_WIDTH = 1
+export const HIGHLIGHT_WIDTH = 5
+export const GROW_DURATION_FRAMES = 30
+export const TEXT_COLOR = 'black'
+export const TEXT_FONT = '16px Arial'
+export const TEXT_Y_OFFSET = 2
 
 export const ROOT_TARGET_X = 400
 export const ROOT_TARGET_Y = 50

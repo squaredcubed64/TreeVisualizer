@@ -1,3 +1,19 @@
+  delete (value: number): boolean {
+    if (this.root == null) {
+      return false
+    }
+    const path = this.findMinimalPathToValue(value)
+    this.setupNodesToHighlightAfterDelay(path.nodesTraversed)
+
+    if (path.found) {
+      // Save args to call setupDeletionAnimation later
+      this.timeUntilSetupDeletionAnimation = FRAMES_BEFORE_FIRST_HIGHLIGHT + (path.nodesTraversed.length - 1) * FRAMES_BETWEEN_HIGHLIGHTS + (path.nodesTraversed.length) * HIGHLIGHT_DURATION_FRAMES + FRAMES_AFTER_LAST_HIGHLIGHT
+      this.setupDeletionAnimationArgs = { value, parent: path.nodesTraversed[path.nodesTraversed.length - 1], lastLeft: path.lastLeft }
+    }
+  }
+
+
+
 import DisplayNode from './DisplayNode.js'
 import DataNode from './DataNode.js'
 import type Tree from './Tree.js'
@@ -14,11 +30,9 @@ import {
   ARROW_LINE_WIDTH,
   FRAMES_BETWEEN_HIGHLIGHTS,
   FRAMES_BEFORE_FIRST_HIGHLIGHT,
+  FRAMES_AFTER_LAST_HIGHLIGHT,
   // MOVE_DURATION_FRAMES,
-  HIGHLIGHT_DURATION_FRAMES,
-  SHRINK_DURATION_FRAMES,
-  FRAMES_AFTER_SHRINK,
-  TOTAL_HIGHLIGHT_DURATION_FRAMES
+  HIGHLIGHT_DURATION_FRAMES
 } from './constants.js'
 
 // For debugging
@@ -63,29 +77,18 @@ function makeDataNode (targetX: number, targetY: number, value: number): DataNod
 
 export default class BinarySearchTree implements Tree {
   root: DataNode | null
-  framesUntilSetupInsertionAnimation: number
+  timeUntilSetupInsertionAnimation: number
   setupInsertionAnimationValue: number
   setupInsertionAnimationParent: DataNode | null
 
-  framesUntilShrinkAnimation: number
-  framesUntilSetupDeletionAnimation: number
-  // Also referenced for the shrink animation
-  setupDeletionAnimationNode: DataNode | null
-  setupDeletionAnimationParent: DataNode | null
-
   constructor () {
     this.root = null
-    this.framesUntilSetupInsertionAnimation = -1
+    this.timeUntilSetupInsertionAnimation = -1
     this.setupInsertionAnimationValue = -1
     this.setupInsertionAnimationParent = null
-    this.framesUntilShrinkAnimation = -1
-    this.framesUntilSetupDeletionAnimation = -1
-    this.setupDeletionAnimationNode = null
-    this.setupDeletionAnimationParent = null
   }
 
-  // Animation: highlight path, then simultaneously grow inserted node and move other nodes to new target positions
-  // Note: equivalent values are inserted to the right
+  // Equivalent values are inserted to the right
   insert (value: number): void {
     // If the tree is empty, insert without any animation
     if (this.root == null) {
@@ -93,7 +96,36 @@ export default class BinarySearchTree implements Tree {
       return
     }
 
-    // Find the path to where the new node will be inserted
+    const path = this.pathToNode(value)
+    this.setupInsertionPathAnimation(path)
+
+    // Save args to call setupInsertionAnimation later
+    this.timeUntilSetupInsertionAnimation = FRAMES_BEFORE_FIRST_HIGHLIGHT + (path.length - 1) * FRAMES_BETWEEN_HIGHLIGHTS + (path.length) * HIGHLIGHT_DURATION_FRAMES + FRAMES_AFTER_LAST_HIGHLIGHT
+    this.setupInsertionAnimationValue = value
+    this.setupInsertionAnimationParent = path[path.length - 1]
+  }
+
+  // Tells nodes to highlight after a delay
+  setupInsertionPathAnimation (path: DataNode[]): void {
+    for (let i = 0; i < path.length; i++) {
+      const node = path[i]
+      node.displayNode.highlightAfterDelay(FRAMES_BEFORE_FIRST_HIGHLIGHT + i * (HIGHLIGHT_DURATION_FRAMES + FRAMES_BETWEEN_HIGHLIGHTS))
+    }
+  }
+
+  // Tells nodes to start moving to new target positions
+  setupInsertionAnimation (value: number, parent: DataNode): void {
+    if (parent == null) {
+      throw new Error('Parent is null. If the tree is empty, this should have been handled by insert')
+    } else if (value < parent.displayNode.value) {
+      parent.left = makeDataNode(parent.displayNode.targetX - TARGET_X_GAP, parent.displayNode.targetY + TARGET_Y_GAP, value)
+    } else {
+      parent.right = makeDataNode(parent.displayNode.targetX + TARGET_X_GAP, parent.displayNode.targetY + TARGET_Y_GAP, value)
+    }
+    this.setTargetPositions()
+  }
+
+  pathToNode (value: number): DataNode[] {
     const path: DataNode[] = []
     let currNode: DataNode | null = this.root
     while (currNode != null) {
@@ -104,114 +136,15 @@ export default class BinarySearchTree implements Tree {
         currNode = currNode.right
       }
     }
-
-    this.setupNodesToHighlightAlongPath(path)
-
-    // Save args to call setupInsertionAnimation later
-    this.framesUntilSetupInsertionAnimation = TOTAL_HIGHLIGHT_DURATION_FRAMES(path.length)
-    this.setupInsertionAnimationValue = value
-    this.setupInsertionAnimationParent = path[path.length - 1]
+    return path
   }
 
-  setupNodesToHighlightAlongPath (path: DataNode[]): void {
-    for (let i = 0; i < path.length; i++) {
-      const node = path[i]
-      node.displayNode.highlightAfterDelay(FRAMES_BEFORE_FIRST_HIGHLIGHT + i * (HIGHLIGHT_DURATION_FRAMES + FRAMES_BETWEEN_HIGHLIGHTS))
-    }
+  delete (value: number): boolean {
+    return false
   }
 
-  // Creates node and tells nodes to start moving to new target positions
-  setupInsertionAnimation (value: number, parent: DataNode): void {
-    if (value < parent.displayNode.value) {
-      parent.left = makeDataNode(parent.displayNode.targetX - TARGET_X_GAP, parent.displayNode.targetY + TARGET_Y_GAP, value)
-    } else {
-      parent.right = makeDataNode(parent.displayNode.targetX + TARGET_X_GAP, parent.displayNode.targetY + TARGET_Y_GAP, value)
-    }
-    this.setTargetPositions()
-  }
+  deleteFromSubtree (value: number, node: DataNode): void {
 
-  // Animation: highlight path, shrink victim node, then move other nodes to new target positions
-  delete (value: number): void {
-    // If the tree is empty, do nothing
-    if (this.root == null) {
-      return
-    }
-
-    // Find the path the tree takes to find the node to delete
-    const path: DataNode[] = []
-    let currNode: DataNode | null = this.root
-    let currParent: DataNode | null = null
-    while (currNode != null && currNode.displayNode.value !== value) {
-      currParent = currNode
-      path.push(currNode)
-      if (value < currNode.displayNode.value) {
-        currNode = currNode.left
-      } else {
-        currNode = currNode.right
-      }
-    }
-    // Highlight victim node too
-    if (currNode != null) {
-      path.push(currNode)
-    }
-
-    this.setupNodesToHighlightAlongPath(path)
-
-    if (currNode !== null) {
-      // If the victim node has one child or fewer, start shrinking after highlighting
-      if (currNode.left == null || currNode.right == null) {
-        this.framesUntilShrinkAnimation = TOTAL_HIGHLIGHT_DURATION_FRAMES(path.length)
-      }
-      // add logic here
-      // Save args to call setupDeletionAnimation later
-      this.framesUntilSetupDeletionAnimation = TOTAL_HIGHLIGHT_DURATION_FRAMES(path.length) + SHRINK_DURATION_FRAMES + FRAMES_AFTER_SHRINK
-      this.setupDeletionAnimationNode = currNode
-      this.setupDeletionAnimationParent = currParent
-    }
-  }
-
-  // Deletes node and tells nodes to start moving to new target positions
-  setupDeletionAnimation (node: DataNode, parent: DataNode | null): void {
-    if (parent != null && !parent.isParentOf(node)) {
-      throw new Error('parent is not the parent of node')
-    }
-
-    // BST deletion
-    if (node.left === null && node.right === null) {
-      // Case 1: Node has no children
-      if (parent == null) {
-        // Node is the root
-        this.root = null
-      } else if (parent.left === node) {
-        parent.left = null
-      } else {
-        parent.right = null
-      }
-    } else if (node.left === null || node.right === null) {
-      // Case 2: Node has one child
-      const child = node.left ?? node.right
-      if (parent == null) {
-        // Node is the root
-        this.root = child
-      } else if (parent.left === node) {
-        parent.left = child
-      } else {
-        parent.right = child
-      }
-    } else {
-      // Case 3: Node has two children, swap with smallest node in right subtree
-      let successorParent: DataNode = node
-      let successor: DataNode = node.right
-      while (successor.left != null) {
-        successorParent = successor
-        successor = successor.left
-      }
-      node.displayNode.value = successor.displayNode.value
-      this.setupDeletionAnimation(successor, successorParent)
-      return
-    }
-
-    this.setTargetPositions()
   }
 
   find (value: number): DisplayNode | null {
@@ -222,36 +155,14 @@ export default class BinarySearchTree implements Tree {
     context.clearRect(0, 0, canvas.width, canvas.height)
 
     // Insert a new node and have other nodes move to accomodate
-    if (this.framesUntilSetupInsertionAnimation === 0) {
+    if (this.timeUntilSetupInsertionAnimation === 0) {
       if (this.setupInsertionAnimationParent == null) {
-        throw new Error('Parent is null. If the tree is empty, this should have been handled by insert')
+        throw new Error('setupInsertionAnimationParent is null')
       }
       this.setupInsertionAnimation(this.setupInsertionAnimationValue, this.setupInsertionAnimationParent)
-      this.framesUntilSetupInsertionAnimation = -1
-    } else if (this.framesUntilSetupInsertionAnimation > 0) {
-      this.framesUntilSetupInsertionAnimation--
-    }
-
-    // Tell victim node to start shrinking
-    if (this.framesUntilShrinkAnimation === 0) {
-      if (this.setupDeletionAnimationNode == null) {
-        throw new Error('Node is null. If the victim node is not in the tree, this should have been handled by delete')
-      }
-      this.setupDeletionAnimationNode.displayNode.startShrinkingIntoNothing()
-      this.framesUntilShrinkAnimation = -1
-    } else if (this.framesUntilShrinkAnimation > 0) {
-      this.framesUntilShrinkAnimation--
-    }
-
-    // Delete a node and have other nodes move to accomodate
-    if (this.framesUntilSetupDeletionAnimation === 0) {
-      if (this.setupDeletionAnimationNode == null) {
-        throw new Error('Node is null. If the victim node is not in the tree, this should have been handled by delete')
-      }
-      this.setupDeletionAnimation(this.setupDeletionAnimationNode, this.setupDeletionAnimationParent)
-      this.framesUntilSetupDeletionAnimation = -1
-    } else if (this.framesUntilSetupDeletionAnimation > 0) {
-      this.framesUntilSetupDeletionAnimation--
+      this.timeUntilSetupInsertionAnimation = -1
+    } else if (this.timeUntilSetupInsertionAnimation > 0) {
+      this.timeUntilSetupInsertionAnimation--
     }
 
     if (this.root != null) {
@@ -321,11 +232,11 @@ export default class BinarySearchTree implements Tree {
   }
 
   setTargetPositions (): void {
-    if (this.root == null) {
-      return
-    }
     const nodeToTargetX = this.targetXs()
     const nodeToTargetY = this.targetYs()
+    if (this.root == null) {
+      throw new Error('Root is null')
+    }
     for (const node of this.root.inorderTraversal()) {
       const targetX = nodeToTargetX.get(node)
       if (targetX == null) {

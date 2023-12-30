@@ -7,7 +7,8 @@ import {
   GROW_DURATION_FRAMES,
   TEXT_COLOR,
   TEXT_FONT,
-  TEXT_Y_OFFSET
+  TEXT_Y_OFFSET,
+  SHRINK_DURATION_FRAMES
 } from './constants.js'
 
 export default class DisplayNode {
@@ -25,6 +26,7 @@ export default class DisplayNode {
   private framesUntilStop: number
   private framesUntilHighlighted: number
   private framesUntilUnhighlighted: number
+  private startedShrinking: boolean
 
   constructor (
     x: number,
@@ -66,7 +68,12 @@ export default class DisplayNode {
       this.framesUntilUnhighlighted--
     }
 
-    if (this.currentRadius < this.maxRadius) {
+    if (this.startedShrinking) {
+      this.currentRadius -= this.maxRadius / SHRINK_DURATION_FRAMES
+      if (this.currentRadius < 0) {
+        this.currentRadius = 0
+      }
+    } else if (this.currentRadius < this.maxRadius) {
       this.currentRadius += this.maxRadius / GROW_DURATION_FRAMES
     }
 
@@ -120,5 +127,9 @@ export default class DisplayNode {
 
   highlightAfterDelay (delayFrames: number): void {
     this.framesUntilHighlighted = delayFrames
+  }
+
+  startShrinkingIntoNothing (): void {
+    this.startedShrinking = true
   }
 }

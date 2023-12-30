@@ -17,4 +17,8 @@ export default class DataNode {
     const rightNodes = (this.right != null) ? this.right.inorderTraversal() : []
     return [...leftNodes, this, ...rightNodes]
   }
+
+  isParentOf (node: DataNode): boolean {
+    return this.left === node || this.right === node
+  }
 }

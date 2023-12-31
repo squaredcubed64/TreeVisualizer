@@ -24,7 +24,10 @@ import {
   FIND_SUCCESSOR_HIGHLIGHT_COLOR,
   FRAMES_BEFORE_REPLACE_WITH_SUCCESSOR,
   FRAMES_BEFORE_HIGHLIGHT_SUCCESSOR,
-  FRAMES_BEFORE_UNHIGHLIGHT_VICTIM
+  FRAMES_BEFORE_UNHIGHLIGHT_VICTIM,
+  HIGHLIGHT_DURATION_AFTER_SUCCESSFUL_FIND_FRAMES,
+  HIGHLIGHT_COLOR_AFTER_SUCCESSFUL_FIND,
+  FRAMES_AFTER_UNSUCCESSFUL_FIND
 } from './constants.js'
 
 // For debugging
@@ -253,8 +256,39 @@ export default class BinarySearchTree implements Tree {
     }
   }
 
-  find (value: number): DisplayNode | null {
-    return null
+  find (value: number): void {
+    // Find the path the tree takes to find the node to delete
+    const path: DataNode[] = []
+    let currNode: DataNode | null = this.root
+    while (currNode != null && currNode.displayNode.value !== value) {
+      path.push(currNode)
+      if (value < currNode.displayNode.value) {
+        currNode = currNode.left
+      } else {
+        currNode = currNode.right
+      }
+    }
+    // Highlight victim node too
+    if (currNode != null) {
+      path.push(currNode)
+    }
+
+    this.pushNodeHighlightingOntoFunctionQueue(path)
+
+    // If found, highlight again in a different color
+    this.functionQueue.push({
+      framesBeforeCall: 0,
+      function: () => {
+        if (currNode != null) {
+          currNode.displayNode.highlight(HIGHLIGHT_COLOR_AFTER_SUCCESSFUL_FIND, HIGHLIGHT_DURATION_AFTER_SUCCESSFUL_FIND_FRAMES)
+          return HIGHLIGHT_DURATION_AFTER_SUCCESSFUL_FIND_FRAMES
+        } else return FRAMES_AFTER_UNSUCCESSFUL_FIND
+      }
+    })
+  }
+
+  clear (): void {
+    this.root = null
   }
 
   animate (canvas: HTMLCanvasElement, context: CanvasRenderingContext2D): void {
@@ -280,7 +314,6 @@ export default class BinarySearchTree implements Tree {
     if (this.root != null) {
       const arbitraryTraversal = this.root.getInorderTraversal()
       // Draw arrows first
-      // Parent to child is a special case
       if (this.arrowDirection === ArrowDirection.PARENT_TO_CHILD) {
         arbitraryTraversal.forEach((node) => {
           if (node.left != null) {

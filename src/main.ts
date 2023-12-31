@@ -34,6 +34,30 @@ deleteButton.addEventListener('click', () => {
   tree.delete(value)
 })
 
+const findButton = document.getElementById('findButton')
+if (findButton == null) {
+  throw new Error('findButton not found')
+}
+findButton.addEventListener('click', () => {
+  const findInput = document.getElementById('findInput')
+  if (!(findInput instanceof HTMLInputElement)) {
+    throw new Error('findInput must be an HTMLInputElement')
+  }
+  const value = parseInt(findInput.value)
+  if (isNaN(value)) {
+    throw new Error('value must be a number')
+  }
+  tree.find(value)
+})
+
+const clearButton = document.getElementById('clearButton')
+if (clearButton == null) {
+  throw new Error('clearButton not found')
+}
+clearButton.addEventListener('click', () => {
+  tree.clear()
+})
+
 const arrowDirections = [ArrowDirection.PARENT_TO_CHILD, ArrowDirection.PREORDER, ArrowDirection.INORDER, ArrowDirection.POSTORDER]
 const arrowTexts = ['Parent to Child', 'Preorder', 'Inorder', 'Postorder']
 let currentDirectionIndex = 0
@@ -44,7 +68,7 @@ if (arrowButton == null) {
 arrowButton.addEventListener('click', () => {
   currentDirectionIndex = (currentDirectionIndex + 1) % arrowDirections.length
   const currentDirection = arrowDirections[currentDirectionIndex]
-  const currentText = arrowTexts[currentDirectionIndex]
+  const currentText = 'Arrows: ' + arrowTexts[currentDirectionIndex]
   arrowButton.textContent = currentText
   tree.setArrowDirection(currentDirection)
 })

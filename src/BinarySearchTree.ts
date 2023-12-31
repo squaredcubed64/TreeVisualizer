@@ -196,7 +196,6 @@ export default class BinarySearchTree implements Tree {
     if (victim.left == null || victim.right == null) {
       this.functionQueue.push({ framesBeforeCall: 0, function: () => { victim.displayNode.startShrinkingIntoNothing(); return SHRINK_DURATION_FRAMES + FRAMES_AFTER_SHRINK } })
     }
-    // TODO add logic here to handle case where victim node has two children
     // Save args to call setupDeletionAnimation later
     this.functionQueue.push({ framesBeforeCall: 0, function: () => this.setupDeletionAnimation(victim, parent) })
   }
@@ -257,6 +256,11 @@ export default class BinarySearchTree implements Tree {
   }
 
   find (value: number): void {
+    // If the tree is empty, do nothing
+    if (this.root == null) {
+      return
+    }
+
     // Find the path the tree takes to find the node to delete
     const path: DataNode[] = []
     let currNode: DataNode | null = this.root
@@ -301,9 +305,13 @@ export default class BinarySearchTree implements Tree {
         throw new Error('Function call is null')
       }
       const additionalFramesToWait = functionCall.function()
-      // TODO: once you stop the user from inserting/deleting while animations are happening, you may need to create a wait() function to keep track of how long the last animation in the queue takes
-      if (this.functionQueue.length > 0) {
-        this.functionQueue[0].framesBeforeCall += additionalFramesToWait
+      if (additionalFramesToWait > 0) {
+        if (this.functionQueue.length > 0) {
+          this.functionQueue[0].framesBeforeCall += additionalFramesToWait
+        } else {
+          // If the queue is empty, add a dummy function to wait for additionalFramesToWait frames
+          this.functionQueue.push({ framesBeforeCall: additionalFramesToWait, function: () => 0 })
+        }
       }
     }
 

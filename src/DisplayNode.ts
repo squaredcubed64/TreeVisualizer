@@ -24,7 +24,6 @@ export default class DisplayNode {
   private speedX: number
   private speedY: number
   private framesUntilStop: number
-  private framesUntilHighlighted: number
   private framesUntilUnhighlighted: number
   private startedShrinking: boolean
 
@@ -55,13 +54,6 @@ export default class DisplayNode {
       this.stop()
     } else if (this.framesUntilStop > 0) {
       this.framesUntilStop--
-    }
-
-    if (this.framesUntilHighlighted === 0) {
-      this.framesUntilUnhighlighted = HIGHLIGHT_DURATION_FRAMES
-      this.framesUntilHighlighted = -1
-    } else if (this.framesUntilHighlighted > 0) {
-      this.framesUntilHighlighted--
     }
 
     if (this.framesUntilUnhighlighted > 0) {
@@ -125,8 +117,8 @@ export default class DisplayNode {
     this.targetY = targetY
   }
 
-  highlightAfterDelay (delayFrames: number): void {
-    this.framesUntilHighlighted = delayFrames
+  highlight (): void {
+    this.framesUntilUnhighlighted = HIGHLIGHT_DURATION_FRAMES
   }
 
   startShrinkingIntoNothing (): void {

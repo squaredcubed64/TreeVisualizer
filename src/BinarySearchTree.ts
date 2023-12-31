@@ -14,11 +14,12 @@ import {
   ARROW_LINE_WIDTH,
   FRAMES_BETWEEN_HIGHLIGHTS,
   FRAMES_BEFORE_FIRST_HIGHLIGHT,
-  // MOVE_DURATION_FRAMES,
+  MOVE_DURATION_FRAMES,
   HIGHLIGHT_DURATION_FRAMES,
   SHRINK_DURATION_FRAMES,
   FRAMES_AFTER_SHRINK,
-  TOTAL_HIGHLIGHT_DURATION_FRAMES
+  TOTAL_HIGHLIGHT_DURATION_FRAMES,
+  FRAMES_AFTER_LAST_HIGHLIGHT
 } from './constants.js'
 
 // For debugging
@@ -61,30 +62,27 @@ function makeDataNode (targetX: number, targetY: number, value: number): DataNod
   return new DataNode(new DisplayNode(targetX, targetY, MAX_RADIUS, FILL_COLOR, STROKE_COLOR, value))
 }
 
+// Used to implement animations
+interface DelayedFunctionCall {
+  // The time between reaching the front of the queue and being called
+  framesBeforeCall: number
+  // The time between being called and leaving the queue
+  // Most functions will return the number of frames they expect their animation to take
+  // TODO consider implementing simultaneous function calls when a function returns 0 followed by a delayFrames of 0
+  function: () => number
+  // The total time between function calls equals the return value of one function plus the delayFrames of the next function
+}
+
 export default class BinarySearchTree implements Tree {
   root: DataNode | null
-  framesUntilSetupInsertionAnimation: number
-  setupInsertionAnimationValue: number
-  setupInsertionAnimationParent: DataNode | null
-
-  framesUntilShrinkAnimation: number
-  framesUntilSetupDeletionAnimation: number
-  // Also referenced for the shrink animation
-  setupDeletionAnimationNode: DataNode | null
-  setupDeletionAnimationParent: DataNode | null
+  functionQueue: DelayedFunctionCall[]
 
   constructor () {
     this.root = null
-    this.framesUntilSetupInsertionAnimation = -1
-    this.setupInsertionAnimationValue = -1
-    this.setupInsertionAnimationParent = null
-    this.framesUntilShrinkAnimation = -1
-    this.framesUntilSetupDeletionAnimation = -1
-    this.setupDeletionAnimationNode = null
-    this.setupDeletionAnimationParent = null
+    this.functionQueue = []
   }
 
-  // Animation: highlight path, then simultaneously grow inserted node and move other nodes to new target positions
+  // Animation: highlight path, grow inserted node, then move nodes to new target positions
   // Note: equivalent values are inserted to the right
   insert (value: number): void {
     // If the tree is empty, insert without any animation
@@ -105,29 +103,52 @@ export default class BinarySearchTree implements Tree {
       }
     }
 
-    this.setupNodesToHighlightAlongPath(path)
+    this.pushNodeHighlightingOntoFunctionQueue(path)
 
-    // Save args to call setupInsertionAnimation later
-    this.framesUntilSetupInsertionAnimation = TOTAL_HIGHLIGHT_DURATION_FRAMES(path.length)
-    this.setupInsertionAnimationValue = value
-    this.setupInsertionAnimationParent = path[path.length - 1]
+    this.functionQueue.push({ framesBeforeCall: 0, function: () => this.setupInsertionAnimation(value, path[path.length - 1]) })
   }
 
-  setupNodesToHighlightAlongPath (path: DataNode[]): void {
+  /* setupNodesToHighlightAlongPath (path: DataNode[]): void {
     for (let i = 0; i < path.length; i++) {
       const node = path[i]
       node.displayNode.highlightAfterDelay(FRAMES_BEFORE_FIRST_HIGHLIGHT + i * (HIGHLIGHT_DURATION_FRAMES + FRAMES_BETWEEN_HIGHLIGHTS))
     }
+  } */
+
+  // Pushes methods onto functionQueue to highlight nodes along path
+  pushNodeHighlightingOntoFunctionQueue (path: DataNode[]): void {
+    if (path.length === 0) {
+      throw new Error('Path is empty')
+    }
+    for (let i = 0; i < path.length; i++) {
+      const node = path[i]
+      let framesBeforeCall: number
+      if (i === 0) {
+        framesBeforeCall = FRAMES_BEFORE_FIRST_HIGHLIGHT
+      } else {
+        framesBeforeCall = FRAMES_BETWEEN_HIGHLIGHTS
+      }
+
+      let additionalFramesToWait: number
+      if (i === path.length - 1) {
+        additionalFramesToWait = FRAMES_AFTER_LAST_HIGHLIGHT
+      } else {
+        additionalFramesToWait = HIGHLIGHT_DURATION_FRAMES
+      }
+
+      this.functionQueue.push({ framesBeforeCall, function: () => { node.displayNode.highlight(); return additionalFramesToWait } })
+    }
   }
 
   // Creates node and tells nodes to start moving to new target positions
-  setupInsertionAnimation (value: number, parent: DataNode): void {
+  setupInsertionAnimation (value: number, parent: DataNode): number {
     if (value < parent.displayNode.value) {
       parent.left = makeDataNode(parent.displayNode.targetX - TARGET_X_GAP, parent.displayNode.targetY + TARGET_Y_GAP, value)
     } else {
       parent.right = makeDataNode(parent.displayNode.targetX + TARGET_X_GAP, parent.displayNode.targetY + TARGET_Y_GAP, value)
     }
     this.setTargetPositions()
+    return MOVE_DURATION_FRAMES
   }
 
   // Animation: highlight path, shrink victim node, then move other nodes to new target positions
@@ -155,23 +176,23 @@ export default class BinarySearchTree implements Tree {
       path.push(currNode)
     }
 
-    this.setupNodesToHighlightAlongPath(path)
+    this.pushNodeHighlightingOntoFunctionQueue(path)
 
-    if (currNode !== null) {
+    if (currNode != null) {
       // If the victim node has one child or fewer, start shrinking after highlighting
       if (currNode.left == null || currNode.right == null) {
-        this.framesUntilShrinkAnimation = TOTAL_HIGHLIGHT_DURATION_FRAMES(path.length)
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        this.functionQueue.push({ framesBeforeCall: 0, function: () => { currNode!.displayNode.startShrinkingIntoNothing(); return SHRINK_DURATION_FRAMES } })
       }
-      // add logic here
+      // TODO add logic here to handle case where victim node has two children
       // Save args to call setupDeletionAnimation later
-      this.framesUntilSetupDeletionAnimation = TOTAL_HIGHLIGHT_DURATION_FRAMES(path.length) + SHRINK_DURATION_FRAMES + FRAMES_AFTER_SHRINK
-      this.setupDeletionAnimationNode = currNode
-      this.setupDeletionAnimationParent = currParent
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      this.functionQueue.push({ framesBeforeCall: FRAMES_AFTER_SHRINK, function: () => this.setupDeletionAnimation(currNode!, currParent) })
     }
   }
 
   // Deletes node and tells nodes to start moving to new target positions
-  setupDeletionAnimation (node: DataNode, parent: DataNode | null): void {
+  setupDeletionAnimation (node: DataNode, parent: DataNode | null): number {
     if (parent != null && !parent.isParentOf(node)) {
       throw new Error('parent is not the parent of node')
     }
@@ -198,7 +219,7 @@ export default class BinarySearchTree implements Tree {
       } else {
         parent.right = child
       }
-    } else {
+    } /* else {
       // Case 3: Node has two children, swap with smallest node in right subtree
       let successorParent: DataNode = node
       let successor: DataNode = node.right
@@ -209,9 +230,10 @@ export default class BinarySearchTree implements Tree {
       node.displayNode.value = successor.displayNode.value
       this.setupDeletionAnimation(successor, successorParent)
       return
-    }
+    } */
 
     this.setTargetPositions()
+    return MOVE_DURATION_FRAMES
   }
 
   find (value: number): DisplayNode | null {
@@ -221,37 +243,21 @@ export default class BinarySearchTree implements Tree {
   animate (canvas: HTMLCanvasElement, context: CanvasRenderingContext2D): void {
     context.clearRect(0, 0, canvas.width, canvas.height)
 
-    // Insert a new node and have other nodes move to accomodate
-    if (this.framesUntilSetupInsertionAnimation === 0) {
-      if (this.setupInsertionAnimationParent == null) {
-        throw new Error('Parent is null. If the tree is empty, this should have been handled by insert')
+    // Call functions in functionQueue
+    while (this.functionQueue.length > 0 && this.functionQueue[0].framesBeforeCall === 0) {
+      const functionCall = this.functionQueue.shift()
+      if (functionCall == null) {
+        throw new Error('Function call is null')
       }
-      this.setupInsertionAnimation(this.setupInsertionAnimationValue, this.setupInsertionAnimationParent)
-      this.framesUntilSetupInsertionAnimation = -1
-    } else if (this.framesUntilSetupInsertionAnimation > 0) {
-      this.framesUntilSetupInsertionAnimation--
+      const additionalFramesToWait = functionCall.function()
+      // TODO: once you stop the user from inserting/deleting while animations are happening, you may need to create a wait() function to keep track of how long the last animation in the queue takes
+      if (this.functionQueue.length > 0) {
+        this.functionQueue[0].framesBeforeCall += additionalFramesToWait
+      }
     }
 
-    // Tell victim node to start shrinking
-    if (this.framesUntilShrinkAnimation === 0) {
-      if (this.setupDeletionAnimationNode == null) {
-        throw new Error('Node is null. If the victim node is not in the tree, this should have been handled by delete')
-      }
-      this.setupDeletionAnimationNode.displayNode.startShrinkingIntoNothing()
-      this.framesUntilShrinkAnimation = -1
-    } else if (this.framesUntilShrinkAnimation > 0) {
-      this.framesUntilShrinkAnimation--
-    }
-
-    // Delete a node and have other nodes move to accomodate
-    if (this.framesUntilSetupDeletionAnimation === 0) {
-      if (this.setupDeletionAnimationNode == null) {
-        throw new Error('Node is null. If the victim node is not in the tree, this should have been handled by delete')
-      }
-      this.setupDeletionAnimation(this.setupDeletionAnimationNode, this.setupDeletionAnimationParent)
-      this.framesUntilSetupDeletionAnimation = -1
-    } else if (this.framesUntilSetupDeletionAnimation > 0) {
-      this.framesUntilSetupDeletionAnimation--
+    if (this.functionQueue.length > 0) {
+      this.functionQueue[0].framesBeforeCall--
     }
 
     if (this.root != null) {
@@ -267,6 +273,7 @@ export default class BinarySearchTree implements Tree {
         }
       })
 
+      // Draw nodes
       inorderTraversal.forEach((node) => {
         node.displayNode.drawAndUpdate(context)
       })

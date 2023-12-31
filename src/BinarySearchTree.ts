@@ -338,6 +338,17 @@ export default class BinarySearchTree implements Tree {
       })
     }
     requestAnimationFrame(() => { this.animate(canvas, context) })
+
+    // Disable buttons if animation is happening
+    const operationPanel = document.getElementById('operationPanel')
+    if (operationPanel == null) {
+      throw new Error('operationPanel not found')
+    }
+    if (this.functionQueue.length === 0) {
+      operationPanel.classList.remove('disabled')
+    } else {
+      operationPanel.classList.add('disabled')
+    }
   }
 
   // Nodes are equally spaced horizontally based on their inorder traversal

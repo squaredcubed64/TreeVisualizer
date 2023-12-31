@@ -1,4 +1,5 @@
 import type DisplayNode from './DisplayNode'
+import { ArrowDirection } from './BinarySearchTree.js'
 
 export default class DataNode {
   // DisplayNode holds the numeric value
@@ -12,10 +13,37 @@ export default class DataNode {
     this.right = null
   }
 
-  inorderTraversal (): DataNode[] {
-    const leftNodes = (this.left != null) ? this.left.inorderTraversal() : []
-    const rightNodes = (this.right != null) ? this.right.inorderTraversal() : []
+  getPreorderTraversal (): DataNode[] {
+    const leftNodes = (this.left != null) ? this.left.getPreorderTraversal() : []
+    const rightNodes = (this.right != null) ? this.right.getPreorderTraversal() : []
+    return [this, ...leftNodes, ...rightNodes]
+  }
+
+  getInorderTraversal (): DataNode[] {
+    const leftNodes = (this.left != null) ? this.left.getInorderTraversal() : []
+    const rightNodes = (this.right != null) ? this.right.getInorderTraversal() : []
     return [...leftNodes, this, ...rightNodes]
+  }
+
+  getPostorderTraversal (): DataNode[] {
+    const leftNodes = (this.left != null) ? this.left.getPostorderTraversal() : []
+    const rightNodes = (this.right != null) ? this.right.getPostorderTraversal() : []
+    return [...leftNodes, ...rightNodes, this]
+  }
+
+  getTraversal (arrowDirection: ArrowDirection): DataNode[] {
+    switch (arrowDirection) {
+      case ArrowDirection.PREORDER:
+        return this.getPreorderTraversal()
+      case ArrowDirection.INORDER:
+        return this.getInorderTraversal()
+      case ArrowDirection.POSTORDER:
+        return this.getPostorderTraversal()
+      case ArrowDirection.PARENT_TO_CHILD:
+        throw new Error('Cannot get traversal for parent to child')
+      default:
+        throw new Error('Invalid arrow direction')
+    }
   }
 
   isParentOf (node: DataNode): boolean {

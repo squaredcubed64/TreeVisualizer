@@ -12,9 +12,9 @@ export const SHRINK_DURATION_FRAMES = 30
 
 export const ROOT_TARGET_X = 400
 export const ROOT_TARGET_Y = 50
-export const TARGET_X_GAP = 100
-export const TARGET_Y_GAP = 100
-export const MAX_RADIUS = 10
+export const TARGET_X_GAP = 75
+export const TARGET_Y_GAP = 75
+export const MAX_RADIUS = 30
 export const FILL_COLOR = 'red'
 export const STROKE_COLOR = 'black'
 export const ARROW_HEAD_ANGLE = Math.PI / 6

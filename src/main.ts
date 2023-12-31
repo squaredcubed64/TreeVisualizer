@@ -1,4 +1,4 @@
-import BinarySearchTree from './BinarySearchTree'
+import BinarySearchTree, { ArrowDirection } from './BinarySearchTree'
 
 const tree = new BinarySearchTree()
 
@@ -32,6 +32,21 @@ deleteButton.addEventListener('click', () => {
     throw new Error('value must be a number')
   }
   tree.delete(value)
+})
+
+const arrowDirections = [ArrowDirection.PARENT_TO_CHILD, ArrowDirection.PREORDER, ArrowDirection.INORDER, ArrowDirection.POSTORDER]
+const arrowTexts = ['Parent to Child', 'Preorder', 'Inorder', 'Postorder']
+let currentDirectionIndex = 0
+const arrowButton = document.getElementById('arrowButton')
+if (arrowButton == null) {
+  throw new Error('arrowButton not found')
+}
+arrowButton.addEventListener('click', () => {
+  currentDirectionIndex = (currentDirectionIndex + 1) % arrowDirections.length
+  const currentDirection = arrowDirections[currentDirectionIndex]
+  const currentText = arrowTexts[currentDirectionIndex]
+  arrowButton.textContent = currentText
+  tree.setArrowDirection(currentDirection)
 })
 
 const canvas = document.getElementById('canvas') as HTMLCanvasElement

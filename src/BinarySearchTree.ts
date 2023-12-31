@@ -67,6 +67,14 @@ function makeDataNode (targetX: number, targetY: number, value: number): DataNod
   return new DataNode(new DisplayNode(targetX, targetY, MAX_RADIUS, FILL_COLOR, STROKE_COLOR, value))
 }
 
+// How arrows are rendered
+export enum ArrowDirection {
+  PARENT_TO_CHILD,
+  PREORDER,
+  INORDER,
+  POSTORDER
+}
+
 // Used to implement animations
 interface DelayedFunctionCall {
   // The time between reaching the front of the queue and being called
@@ -80,10 +88,12 @@ interface DelayedFunctionCall {
 export default class BinarySearchTree implements Tree {
   root: DataNode | null
   functionQueue: DelayedFunctionCall[]
+  arrowDirection: ArrowDirection
 
   constructor () {
     this.root = null
     this.functionQueue = []
+    this.arrowDirection = ArrowDirection.PARENT_TO_CHILD
   }
 
   // Animation: highlight path, grow inserted node, then move nodes to new target positions
@@ -268,20 +278,29 @@ export default class BinarySearchTree implements Tree {
     }
 
     if (this.root != null) {
-      const inorderTraversal = this.root.inorderTraversal()
-
+      const arbitraryTraversal = this.root.getInorderTraversal()
       // Draw arrows first
-      inorderTraversal.forEach((node) => {
-        if (node.left != null) {
-          drawArrowFromNodeToNode(node, node.left, context)
+      // Parent to child is a special case
+      if (this.arrowDirection === ArrowDirection.PARENT_TO_CHILD) {
+        arbitraryTraversal.forEach((node) => {
+          if (node.left != null) {
+            drawArrowFromNodeToNode(node, node.left, context)
+          }
+          if (node.right != null) {
+            drawArrowFromNodeToNode(node, node.right, context)
+          }
+        })
+      } else {
+        const traversal = this.root.getTraversal(this.arrowDirection)
+        for (let i = 0; i < traversal.length - 1; i++) {
+          const node = traversal[i]
+          const nextNode = traversal[i + 1]
+          drawArrowFromNodeToNode(node, nextNode, context)
         }
-        if (node.right != null) {
-          drawArrowFromNodeToNode(node, node.right, context)
-        }
-      })
+      }
 
       // Draw nodes
-      inorderTraversal.forEach((node) => {
+      arbitraryTraversal.forEach((node) => {
         node.displayNode.drawAndUpdate(context)
       })
     }
@@ -295,7 +314,7 @@ export default class BinarySearchTree implements Tree {
       throw new Error('Root is null')
     }
 
-    const inorderTraversal = this.root.inorderTraversal()
+    const inorderTraversal = this.root.getInorderTraversal()
     const rootIndex = inorderTraversal.indexOf(this.root)
     for (let i = 0; i < inorderTraversal.length; i++) {
       const node = inorderTraversal[i]
@@ -340,7 +359,7 @@ export default class BinarySearchTree implements Tree {
     }
     const nodeToTargetX = this.targetXs()
     const nodeToTargetY = this.targetYs()
-    for (const node of this.root.inorderTraversal()) {
+    for (const node of this.root.getInorderTraversal()) {
       const targetX = nodeToTargetX.get(node)
       if (targetX == null) {
         throw new Error('TargetX is null')
@@ -351,5 +370,9 @@ export default class BinarySearchTree implements Tree {
       }
       node.displayNode.moveTo(targetX, targetY)
     }
+  }
+
+  setArrowDirection (arrowDirection: ArrowDirection): void {
+    this.arrowDirection = arrowDirection
   }
 }

@@ -112,13 +112,6 @@ export default class BinarySearchTree implements Tree {
     this.functionQueue.push({ framesBeforeCall: 0, function: () => this.setupInsertionAnimation(value, path[path.length - 1]) })
   }
 
-  /* setupNodesToHighlightAlongPath (path: DataNode[]): void {
-    for (let i = 0; i < path.length; i++) {
-      const node = path[i]
-      node.displayNode.highlightAfterDelay(FRAMES_BEFORE_FIRST_HIGHLIGHT + i * (HIGHLIGHT_DURATION_FRAMES + FRAMES_BETWEEN_HIGHLIGHTS))
-    }
-  } */
-
   // Pushes methods onto functionQueue to highlight nodes along path
   pushNodeHighlightingOntoFunctionQueue (path: DataNode[], highlightColor: string = DEFAULT_HIGHLIGHT_COLOR): void {
     if (path.length === 0) {

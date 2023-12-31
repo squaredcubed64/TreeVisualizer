@@ -1,14 +1,14 @@
 import {
   MOVE_DURATION_FRAMES,
-  HIGHLIGHT_DURATION_FRAMES,
-  HIGHLIGHT_COLOR,
+  HIGHLIGHT_DURATION_FRAMES as DEFAULT_HIGHLIGHT_DURATION_FRAMES,
   BORDER_WIDTH,
   HIGHLIGHT_WIDTH,
   GROW_DURATION_FRAMES,
   TEXT_COLOR,
   TEXT_FONT,
   TEXT_Y_OFFSET,
-  SHRINK_DURATION_FRAMES
+  SHRINK_DURATION_FRAMES,
+  DEFAULT_HIGHLIGHT_COLOR
 } from './constants.js'
 
 export default class DisplayNode {
@@ -20,6 +20,7 @@ export default class DisplayNode {
   maxRadius: number
   fillColor: string
   strokeColor: string
+  highlightColor: string
   value: number
   private speedX: number
   private speedY: number
@@ -78,7 +79,7 @@ export default class DisplayNode {
     if (this.framesUntilUnhighlighted > 0) {
       context.beginPath()
       context.arc(this.x, this.y, this.currentRadius + HIGHLIGHT_WIDTH, 0, Math.PI * 2, false)
-      context.fillStyle = HIGHLIGHT_COLOR
+      context.fillStyle = this.highlightColor
       context.fill()
     }
 
@@ -117,8 +118,13 @@ export default class DisplayNode {
     this.targetY = targetY
   }
 
-  highlight (): void {
-    this.framesUntilUnhighlighted = HIGHLIGHT_DURATION_FRAMES
+  highlight (color: string = DEFAULT_HIGHLIGHT_COLOR, durationFrames: number = DEFAULT_HIGHLIGHT_DURATION_FRAMES): void {
+    this.highlightColor = color
+    this.framesUntilUnhighlighted = durationFrames
+  }
+
+  unhighlight (): void {
+    this.framesUntilUnhighlighted = 0
   }
 
   startShrinkingIntoNothing (): void {

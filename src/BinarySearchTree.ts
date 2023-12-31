@@ -18,8 +18,13 @@ import {
   HIGHLIGHT_DURATION_FRAMES,
   SHRINK_DURATION_FRAMES,
   FRAMES_AFTER_SHRINK,
-  TOTAL_HIGHLIGHT_DURATION_FRAMES,
-  FRAMES_AFTER_LAST_HIGHLIGHT
+  FRAMES_AFTER_LAST_HIGHLIGHT,
+  FRAMES_AFTER_FINDING_VICTIM_WITH_TWO_CHILDREN as FRAMES_AFTER_HIGHLIGHTING_VICTIM_WITH_TWO_CHILDREN,
+  DEFAULT_HIGHLIGHT_COLOR,
+  FIND_SUCCESSOR_HIGHLIGHT_COLOR,
+  FRAMES_BEFORE_REPLACE_WITH_SUCCESSOR,
+  FRAMES_BEFORE_HIGHLIGHT_SUCCESSOR,
+  FRAMES_BEFORE_UNHIGHLIGHT_VICTIM
 } from './constants.js'
 
 // For debugging
@@ -67,8 +72,7 @@ interface DelayedFunctionCall {
   // The time between reaching the front of the queue and being called
   framesBeforeCall: number
   // The time between being called and leaving the queue
-  // Most functions will return the number of frames they expect their animation to take
-  // TODO consider implementing simultaneous function calls when a function returns 0 followed by a delayFrames of 0
+  // Most functions will return the time it will take to complete the animation or that plus a buffer for the next function
   function: () => number
   // The total time between function calls equals the return value of one function plus the delayFrames of the next function
 }
@@ -116,7 +120,7 @@ export default class BinarySearchTree implements Tree {
   } */
 
   // Pushes methods onto functionQueue to highlight nodes along path
-  pushNodeHighlightingOntoFunctionQueue (path: DataNode[]): void {
+  pushNodeHighlightingOntoFunctionQueue (path: DataNode[], highlightColor: string = DEFAULT_HIGHLIGHT_COLOR): void {
     if (path.length === 0) {
       throw new Error('Path is empty')
     }
@@ -130,13 +134,12 @@ export default class BinarySearchTree implements Tree {
       }
 
       let additionalFramesToWait: number
+      additionalFramesToWait = HIGHLIGHT_DURATION_FRAMES
       if (i === path.length - 1) {
-        additionalFramesToWait = FRAMES_AFTER_LAST_HIGHLIGHT
-      } else {
-        additionalFramesToWait = HIGHLIGHT_DURATION_FRAMES
+        additionalFramesToWait += FRAMES_AFTER_LAST_HIGHLIGHT
       }
 
-      this.functionQueue.push({ framesBeforeCall, function: () => { node.displayNode.highlight(); return additionalFramesToWait } })
+      this.functionQueue.push({ framesBeforeCall, function: () => { node.displayNode.highlight(highlightColor); return additionalFramesToWait } })
     }
   }
 
@@ -177,63 +180,74 @@ export default class BinarySearchTree implements Tree {
     }
 
     this.pushNodeHighlightingOntoFunctionQueue(path)
-
     if (currNode != null) {
-      // If the victim node has one child or fewer, start shrinking after highlighting
-      if (currNode.left == null || currNode.right == null) {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        this.functionQueue.push({ framesBeforeCall: 0, function: () => { currNode!.displayNode.startShrinkingIntoNothing(); return SHRINK_DURATION_FRAMES } })
-      }
-      // TODO add logic here to handle case where victim node has two children
-      // Save args to call setupDeletionAnimation later
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      this.functionQueue.push({ framesBeforeCall: FRAMES_AFTER_SHRINK, function: () => this.setupDeletionAnimation(currNode!, currParent) })
+      this.pushOptionalShrinkAndSetupDeletionAnimationToQueue(currNode, currParent)
     }
   }
 
+  pushOptionalShrinkAndSetupDeletionAnimationToQueue (victim: DataNode, parent: DataNode | null): void {
+    // If victim has one child or fewer, start shrinking after highlighting
+    if (victim.left == null || victim.right == null) {
+      this.functionQueue.push({ framesBeforeCall: 0, function: () => { victim.displayNode.startShrinkingIntoNothing(); return SHRINK_DURATION_FRAMES + FRAMES_AFTER_SHRINK } })
+    }
+    // TODO add logic here to handle case where victim node has two children
+    // Save args to call setupDeletionAnimation later
+    this.functionQueue.push({ framesBeforeCall: 0, function: () => this.setupDeletionAnimation(victim, parent) })
+  }
+
   // Deletes node and tells nodes to start moving to new target positions
-  setupDeletionAnimation (node: DataNode, parent: DataNode | null): number {
-    if (parent != null && !parent.isParentOf(node)) {
+  setupDeletionAnimation (victim: DataNode, parent: DataNode | null): number {
+    if (parent != null && !parent.isParentOf(victim)) {
       throw new Error('parent is not the parent of node')
     }
 
     // BST deletion
-    if (node.left === null && node.right === null) {
+    if (victim.left === null && victim.right === null) {
       // Case 1: Node has no children
       if (parent == null) {
         // Node is the root
         this.root = null
-      } else if (parent.left === node) {
+      } else if (parent.left === victim) {
         parent.left = null
       } else {
         parent.right = null
       }
-    } else if (node.left === null || node.right === null) {
+      this.setTargetPositions()
+      return MOVE_DURATION_FRAMES
+    } else if (victim.left === null || victim.right === null) {
       // Case 2: Node has one child
-      const child = node.left ?? node.right
+      const child = victim.left ?? victim.right
       if (parent == null) {
         // Node is the root
         this.root = child
-      } else if (parent.left === node) {
+      } else if (parent.left === victim) {
         parent.left = child
       } else {
         parent.right = child
       }
-    } /* else {
+      this.setTargetPositions()
+      return MOVE_DURATION_FRAMES
+    } else {
       // Case 3: Node has two children, swap with smallest node in right subtree
-      let successorParent: DataNode = node
-      let successor: DataNode = node.right
-      while (successor.left != null) {
-        successorParent = successor
-        successor = successor.left
-      }
-      node.displayNode.value = successor.displayNode.value
-      this.setupDeletionAnimation(successor, successorParent)
-      return
-    } */
+      victim.displayNode.highlight(FIND_SUCCESSOR_HIGHLIGHT_COLOR, Infinity)
 
-    this.setTargetPositions()
-    return MOVE_DURATION_FRAMES
+      let currParent: DataNode = victim
+      let currNode: DataNode = victim.right
+      const path: DataNode[] = [currNode]
+      while (currNode.left != null) {
+        currParent = currNode
+        currNode = currNode.left
+        path.push(currNode)
+      }
+      // Requires that setupDeletionAnimation is the last function in the queue, which should be the case
+      this.pushNodeHighlightingOntoFunctionQueue(path, FIND_SUCCESSOR_HIGHLIGHT_COLOR)
+      // currNode is the successor, currParent is the successor's parent
+      this.functionQueue.push({ framesBeforeCall: FRAMES_BEFORE_HIGHLIGHT_SUCCESSOR, function: () => { currNode.displayNode.highlight(FIND_SUCCESSOR_HIGHLIGHT_COLOR, Infinity); return 0 } })
+      this.functionQueue.push({ framesBeforeCall: FRAMES_BEFORE_REPLACE_WITH_SUCCESSOR, function: () => { victim.displayNode.value = currNode.displayNode.value; return 0 } })
+      this.functionQueue.push({ framesBeforeCall: FRAMES_BEFORE_UNHIGHLIGHT_VICTIM, function: () => { victim.displayNode.unhighlight(); return 0 } })
+      this.pushOptionalShrinkAndSetupDeletionAnimationToQueue(currNode, currParent)
+      return FRAMES_AFTER_HIGHLIGHTING_VICTIM_WITH_TWO_CHILDREN
+    }
   }
 
   find (value: number): DisplayNode | null {

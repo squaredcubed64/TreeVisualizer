@@ -19,7 +19,7 @@ import {
   SHRINK_DURATION_FRAMES,
   FRAMES_AFTER_SHRINK,
   FRAMES_AFTER_LAST_HIGHLIGHT,
-  FRAMES_AFTER_FINDING_VICTIM_WITH_TWO_CHILDREN as FRAMES_AFTER_HIGHLIGHTING_VICTIM_WITH_TWO_CHILDREN,
+  FRAMES_AFTER_HIGHLIGHTING_VICTIM_WITH_TWO_CHILDREN,
   DEFAULT_HIGHLIGHT_COLOR,
   FIND_SUCCESSOR_HIGHLIGHT_COLOR,
   FRAMES_BEFORE_REPLACE_WITH_SUCCESSOR,
@@ -27,7 +27,10 @@ import {
   FRAMES_BEFORE_UNHIGHLIGHT_VICTIM,
   HIGHLIGHT_DURATION_AFTER_SUCCESSFUL_FIND_FRAMES,
   HIGHLIGHT_COLOR_AFTER_SUCCESSFUL_FIND,
-  FRAMES_AFTER_UNSUCCESSFUL_FIND
+  FRAMES_AFTER_FIND,
+  INSERTION_DESCRIPTIONS,
+  DELETION_DESCRIPTIONS,
+  FIND_DESCRIPTIONS
 } from './constants.js'
 
 // For debugging
@@ -81,21 +84,33 @@ export enum ArrowDirection {
 // Used to implement animations
 interface DelayedFunctionCall {
   // The time between reaching the front of the queue and being called
-  framesBeforeCall: number
+  // The total time between function calls equals the framesAfterCall returned by one function plus the framesToWait of the next function
+  framesToWait: number
+  function: DelayedFunctionCallFunction
+}
+
+type DelayedFunctionCallFunction = () => DelayedFunctionCallFunctionResult
+
+interface DelayedFunctionCallFunctionResult {
   // The time between being called and leaving the queue
-  // Most functions will return the time it will take to complete the animation or that plus a buffer for the next function
-  function: () => number
-  // The total time between function calls equals the return value of one function plus the delayFrames of the next function
+  // Most functions will return the time it will take to complete the animation or that plus a buffer
+  framesAfterCall: number
+  // What should be displayed while the animation occurs
+  description: string
 }
 
 export default class BinarySearchTree implements Tree {
   root: DataNode | null
   functionQueue: DelayedFunctionCall[]
+  functionAtFrontOfQueueWasCalled: boolean
+  currentdescription: string
   arrowDirection: ArrowDirection
 
   constructor () {
     this.root = null
     this.functionQueue = []
+    this.functionAtFrontOfQueueWasCalled = false
+    this.currentdescription = ''
     this.arrowDirection = ArrowDirection.PARENT_TO_CHILD
   }
 
@@ -120,44 +135,44 @@ export default class BinarySearchTree implements Tree {
       }
     }
 
-    this.pushNodeHighlightingOntoFunctionQueue(path)
+    this.pushNodeHighlightingOntoFunctionQueue(path, DEFAULT_HIGHLIGHT_COLOR, INSERTION_DESCRIPTIONS.FIND_WHERE_TO_INSERT)
 
-    this.functionQueue.push({ framesBeforeCall: 0, function: () => this.setupInsertionAnimation(value, path[path.length - 1]) })
+    this.functionQueue.push({ framesToWait: 0, function: () => this.setupInsertionAnimation(value, path[path.length - 1]) })
   }
 
   // Pushes methods onto functionQueue to highlight nodes along path
-  pushNodeHighlightingOntoFunctionQueue (path: DataNode[], highlightColor: string = DEFAULT_HIGHLIGHT_COLOR): void {
+  pushNodeHighlightingOntoFunctionQueue (path: DataNode[], highlightColor: string, description: string): void {
     if (path.length === 0) {
       throw new Error('Path is empty')
     }
     for (let i = 0; i < path.length; i++) {
       const node = path[i]
-      let framesBeforeCall: number
+      let framesToWait: number
       if (i === 0) {
-        framesBeforeCall = FRAMES_BEFORE_FIRST_HIGHLIGHT
+        framesToWait = FRAMES_BEFORE_FIRST_HIGHLIGHT
       } else {
-        framesBeforeCall = FRAMES_BETWEEN_HIGHLIGHTS
+        framesToWait = FRAMES_BETWEEN_HIGHLIGHTS
       }
 
-      let additionalFramesToWait: number
-      additionalFramesToWait = HIGHLIGHT_DURATION_FRAMES
+      let framesAfterCall: number
+      framesAfterCall = HIGHLIGHT_DURATION_FRAMES
       if (i === path.length - 1) {
-        additionalFramesToWait += FRAMES_AFTER_LAST_HIGHLIGHT
+        framesAfterCall += FRAMES_AFTER_LAST_HIGHLIGHT
       }
 
-      this.functionQueue.push({ framesBeforeCall, function: () => { node.displayNode.highlight(highlightColor); return additionalFramesToWait } })
+      this.functionQueue.push({ framesToWait, function: () => { node.displayNode.highlight(highlightColor); return { framesAfterCall, description } } })
     }
   }
 
   // Creates node and tells nodes to start moving to new target positions
-  setupInsertionAnimation (value: number, parent: DataNode): number {
+  setupInsertionAnimation (value: number, parent: DataNode): DelayedFunctionCallFunctionResult {
     if (value < parent.displayNode.value) {
       parent.left = makeDataNode(parent.displayNode.targetX - TARGET_X_GAP, parent.displayNode.targetY + TARGET_Y_GAP, value)
     } else {
       parent.right = makeDataNode(parent.displayNode.targetX + TARGET_X_GAP, parent.displayNode.targetY + TARGET_Y_GAP, value)
     }
     this.setTargetPositions()
-    return MOVE_DURATION_FRAMES
+    return { framesAfterCall: MOVE_DURATION_FRAMES, description: INSERTION_DESCRIPTIONS.INSERT_NEW_NODE }
   }
 
   // Animation: highlight path, shrink victim node, then move other nodes to new target positions
@@ -185,23 +200,23 @@ export default class BinarySearchTree implements Tree {
       path.push(currNode)
     }
 
-    this.pushNodeHighlightingOntoFunctionQueue(path)
+    this.pushNodeHighlightingOntoFunctionQueue(path, DEFAULT_HIGHLIGHT_COLOR, DELETION_DESCRIPTIONS.FIND_NODE_TO_DELETE)
     if (currNode != null) {
-      this.pushOptionalShrinkAndSetupDeletionAnimationToQueue(currNode, currParent)
+      this.pushOptionalShrinkAndSetupDeletionAnimationToQueue(currNode, currParent, false)
     }
   }
 
-  pushOptionalShrinkAndSetupDeletionAnimationToQueue (victim: DataNode, parent: DataNode | null): void {
+  pushOptionalShrinkAndSetupDeletionAnimationToQueue (victim: DataNode, parent: DataNode | null, victimIsSuccessor: boolean): void {
     // If victim has one child or fewer, start shrinking after highlighting
     if (victim.left == null || victim.right == null) {
-      this.functionQueue.push({ framesBeforeCall: 0, function: () => { victim.displayNode.startShrinkingIntoNothing(); return SHRINK_DURATION_FRAMES + FRAMES_AFTER_SHRINK } })
+      this.functionQueue.push({ framesToWait: 0, function: () => { victim.displayNode.startShrinkingIntoNothing(); return { framesAfterCall: SHRINK_DURATION_FRAMES + FRAMES_AFTER_SHRINK, description: victimIsSuccessor ? DELETION_DESCRIPTIONS.DELETE_SUCCESSOR : DELETION_DESCRIPTIONS.DELETE_NODE } } })
     }
     // Save args to call setupDeletionAnimation later
-    this.functionQueue.push({ framesBeforeCall: 0, function: () => this.setupDeletionAnimation(victim, parent) })
+    this.functionQueue.push({ framesToWait: 0, function: () => this.setupDeletionAnimation(victim, parent, victimIsSuccessor) })
   }
 
   // Deletes node and tells nodes to start moving to new target positions
-  setupDeletionAnimation (victim: DataNode, parent: DataNode | null): number {
+  setupDeletionAnimation (victim: DataNode, parent: DataNode | null, victimIsSuccessor: boolean): DelayedFunctionCallFunctionResult {
     if (parent != null && !parent.isParentOf(victim)) {
       throw new Error('parent is not the parent of node')
     }
@@ -218,7 +233,7 @@ export default class BinarySearchTree implements Tree {
         parent.right = null
       }
       this.setTargetPositions()
-      return MOVE_DURATION_FRAMES
+      return { framesAfterCall: MOVE_DURATION_FRAMES, description: victimIsSuccessor ? DELETION_DESCRIPTIONS.DELETE_SUCCESSOR : DELETION_DESCRIPTIONS.DELETE_NODE }
     } else if (victim.left === null || victim.right === null) {
       // Case 2: Node has one child
       const child = victim.left ?? victim.right
@@ -231,7 +246,7 @@ export default class BinarySearchTree implements Tree {
         parent.right = child
       }
       this.setTargetPositions()
-      return MOVE_DURATION_FRAMES
+      return { framesAfterCall: MOVE_DURATION_FRAMES, description: victimIsSuccessor ? DELETION_DESCRIPTIONS.DELETE_SUCCESSOR : DELETION_DESCRIPTIONS.DELETE_NODE }
     } else {
       // Case 3: Node has two children, swap with smallest node in right subtree
       victim.displayNode.highlight(FIND_SUCCESSOR_HIGHLIGHT_COLOR, Infinity)
@@ -245,13 +260,13 @@ export default class BinarySearchTree implements Tree {
         path.push(currNode)
       }
       // Requires that setupDeletionAnimation is the last function in the queue, which should be the case
-      this.pushNodeHighlightingOntoFunctionQueue(path, FIND_SUCCESSOR_HIGHLIGHT_COLOR)
+      this.pushNodeHighlightingOntoFunctionQueue(path, FIND_SUCCESSOR_HIGHLIGHT_COLOR, DELETION_DESCRIPTIONS.FIND_SUCCESSOR)
       // currNode is the successor, currParent is the successor's parent
-      this.functionQueue.push({ framesBeforeCall: FRAMES_BEFORE_HIGHLIGHT_SUCCESSOR, function: () => { currNode.displayNode.highlight(FIND_SUCCESSOR_HIGHLIGHT_COLOR, Infinity); return 0 } })
-      this.functionQueue.push({ framesBeforeCall: FRAMES_BEFORE_REPLACE_WITH_SUCCESSOR, function: () => { victim.displayNode.value = currNode.displayNode.value; return 0 } })
-      this.functionQueue.push({ framesBeforeCall: FRAMES_BEFORE_UNHIGHLIGHT_VICTIM, function: () => { victim.displayNode.unhighlight(); return 0 } })
-      this.pushOptionalShrinkAndSetupDeletionAnimationToQueue(currNode, currParent)
-      return FRAMES_AFTER_HIGHLIGHTING_VICTIM_WITH_TWO_CHILDREN
+      this.functionQueue.push({ framesToWait: FRAMES_BEFORE_HIGHLIGHT_SUCCESSOR, function: () => { currNode.displayNode.highlight(FIND_SUCCESSOR_HIGHLIGHT_COLOR, Infinity); return { framesAfterCall: 0, description: DELETION_DESCRIPTIONS.REPLACE_NODE_WITH_SUCCESSOR } } })
+      this.functionQueue.push({ framesToWait: FRAMES_BEFORE_REPLACE_WITH_SUCCESSOR, function: () => { victim.displayNode.value = currNode.displayNode.value; return { framesAfterCall: 0, description: DELETION_DESCRIPTIONS.REPLACE_NODE_WITH_SUCCESSOR } } })
+      this.functionQueue.push({ framesToWait: FRAMES_BEFORE_UNHIGHLIGHT_VICTIM, function: () => { victim.displayNode.unhighlight(); return { framesAfterCall: 0, description: DELETION_DESCRIPTIONS.REPLACE_NODE_WITH_SUCCESSOR } } })
+      this.pushOptionalShrinkAndSetupDeletionAnimationToQueue(currNode, currParent, true)
+      return { framesAfterCall: FRAMES_AFTER_HIGHLIGHTING_VICTIM_WITH_TWO_CHILDREN, description: DELETION_DESCRIPTIONS.FIND_SUCCESSOR }
     }
   }
 
@@ -277,16 +292,16 @@ export default class BinarySearchTree implements Tree {
       path.push(currNode)
     }
 
-    this.pushNodeHighlightingOntoFunctionQueue(path)
+    this.pushNodeHighlightingOntoFunctionQueue(path, DEFAULT_HIGHLIGHT_COLOR, FIND_DESCRIPTIONS.FIND_NODE)
 
     // If found, highlight again in a different color
     this.functionQueue.push({
-      framesBeforeCall: 0,
+      framesToWait: 0,
       function: () => {
         if (currNode != null) {
           currNode.displayNode.highlight(HIGHLIGHT_COLOR_AFTER_SUCCESSFUL_FIND, HIGHLIGHT_DURATION_AFTER_SUCCESSFUL_FIND_FRAMES)
-          return HIGHLIGHT_DURATION_AFTER_SUCCESSFUL_FIND_FRAMES
-        } else return FRAMES_AFTER_UNSUCCESSFUL_FIND
+          return { framesAfterCall: HIGHLIGHT_DURATION_AFTER_SUCCESSFUL_FIND_FRAMES + FRAMES_AFTER_FIND, description: FIND_DESCRIPTIONS.FOUND_NODE }
+        } else return { framesAfterCall: FRAMES_AFTER_FIND, description: FIND_DESCRIPTIONS.DID_NOT_FIND_NODE }
       }
     })
   }
@@ -298,25 +313,31 @@ export default class BinarySearchTree implements Tree {
   animate (canvas: HTMLCanvasElement, context: CanvasRenderingContext2D): void {
     context.clearRect(0, 0, canvas.width, canvas.height)
 
-    // Call functions in functionQueue
-    while (this.functionQueue.length > 0 && this.functionQueue[0].framesBeforeCall === 0) {
-      const functionCall = this.functionQueue.shift()
-      if (functionCall == null) {
-        throw new Error('Function call is null')
-      }
-      const additionalFramesToWait = functionCall.function()
-      if (additionalFramesToWait > 0) {
-        if (this.functionQueue.length > 0) {
-          this.functionQueue[0].framesBeforeCall += additionalFramesToWait
-        } else {
-          // If the queue is empty, add a dummy function to wait for additionalFramesToWait frames
-          this.functionQueue.push({ framesBeforeCall: additionalFramesToWait, function: () => 0 })
+    // Call ready functions in functionQueue
+    while (this.functionQueue.length > 0 && this.functionQueue[0].framesToWait === 0) {
+      if (!this.functionAtFrontOfQueueWasCalled) {
+        const functionCall = this.functionQueue[0]
+        if (functionCall == null) {
+          throw new Error('Function call is null')
         }
+        const result = functionCall.function()
+        this.currentdescription = result.description
+
+        // Keep function at front of queue for framesAfterCall frames, to give the animation time to complete and show the description
+        if (result.framesAfterCall > 0) {
+          this.functionAtFrontOfQueueWasCalled = true
+          this.functionQueue[0].framesToWait = result.framesAfterCall
+        } else {
+          this.functionQueue.shift()
+        }
+      } else {
+        this.functionAtFrontOfQueueWasCalled = false
+        this.functionQueue.shift()
       }
     }
 
     if (this.functionQueue.length > 0) {
-      this.functionQueue[0].framesBeforeCall--
+      this.functionQueue[0].framesToWait--
     }
 
     if (this.root != null) {
@@ -345,7 +366,13 @@ export default class BinarySearchTree implements Tree {
         node.displayNode.drawAndUpdate(context)
       })
     }
-    requestAnimationFrame(() => { this.animate(canvas, context) })
+
+    // Update description
+    const animationDescription = document.getElementById('animationDescription') as HTMLParagraphElement
+    if (animationDescription == null) {
+      throw new Error('animationDescription not found')
+    }
+    animationDescription.textContent = this.currentdescription
 
     // Disable buttons if animation is happening
     const operationPanel = document.getElementById('operationPanel')
@@ -357,6 +384,8 @@ export default class BinarySearchTree implements Tree {
     } else {
       operationPanel.classList.add('disabled')
     }
+
+    requestAnimationFrame(() => { this.animate(canvas, context) })
   }
 
   // Nodes are equally spaced horizontally based on their inorder traversal

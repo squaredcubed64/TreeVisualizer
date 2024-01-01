@@ -99,6 +99,7 @@ export default class BinarySearchTree implements Tree {
   private currentDescription: string
   private arrowDirection: ArrowDirection
   private currentAnimationId: number
+  private animationSpeed: number
 
   constructor () {
     this.root = null
@@ -107,6 +108,7 @@ export default class BinarySearchTree implements Tree {
     this.currentDescription = ''
     this.arrowDirection = ArrowDirection.PARENT_TO_CHILD
     this.currentAnimationId = 0
+    this.animationSpeed = 1
   }
 
   // Animation: highlight path, grow inserted node, then move nodes to new target positions
@@ -305,7 +307,7 @@ export default class BinarySearchTree implements Tree {
     context.clearRect(0, 0, canvas.width, canvas.height)
 
     // Call ready functions in functionQueue
-    while (this.functionQueue.length > 0 && this.functionQueue[0].framesToWait === 0) {
+    while (this.functionQueue.length > 0 && this.functionQueue[0].framesToWait <= 0) {
       if (!this.functionAtFrontOfQueueWasCalled) {
         const functionCall = this.functionQueue[0]
         if (functionCall == null) {
@@ -328,7 +330,7 @@ export default class BinarySearchTree implements Tree {
     }
 
     if (this.functionQueue.length > 0) {
-      this.functionQueue[0].framesToWait--
+      this.functionQueue[0].framesToWait -= this.animationSpeed
     }
 
     if (this.root != null) {
@@ -354,7 +356,7 @@ export default class BinarySearchTree implements Tree {
 
       // Draw nodes
       arbitraryTraversal.forEach((node) => {
-        node.displayNode.drawAndUpdate(context)
+        node.displayNode.drawAndUpdate(context, this.animationSpeed)
       })
     }
 
@@ -450,5 +452,9 @@ export default class BinarySearchTree implements Tree {
 
   setArrowDirection (arrowDirection: ArrowDirection): void {
     this.arrowDirection = arrowDirection
+  }
+
+  setAnimationSpeed (speedSetting: number): void {
+    this.animationSpeed = 1.2 ** (speedSetting - 10)
   }
 }

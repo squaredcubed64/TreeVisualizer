@@ -68,6 +68,18 @@ arrowButton.addEventListener('click', () => {
   tree.setArrowDirection(currentDirection)
 })
 
+const animationSpeedBar = document.getElementById('animationSpeedBar') as HTMLInputElement
+if (animationSpeedBar == null) {
+  throw new Error('speedBar not found')
+}
+animationSpeedBar.addEventListener('input', () => {
+  const animationSpeedSetting = parseInt(animationSpeedBar.value)
+  if (isNaN(animationSpeedSetting)) {
+    throw new Error('speed must be a number')
+  }
+  tree.setAnimationSpeed(animationSpeedSetting)
+})
+
 function animateTree (tree: Tree): void {
   const canvas = document.getElementById('canvas') as HTMLCanvasElement
   const context = canvas.getContext('2d')

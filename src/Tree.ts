@@ -7,4 +7,5 @@ export default interface Tree {
   setArrowDirection: (arrowDirection: ArrowDirection) => void
   animate: (canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) => void
   stopAnimationPermanently: () => void
+  setAnimationSpeed: (speedSetting: number) => void
 }

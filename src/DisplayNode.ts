@@ -50,28 +50,33 @@ export default class DisplayNode {
     this.currentRadius = 0
   }
 
-  update (): void {
-    if (this.framesUntilStop === 0) {
-      this.stop()
+  // animationSpeed is a multiplier for all changes
+  update (animationSpeed: number): void {
+    if (this.framesUntilStop > 0 && this.framesUntilStop < animationSpeed) {
+      this.x += this.speedX * this.framesUntilStop
+      this.y += this.speedY * this.framesUntilStop
+      this.framesUntilStop = 0
     } else if (this.framesUntilStop > 0) {
-      this.framesUntilStop--
+      this.x += this.speedX * animationSpeed
+      this.y += this.speedY * animationSpeed
+      this.framesUntilStop -= animationSpeed
     }
 
     if (this.framesUntilUnhighlighted > 0) {
-      this.framesUntilUnhighlighted--
+      this.framesUntilUnhighlighted -= animationSpeed
     }
 
     if (this.startedShrinking) {
-      this.currentRadius -= this.maxRadius / SHRINK_DURATION_FRAMES
+      this.currentRadius -= (this.maxRadius / SHRINK_DURATION_FRAMES) * animationSpeed
       if (this.currentRadius < 0) {
         this.currentRadius = 0
       }
     } else if (this.currentRadius < this.maxRadius) {
-      this.currentRadius += this.maxRadius / GROW_DURATION_FRAMES
+      this.currentRadius += (this.maxRadius / GROW_DURATION_FRAMES) * animationSpeed
+      if (this.currentRadius > this.maxRadius) {
+        this.currentRadius = this.maxRadius
+      }
     }
-
-    this.x += this.speedX
-    this.y += this.speedY
   }
 
   draw (context: CanvasRenderingContext2D): void {
@@ -100,14 +105,9 @@ export default class DisplayNode {
     context.fillText(this.value.toString(), this.x, this.y + TEXT_Y_OFFSET)
   }
 
-  drawAndUpdate (context: CanvasRenderingContext2D): void {
+  drawAndUpdate (context: CanvasRenderingContext2D, animationSpeed: number): void {
     this.draw(context)
-    this.update()
-  }
-
-  stop (): void {
-    this.speedX = 0
-    this.speedY = 0
+    this.update(animationSpeed)
   }
 
   moveTo (targetX: number, targetY: number): void {

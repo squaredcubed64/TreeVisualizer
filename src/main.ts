@@ -48,6 +48,7 @@ if (clearButton == null) {
   throw new Error('clearButton not found')
 }
 clearButton.addEventListener('click', () => {
+  tree.stopAnimationPermanently()
   tree = new BinarySearchTree()
   animateTree(tree)
 })

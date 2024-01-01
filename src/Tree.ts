@@ -6,4 +6,5 @@ export default interface Tree {
   find: (value: number) => void
   setArrowDirection: (arrowDirection: ArrowDirection) => void
   animate: (canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) => void
+  stopAnimationPermanently: () => void
 }

@@ -98,6 +98,7 @@ export default class BinarySearchTree implements Tree {
   private functionAtFrontOfQueueWasCalled: boolean
   private currentDescription: string
   private arrowDirection: ArrowDirection
+  private currentAnimationId: number
 
   constructor () {
     this.root = null
@@ -105,6 +106,7 @@ export default class BinarySearchTree implements Tree {
     this.functionAtFrontOfQueueWasCalled = false
     this.currentDescription = ''
     this.arrowDirection = ArrowDirection.PARENT_TO_CHILD
+    this.currentAnimationId = 0
   }
 
   // Animation: highlight path, grow inserted node, then move nodes to new target positions
@@ -374,7 +376,11 @@ export default class BinarySearchTree implements Tree {
       operationPanel.classList.add('disabled')
     }
 
-    requestAnimationFrame(() => { this.animate(canvas, context) })
+    this.currentAnimationId = requestAnimationFrame(() => { this.animate(canvas, context) })
+  }
+
+  stopAnimationPermanently (): void {
+    cancelAnimationFrame(this.currentAnimationId)
   }
 
   // Nodes are equally spaced horizontally based on their inorder traversal

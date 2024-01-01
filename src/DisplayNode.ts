@@ -8,74 +8,73 @@ import {
   TEXT_FONT,
   TEXT_Y_OFFSET,
   SHRINK_DURATION_FRAMES,
-  DEFAULT_HIGHLIGHT_COLOR
+  DEFAULT_HIGHLIGHT_COLOR,
+  motionCurve,
+  MAX_RADIUS,
+  radiusGrowthCurve,
+  radiusShrinkingCurve
 } from './constants.js'
 
 export default class DisplayNode {
   x: number
   y: number
+  private previousX: number
+  private previousY: number
   targetX: number
   targetY: number
   currentRadius: number
-  maxRadius: number
-  fillColor: string
-  strokeColor: string
-  highlightColor: string
-  value: number
-  private speedX: number
-  private speedY: number
+  private readonly fillColor: string
+  private readonly strokeColor: string
+  private highlightColor: string
+  public value: number
   private framesUntilStop: number
   private framesUntilUnhighlighted: number
-  private startedShrinking: boolean
+  private framesUntilGrown: number
+  private framesUntilShrunk: number
 
   constructor (
     x: number,
     y: number,
-    maxRadius: number,
     fillColor: string,
     strokeColor: string,
     value: number
   ) {
     this.x = x
     this.y = y
+    this.previousX = x
+    this.previousY = y
     this.targetX = x
     this.targetY = y
-    this.maxRadius = maxRadius
     this.fillColor = fillColor
     this.strokeColor = strokeColor
     this.value = value
-    this.speedX = 0
-    this.speedY = 0
     this.framesUntilStop = 0
+    this.framesUntilGrown = GROW_DURATION_FRAMES
+    this.framesUntilShrunk = -1
     this.currentRadius = 0
   }
 
-  // animationSpeed is a multiplier for all changes
+  // animationSpeed is a multiplier for the speed of all changes
   update (animationSpeed: number): void {
-    if (this.framesUntilStop > 0 && this.framesUntilStop < animationSpeed) {
-      this.x += this.speedX * this.framesUntilStop
-      this.y += this.speedY * this.framesUntilStop
-      this.framesUntilStop = 0
-    } else if (this.framesUntilStop > 0) {
-      this.x += this.speedX * animationSpeed
-      this.y += this.speedY * animationSpeed
-      this.framesUntilStop -= animationSpeed
+    this.framesUntilStop = Math.max(this.framesUntilStop - animationSpeed, 0)
+    this.framesUntilGrown = Math.max(this.framesUntilGrown - animationSpeed, 0)
+    this.framesUntilUnhighlighted = Math.max(this.framesUntilUnhighlighted - animationSpeed, 0)
+    if (this.framesUntilShrunk !== -1) {
+      this.framesUntilShrunk = Math.max(this.framesUntilShrunk - animationSpeed, 0)
     }
 
-    if (this.framesUntilUnhighlighted > 0) {
-      this.framesUntilUnhighlighted -= animationSpeed
-    }
+    // 0 < motionProgress < 1
+    const motionProgress = (MOVE_DURATION_FRAMES - this.framesUntilStop) / MOVE_DURATION_FRAMES
+    this.x = this.previousX + (this.targetX - this.previousX) * motionCurve(motionProgress)
+    this.y = this.previousY + (this.targetY - this.previousY) * motionCurve(motionProgress)
 
-    if (this.startedShrinking) {
-      this.currentRadius -= (this.maxRadius / SHRINK_DURATION_FRAMES) * animationSpeed
-      if (this.currentRadius < 0) {
-        this.currentRadius = 0
-      }
-    } else if (this.currentRadius < this.maxRadius) {
-      this.currentRadius += (this.maxRadius / GROW_DURATION_FRAMES) * animationSpeed
-      if (this.currentRadius > this.maxRadius) {
-        this.currentRadius = this.maxRadius
-      }
+    // If it is being deleted
+    if (this.framesUntilShrunk >= 0) {
+      const shrinkingProgress = (SHRINK_DURATION_FRAMES - this.framesUntilShrunk) / SHRINK_DURATION_FRAMES
+      this.currentRadius = MAX_RADIUS * radiusShrinkingCurve(shrinkingProgress)
+    } else {
+      const growthProgress = (GROW_DURATION_FRAMES - this.framesUntilGrown) / GROW_DURATION_FRAMES
+      this.currentRadius = MAX_RADIUS * radiusGrowthCurve(growthProgress)
     }
   }
 
@@ -112,8 +111,8 @@ export default class DisplayNode {
 
   moveTo (targetX: number, targetY: number): void {
     this.framesUntilStop = MOVE_DURATION_FRAMES
-    this.speedX = (targetX - this.x) / MOVE_DURATION_FRAMES
-    this.speedY = (targetY - this.y) / MOVE_DURATION_FRAMES
+    this.previousX = this.x
+    this.previousY = this.y
     this.targetX = targetX
     this.targetY = targetY
   }
@@ -128,6 +127,6 @@ export default class DisplayNode {
   }
 
   startShrinkingIntoNothing (): void {
-    this.startedShrinking = true
+    this.framesUntilShrunk = SHRINK_DURATION_FRAMES
   }
 }

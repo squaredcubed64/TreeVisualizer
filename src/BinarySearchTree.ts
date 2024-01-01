@@ -6,7 +6,6 @@ import {
   ROOT_TARGET_Y,
   TARGET_X_GAP,
   TARGET_Y_GAP,
-  MAX_RADIUS,
   FILL_COLOR,
   STROKE_COLOR,
   ARROW_HEAD_ANGLE,
@@ -71,7 +70,7 @@ function drawArrowFromNodeToNode (fromNode: DataNode, toNode: DataNode, context:
 }
 
 function makeDataNode (targetX: number, targetY: number, value: number): DataNode {
-  return new DataNode(new DisplayNode(targetX, targetY, MAX_RADIUS, FILL_COLOR, STROKE_COLOR, value))
+  return new DataNode(new DisplayNode(targetX, targetY, FILL_COLOR, STROKE_COLOR, value))
 }
 
 // Used to implement animations

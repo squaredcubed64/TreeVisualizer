@@ -30,7 +30,8 @@ import {
   FRAMES_AFTER_FIND,
   INSERTION_DESCRIPTIONS,
   DELETION_DESCRIPTIONS,
-  FIND_DESCRIPTIONS
+  FIND_DESCRIPTIONS,
+  ArrowDirection
 } from './constants.js'
 
 // For debugging
@@ -73,14 +74,6 @@ function makeDataNode (targetX: number, targetY: number, value: number): DataNod
   return new DataNode(new DisplayNode(targetX, targetY, MAX_RADIUS, FILL_COLOR, STROKE_COLOR, value))
 }
 
-// How arrows are rendered
-export enum ArrowDirection {
-  PARENT_TO_CHILD,
-  PREORDER,
-  INORDER,
-  POSTORDER
-}
-
 // Used to implement animations
 interface DelayedFunctionCall {
   // The time between reaching the front of the queue and being called
@@ -100,17 +93,17 @@ interface DelayedFunctionCallFunctionResult {
 }
 
 export default class BinarySearchTree implements Tree {
-  root: DataNode | null
-  functionQueue: DelayedFunctionCall[]
-  functionAtFrontOfQueueWasCalled: boolean
-  currentdescription: string
-  arrowDirection: ArrowDirection
+  private root: DataNode | null
+  private readonly functionQueue: DelayedFunctionCall[]
+  private functionAtFrontOfQueueWasCalled: boolean
+  private currentDescription: string
+  private arrowDirection: ArrowDirection
 
   constructor () {
     this.root = null
     this.functionQueue = []
     this.functionAtFrontOfQueueWasCalled = false
-    this.currentdescription = ''
+    this.currentDescription = ''
     this.arrowDirection = ArrowDirection.PARENT_TO_CHILD
   }
 
@@ -141,7 +134,7 @@ export default class BinarySearchTree implements Tree {
   }
 
   // Pushes methods onto functionQueue to highlight nodes along path
-  pushNodeHighlightingOntoFunctionQueue (path: DataNode[], highlightColor: string, description: string): void {
+  private pushNodeHighlightingOntoFunctionQueue (path: DataNode[], highlightColor: string, description: string): void {
     if (path.length === 0) {
       throw new Error('Path is empty')
     }
@@ -165,7 +158,7 @@ export default class BinarySearchTree implements Tree {
   }
 
   // Creates node and tells nodes to start moving to new target positions
-  setupInsertionAnimation (value: number, parent: DataNode): DelayedFunctionCallFunctionResult {
+  private setupInsertionAnimation (value: number, parent: DataNode): DelayedFunctionCallFunctionResult {
     if (value < parent.displayNode.value) {
       parent.left = makeDataNode(parent.displayNode.targetX - TARGET_X_GAP, parent.displayNode.targetY + TARGET_Y_GAP, value)
     } else {
@@ -206,7 +199,7 @@ export default class BinarySearchTree implements Tree {
     }
   }
 
-  pushOptionalShrinkAndSetupDeletionAnimationToQueue (victim: DataNode, parent: DataNode | null, victimIsSuccessor: boolean): void {
+  private pushOptionalShrinkAndSetupDeletionAnimationToQueue (victim: DataNode, parent: DataNode | null, victimIsSuccessor: boolean): void {
     // If victim has one child or fewer, start shrinking after highlighting
     if (victim.left == null || victim.right == null) {
       this.functionQueue.push({ framesToWait: 0, function: () => { victim.displayNode.startShrinkingIntoNothing(); return { framesAfterCall: SHRINK_DURATION_FRAMES + FRAMES_AFTER_SHRINK, description: victimIsSuccessor ? DELETION_DESCRIPTIONS.DELETE_SUCCESSOR : DELETION_DESCRIPTIONS.DELETE_NODE } } })
@@ -216,7 +209,7 @@ export default class BinarySearchTree implements Tree {
   }
 
   // Deletes node and tells nodes to start moving to new target positions
-  setupDeletionAnimation (victim: DataNode, parent: DataNode | null, victimIsSuccessor: boolean): DelayedFunctionCallFunctionResult {
+  private setupDeletionAnimation (victim: DataNode, parent: DataNode | null, victimIsSuccessor: boolean): DelayedFunctionCallFunctionResult {
     if (parent != null && !parent.isParentOf(victim)) {
       throw new Error('parent is not the parent of node')
     }
@@ -306,10 +299,6 @@ export default class BinarySearchTree implements Tree {
     })
   }
 
-  clear (): void {
-    this.root = null
-  }
-
   animate (canvas: HTMLCanvasElement, context: CanvasRenderingContext2D): void {
     context.clearRect(0, 0, canvas.width, canvas.height)
 
@@ -321,7 +310,7 @@ export default class BinarySearchTree implements Tree {
           throw new Error('Function call is null')
         }
         const result = functionCall.function()
-        this.currentdescription = result.description
+        this.currentDescription = result.description
 
         // Keep function at front of queue for framesAfterCall frames, to give the animation time to complete and show the description
         if (result.framesAfterCall > 0) {
@@ -372,7 +361,7 @@ export default class BinarySearchTree implements Tree {
     if (animationDescription == null) {
       throw new Error('animationDescription not found')
     }
-    animationDescription.textContent = this.currentdescription
+    animationDescription.textContent = this.currentDescription
 
     // Disable buttons if animation is happening
     const operationPanel = document.getElementById('operationPanel')
@@ -389,7 +378,7 @@ export default class BinarySearchTree implements Tree {
   }
 
   // Nodes are equally spaced horizontally based on their inorder traversal
-  targetXs (): Map<DataNode, number> {
+  private targetXs (): Map<DataNode, number> {
     const nodeToTargetX = new Map<DataNode, number>()
     if (this.root == null) {
       throw new Error('Root is null')
@@ -405,7 +394,7 @@ export default class BinarySearchTree implements Tree {
   }
 
   // Layers are equally spaced vertically based on their depth
-  targetYs (): Map<DataNode, number> {
+  private targetYs (): Map<DataNode, number> {
     const nodeToTargetY = new Map<DataNode, number>()
     if (this.root == null) {
       throw new Error('Root is null')
@@ -434,7 +423,7 @@ export default class BinarySearchTree implements Tree {
     return nodeToTargetY
   }
 
-  setTargetPositions (): void {
+  private setTargetPositions (): void {
     if (this.root == null) {
       return
     }

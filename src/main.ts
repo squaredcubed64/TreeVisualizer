@@ -1,6 +1,8 @@
-import BinarySearchTree, { ArrowDirection } from './BinarySearchTree'
+import BinarySearchTree from './BinarySearchTree'
+import { ArrowDirection } from './constants'
+import type Tree from './Tree'
 
-const tree = new BinarySearchTree()
+let tree: Tree = new BinarySearchTree()
 
 const insertButton = document.getElementById('insertButton') as HTMLButtonElement
 const insertInput = document.getElementById('insertInput') as HTMLInputElement
@@ -46,11 +48,12 @@ if (clearButton == null) {
   throw new Error('clearButton not found')
 }
 clearButton.addEventListener('click', () => {
-  tree.clear()
+  tree = new BinarySearchTree()
+  animateTree(tree)
 })
 
 const arrowButton = document.getElementById('arrowButton') as HTMLButtonElement
-const arrowDirections = [ArrowDirection.PARENT_TO_CHILD, ArrowDirection.PREORDER, ArrowDirection.INORDER, ArrowDirection.POSTORDER]
+const arrowDirections: ArrowDirection[] = [ArrowDirection.PARENT_TO_CHILD, ArrowDirection.PREORDER, ArrowDirection.INORDER, ArrowDirection.POSTORDER]
 const arrowTexts = ['Parent to Child', 'Preorder', 'Inorder', 'Postorder']
 let currentDirectionIndex = 0
 if (arrowButton == null) {
@@ -64,9 +67,13 @@ arrowButton.addEventListener('click', () => {
   tree.setArrowDirection(currentDirection)
 })
 
-const canvas = document.getElementById('canvas') as HTMLCanvasElement
-const context = canvas.getContext('2d')
-if (context == null) {
-  throw new Error('context is null')
+function animateTree (tree: Tree): void {
+  const canvas = document.getElementById('canvas') as HTMLCanvasElement
+  const context = canvas.getContext('2d')
+  if (context == null) {
+    throw new Error('context is null')
+  }
+  tree.animate(canvas, context)
 }
-tree.animate(canvas, context)
+
+animateTree(tree)

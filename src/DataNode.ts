@@ -1,5 +1,5 @@
 import type DisplayNode from './DisplayNode'
-import { ArrowDirection } from './BinarySearchTree.js'
+import { ArrowDirection } from './constants'
 
 export default class DataNode {
   // DisplayNode holds the numeric value

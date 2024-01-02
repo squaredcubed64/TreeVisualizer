@@ -6,13 +6,8 @@ import type Tree from './Tree'
 const canvas = document.getElementById('canvas') as HTMLCanvasElement
 const context = canvas.getContext('2d')
 export function resizeCanvas (canvas: HTMLCanvasElement): void {
-  const parent = canvas.parentElement
-  if (parent == null) {
-    throw new Error('canvas parent element not found')
-  }
-  const { width, height } = parent.getBoundingClientRect()
-  canvas.width = width
-  canvas.height = height
+  canvas.width = window.innerWidth
+  canvas.height = window.innerHeight
 }
 window.addEventListener('resize', () => {
   resizeCanvas(canvas)

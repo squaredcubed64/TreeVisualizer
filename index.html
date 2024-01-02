@@ -1,24 +1,46 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <link rel="stylesheet" type="text/css" href="styles/main.css">
-</head>
-<body>
-  <div id="buttonPanel">
-    <div id="operationPanel">
-      <input type="text" id="insertInput" placeholder="Insert a number">
-      <button id="insertButton">Insert</button>
-      <input type="text" id="deleteInput" placeholder="Delete a number">
-      <button id="deleteButton">Delete</button>
-      <input type="text" id="findInput" placeholder="Find a number">
-      <button id="findButton">Find</button>
-      <button id="clearButton">Clear</button>
+  <head>
+    <title>Tree Visualizer</title>
+    <link rel="stylesheet" type="text/css" href="styles/main.css" />
+  </head>
+  <body>
+    <div class="buttonPanel">
+      <div class="operationContainer" id="insert">
+        <input
+          type="text"
+          id="insertInput"
+          placeholder="Enter a value to insert"
+        />
+        <button id="insertButton">Insert</button>
+      </div>
+      <div class="operationContainer" id="delete">
+        <input
+          type="text"
+          id="deleteInput"
+          placeholder="Enter a value to delete"
+        />
+        <button id="deleteButton">Delete</button>
+      </div>
+      <div class="operationContainer" id="find">
+        <input type="text" id="findInput" placeholder="Enter a value to find" />
+        <button id="findButton">Find</button>
+      </div>
+      <button class="miscButton" id="clearButton">Clear</button>
+      <button class="miscButton" id="arrowButton">Arrows: Parent to Child</button>
+      <div class="animationSpeedBarContainer">
+        <label for="animationSpeedBar">Animation Speed</label>
+        <input
+          type="range"
+          id="animationSpeedBar"
+          min="1"
+          max="19"
+          value="10"
+        />
+      </div>
     </div>
-    <button id="arrowButton">Arrows: Parent to Child</button>
-  </div>
-  <p id="animationDescription"></p>
-  <canvas id="canvas" width="800" height="600"></canvas>
-  <input type="range" id="animationSpeedBar" min="1" max="19" value="10">
-  <script type="module" src="/src/main.ts"></script>
-</body>
+    <p id="animationDescription"></p>
+    <canvas id="canvas"></canvas>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
 </html>

@@ -12,7 +12,8 @@ import {
   motionCurve,
   MAX_RADIUS,
   radiusGrowthCurve,
-  radiusShrinkingCurve
+  radiusShrinkingCurve,
+  MIN_RADIUS_TO_DRAW_TEXT
 } from './constants.js'
 
 export default class DisplayNode {
@@ -97,11 +98,13 @@ export default class DisplayNode {
     context.stroke()
 
     // Add text
-    context.fillStyle = TEXT_COLOR
-    context.textAlign = 'center'
-    context.textBaseline = 'middle'
-    context.font = TEXT_FONT
-    context.fillText(this.value.toString(), this.x, this.y + TEXT_Y_OFFSET)
+    if (this.currentRadius >= MIN_RADIUS_TO_DRAW_TEXT) {
+      context.fillStyle = TEXT_COLOR
+      context.textAlign = 'center'
+      context.textBaseline = 'middle'
+      context.font = TEXT_FONT
+      context.fillText(this.value.toString(), this.x, this.y + TEXT_Y_OFFSET)
+    }
   }
 
   drawAndUpdate (context: CanvasRenderingContext2D, animationSpeed: number): void {

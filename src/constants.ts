@@ -1,13 +1,16 @@
+import { resizeCanvas } from './main'
+
 export const MOVE_DURATION_FRAMES = 150
 export const HIGHLIGHT_DURATION_FRAMES = 60
 export const DEFAULT_HIGHLIGHT_COLOR = 'blue'
 export const BORDER_WIDTH = 1
 export const HIGHLIGHT_WIDTH = 5
 export const GROW_DURATION_FRAMES = 30
-export const TEXT_COLOR = 'black'
+export const TEXT_COLOR = 'red'
 export const TEXT_FONT = '16px Arial'
 export const TEXT_Y_OFFSET = 2
 export const SHRINK_DURATION_FRAMES = 60
+export const MIN_RADIUS_TO_DRAW_TEXT = 10
 // Curves that start at 0, 0 and go to 1, 1
 export const motionCurve = (progress: number): number => {
   if (progress < 0 || progress > 1) {
@@ -21,7 +24,6 @@ export const radiusGrowthCurve = (progress: number): number => {
   }
   return progress * progress * (3 - 2 * progress)
 }
-
 // Curve that starts at 1, 1 and goes to 0, 0
 export const radiusShrinkingCurve = (progress: number): number => {
   if (progress < 0 || progress > 1) {
@@ -30,13 +32,16 @@ export const radiusShrinkingCurve = (progress: number): number => {
   return 1 - progress * progress * (3 - 2 * progress)
 }
 
-export const ROOT_TARGET_X = 400
+const canvas = document.getElementById('canvas') as HTMLCanvasElement
+resizeCanvas(canvas)
+export const ROOT_TARGET_X = canvas.width / 2
+
 export const ROOT_TARGET_Y = 50
 export const TARGET_X_GAP = 75
 export const TARGET_Y_GAP = 75
 export const MAX_RADIUS = 30
-export const FILL_COLOR = 'red'
-export const STROKE_COLOR = 'black'
+export const FILL_COLOR = 'pink'
+export const STROKE_COLOR = 'red'
 export const ARROW_HEAD_ANGLE = Math.PI / 6
 export const ARROW_HEAD_LENGTH = 10
 export const ARROW_LINE_WIDTH = 2

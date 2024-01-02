@@ -2,8 +2,26 @@ import BinarySearchTree from './BinarySearchTree'
 import { ArrowDirection } from './constants'
 import type Tree from './Tree'
 
+// Make canvas fill the screen
+const canvas = document.getElementById('canvas') as HTMLCanvasElement
+const context = canvas.getContext('2d')
+export function resizeCanvas (canvas: HTMLCanvasElement): void {
+  const parent = canvas.parentElement
+  if (parent == null) {
+    throw new Error('canvas parent element not found')
+  }
+  const { width, height } = parent.getBoundingClientRect()
+  canvas.width = width
+  canvas.height = height
+}
+window.addEventListener('resize', () => {
+  resizeCanvas(canvas)
+})
+resizeCanvas(canvas)
+
 let tree: Tree = new BinarySearchTree()
 
+// Attach tree operations to HTML elements insertButton, deleteButton, findButton, clearButton, arrowButton, and animationSpeedBar
 const insertButton = document.getElementById('insertButton') as HTMLButtonElement
 const insertInput = document.getElementById('insertInput') as HTMLInputElement
 if (insertButton == null) {
@@ -81,12 +99,9 @@ animationSpeedBar.addEventListener('input', () => {
 })
 
 function animateTree (tree: Tree): void {
-  const canvas = document.getElementById('canvas') as HTMLCanvasElement
-  const context = canvas.getContext('2d')
   if (context == null) {
     throw new Error('context is null')
   }
   tree.animate(canvas, context)
 }
-
 animateTree(tree)

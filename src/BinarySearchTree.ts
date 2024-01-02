@@ -367,14 +367,22 @@ export default class BinarySearchTree implements Tree {
     animationDescription.textContent = this.currentDescription
 
     // Disable buttons if animation is happening
-    const operationPanel = document.getElementById('operationPanel')
-    if (operationPanel == null) {
-      throw new Error('operationPanel not found')
+    const insertDiv = document.getElementById('insert')
+    const deleteDiv = document.getElementById('delete')
+    const findDiv = document.getElementById('find')
+    const clearButton = document.getElementById('clearButton')
+    if (insertDiv == null || deleteDiv == null || findDiv == null || clearButton == null) {
+      throw new Error('insert, delete, find, or clearButton not found')
     }
+    const operations = [insertDiv, deleteDiv, findDiv, clearButton]
     if (this.functionQueue.length === 0) {
-      operationPanel.classList.remove('disabled')
+      operations.forEach((operation) => {
+        operation.classList.remove('disabled')
+      })
     } else {
-      operationPanel.classList.add('disabled')
+      operations.forEach((operation) => {
+        operation.classList.add('disabled')
+      })
     }
 
     this.currentAnimationId = requestAnimationFrame(() => { this.animate(canvas, context) })

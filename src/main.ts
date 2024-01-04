@@ -1,5 +1,6 @@
 import BinarySearchTree from './BinarySearchTree'
-import { ArrowDirection, resizeCanvas } from './Constants'
+import { ArrowDirection } from './Constants'
+import { resizeCanvas } from './Utils'
 import type Tree from './Tree'
 
 // Make canvas fill the screen

@@ -9,12 +9,14 @@ import {
   TEXT_Y_OFFSET,
   SHRINK_DURATION_FRAMES,
   DEFAULT_HIGHLIGHT_COLOR,
-  motionCurve,
   MAX_RADIUS,
-  radiusGrowthCurve,
-  radiusShrinkingCurve,
   MIN_RADIUS_TO_DRAW_TEXT
 } from './Constants'
+import {
+  motionCurve,
+  radiusGrowthCurve,
+  radiusShrinkingCurve
+} from './Utils'
 
 export default class DisplayNode {
   x: number

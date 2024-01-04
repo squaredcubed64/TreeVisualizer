@@ -1,3 +1,5 @@
+import { resizeCanvas } from './Utils'
+
 // Node constants
 export const MOVE_DURATION_FRAMES = 150
 export const HIGHLIGHT_DURATION_FRAMES = 60
@@ -10,32 +12,8 @@ export const TEXT_FONT = '16px Arial'
 export const TEXT_Y_OFFSET = 2
 export const SHRINK_DURATION_FRAMES = 60
 export const MIN_RADIUS_TO_DRAW_TEXT = 10
-// Curves that start at 0, 0 and go to 1, 1
-export const motionCurve = (progress: number): number => {
-  if (progress < 0 || progress > 1) {
-    throw new Error('progress must be between 0 and 1')
-  }
-  return progress * progress * (3 - 2 * progress)
-}
-export const radiusGrowthCurve = (progress: number): number => {
-  if (progress < 0 || progress > 1) {
-    throw new Error('progress must be between 0 and 1')
-  }
-  return progress * progress * (3 - 2 * progress)
-}
-// Curve that starts at 1, 1 and goes to 0, 0
-export const radiusShrinkingCurve = (progress: number): number => {
-  if (progress < 0 || progress > 1) {
-    throw new Error('progress must be between 0 and 1')
-  }
-  return 1 - progress * progress * (3 - 2 * progress)
-}
 
 // Tree constants
-export function resizeCanvas (canvas: HTMLCanvasElement): void {
-  canvas.width = window.innerWidth
-  canvas.height = window.innerHeight
-}
 const canvas = document.getElementById('canvas') as HTMLCanvasElement
 resizeCanvas(canvas)
 export const ROOT_TARGET_X = canvas.width / 2

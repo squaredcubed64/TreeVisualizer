@@ -14,7 +14,7 @@ import {
   radiusGrowthCurve,
   radiusShrinkingCurve,
   MIN_RADIUS_TO_DRAW_TEXT
-} from './constants.js'
+} from './Constants'
 
 export default class DisplayNode {
   x: number

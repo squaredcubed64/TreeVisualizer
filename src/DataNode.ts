@@ -1,5 +1,5 @@
 import type DisplayNode from './DisplayNode'
-import { ArrowDirection } from './constants'
+import { ArrowDirection } from './Constants'
 
 export default class DataNode {
   // DisplayNode holds the numeric value

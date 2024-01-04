@@ -1,4 +1,4 @@
-import type { ArrowDirection } from './constants'
+import type { ArrowDirection } from './Constants'
 
 export default interface Tree {
   insert: (value: number) => void

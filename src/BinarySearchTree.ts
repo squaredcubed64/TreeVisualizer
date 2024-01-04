@@ -1,6 +1,6 @@
-import DisplayNode from './DisplayNode.js'
-import DataNode from './DataNode.js'
-import type Tree from './Tree.js'
+import DisplayNode from './DisplayNode'
+import DataNode from './DataNode'
+import type Tree from './Tree'
 import {
   ROOT_TARGET_X,
   ROOT_TARGET_Y,
@@ -31,7 +31,7 @@ import {
   DELETION_DESCRIPTIONS,
   FIND_DESCRIPTIONS,
   ArrowDirection
-} from './constants.js'
+} from './Constants'
 
 // For debugging
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -202,6 +202,7 @@ export default class BinarySearchTree implements Tree {
     }
   }
 
+  // May push shrinking onto functionQueue, then pushes setupDeletionAnimation onto functionQueue
   private pushOptionalShrinkAndSetupDeletionAnimationToQueue (victim: DataNode, parent: DataNode | null, victimIsSuccessor: boolean): void {
     // If victim has one child or fewer, start shrinking after highlighting
     if (victim.left == null || victim.right == null) {
@@ -266,6 +267,7 @@ export default class BinarySearchTree implements Tree {
     }
   }
 
+  // Animation: highlight path, then highlight node if found
   find (value: number): void {
     // If the tree is empty, do nothing
     if (this.root == null) {
@@ -302,6 +304,7 @@ export default class BinarySearchTree implements Tree {
     })
   }
 
+  // Updates the functionQueue, draws on the canvas, then requests another animation frame for itself
   animate (canvas: HTMLCanvasElement, context: CanvasRenderingContext2D): void {
     context.clearRect(0, 0, canvas.width, canvas.height)
 
@@ -393,7 +396,7 @@ export default class BinarySearchTree implements Tree {
   }
 
   // Nodes are equally spaced horizontally based on their inorder traversal
-  private targetXs (): Map<DataNode, number> {
+  private calculateTargetXs (): Map<DataNode, number> {
     const nodeToTargetX = new Map<DataNode, number>()
     if (this.root == null) {
       throw new Error('Root is null')
@@ -409,7 +412,7 @@ export default class BinarySearchTree implements Tree {
   }
 
   // Layers are equally spaced vertically based on their depth
-  private targetYs (): Map<DataNode, number> {
+  private calculateTargetYs (): Map<DataNode, number> {
     const nodeToTargetY = new Map<DataNode, number>()
     if (this.root == null) {
       throw new Error('Root is null')
@@ -438,12 +441,14 @@ export default class BinarySearchTree implements Tree {
     return nodeToTargetY
   }
 
+  // Tell all nodes to start moving to new targets
   private setTargetPositions (): void {
     if (this.root == null) {
       return
     }
-    const nodeToTargetX = this.targetXs()
-    const nodeToTargetY = this.targetYs()
+    const nodeToTargetX = this.calculateTargetXs()
+    const nodeToTargetY = this.calculateTargetYs()
+    // Use of inorder traversal here is arbitrary
     for (const node of this.root.getInorderTraversal()) {
       const targetX = nodeToTargetX.get(node)
       if (targetX == null) {

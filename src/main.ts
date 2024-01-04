@@ -1,14 +1,10 @@
 import BinarySearchTree from './BinarySearchTree'
-import { ArrowDirection } from './constants'
+import { ArrowDirection, resizeCanvas } from './Constants'
 import type Tree from './Tree'
 
 // Make canvas fill the screen
 const canvas = document.getElementById('canvas') as HTMLCanvasElement
 const context = canvas.getContext('2d')
-export function resizeCanvas (canvas: HTMLCanvasElement): void {
-  canvas.width = window.innerWidth
-  canvas.height = window.innerHeight
-}
 window.addEventListener('resize', () => {
   resizeCanvas(canvas)
 })
@@ -93,6 +89,7 @@ animationSpeedBar.addEventListener('input', () => {
   tree.setAnimationSpeed(animationSpeedSetting)
 })
 
+// Call tree.animate(), a recursive function that uses requestAnimationFrame
 function animateTree (tree: Tree): void {
   if (context == null) {
     throw new Error('context is null')

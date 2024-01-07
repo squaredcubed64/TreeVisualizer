@@ -1,15 +1,8 @@
-import type DataNode from './DataNode'
-import type Tree from './Tree'
 import {
   ROOT_TARGET_X,
   ROOT_TARGET_Y,
   TARGET_X_GAP,
   TARGET_Y_GAP,
-  FILL_COLOR,
-  STROKE_COLOR,
-  ARROW_HEAD_ANGLE,
-  ARROW_HEAD_LENGTH,
-  ARROW_LINE_WIDTH,
   FRAMES_BETWEEN_HIGHLIGHTS,
   FRAMES_BEFORE_FIRST_HIGHLIGHT,
   MOVE_DURATION_FRAMES,
@@ -29,75 +22,59 @@ import {
   INSERTION_DESCRIPTIONS,
   DELETION_DESCRIPTIONS,
   FIND_DESCRIPTIONS,
-  ArrowDirection
+  FILL_COLOR,
+  STROKE_COLOR,
+  ARROW_HEAD_ANGLE,
+  ARROW_HEAD_LENGTH,
+  ARROW_LINE_WIDTH
 } from './Constants'
-import { drawArrowFromNodeToNode, makeDataNode } from './Utils'
+import { drawArrowFromNodeToNode } from './Utils'
+import type DisplayNode from './DisplayNode'
+import type DelayedFunctionCall from './DelayedFunctionCall'
+import type DelayedFunctionCallFunctionResult from './DelayedFunctionCallFunctionResult'
+import type DisplayTreeShape from './DisplayTreeShape'
+import type ViewInsertionInformation from './ViewInsertionInformation'
 
-// Used to implement animations
-interface DelayedFunctionCall {
-  // The time between reaching the front of the queue and being called
-  // The total time between function calls equals the framesAfterCall returned by one function plus the framesToWait of the next function
-  framesToWait: number
-  function: DelayedFunctionCallFunction
-}
-
-type DelayedFunctionCallFunction = () => DelayedFunctionCallFunctionResult
-
-interface DelayedFunctionCallFunctionResult {
-  // The time between being called and leaving the queue
-  // Most functions will return the time it will take to complete the animation or that plus a buffer
-  framesAfterCall: number
-  // What should be displayed while the animation occurs
-  description: string
-}
-
-export default class BinarySearchTree implements Tree {
-  private root: DataNode | null
+export default class BSTView {
+  private shape: DisplayTreeShape
   private readonly functionQueue: DelayedFunctionCall[]
   private functionAtFrontOfQueueWasCalled: boolean
   private currentDescription: string
-  private arrowDirection: ArrowDirection
   private currentAnimationId: number
   private animationSpeed: number
 
   constructor () {
-    this.root = null
+    this.shape = { inorderTraversal: [], layers: [], arrows: [] }
     this.functionQueue = []
     this.functionAtFrontOfQueueWasCalled = false
     this.currentDescription = ''
-    this.arrowDirection = ArrowDirection.PARENT_TO_CHILD
     this.currentAnimationId = 0
     this.animationSpeed = 1
   }
 
   // Animation: highlight path, grow inserted node, then move nodes to new target positions
-  // Note: equivalent values are inserted to the right
-  insert (value: number): void {
-    // If the tree is empty, insert without any animation
-    if (this.root == null) {
-      this.root = makeDataNode(ROOT_TARGET_X, ROOT_TARGET_Y, value)
+  insert (viewInsertionInformation: ViewInsertionInformation): void {
+    const { shapeWithPlaceholder, path, valueToInsert, placeholderNode } = viewInsertionInformation
+
+    // If the tree is empty, set the root without animating
+    if (this.shape.inorderTraversal.length === 0) {
+      this.preparePlaceholderColorsAndValue(placeholderNode, valueToInsert)
+      placeholderNode.x = ROOT_TARGET_X
+      placeholderNode.y = ROOT_TARGET_Y
+      this.shape = shapeWithPlaceholder
+      this.setTargetPositions()
       return
     }
 
-    // Find the path to where the new node will be inserted
-    const path: DataNode[] = []
-    let currNode: DataNode | null = this.root
-    while (currNode != null) {
-      path.push(currNode)
-      if (value < currNode.displayNode.value) {
-        currNode = currNode.left
-      } else {
-        currNode = currNode.right
-      }
-    }
-
+    // Animate finding where to insert
     this.pushNodeHighlightingOntoFunctionQueue(path, DEFAULT_HIGHLIGHT_COLOR, INSERTION_DESCRIPTIONS.FIND_WHERE_TO_INSERT)
 
-    this.functionQueue.push({ framesToWait: 0, function: () => this.setupInsertionAnimation(value, path[path.length - 1]) })
+    // Animate inserting
+    this.functionQueue.push({ framesToWait: 0, function: () => this.setupInsertionAnimation(valueToInsert, shapeWithPlaceholder, placeholderNode, path[path.length - 1]) })
   }
 
   // Pushes methods onto functionQueue to highlight nodes along path
-  private pushNodeHighlightingOntoFunctionQueue (path: DataNode[], highlightColor: string, description: string): void {
+  private pushNodeHighlightingOntoFunctionQueue (path: DisplayNode[], highlightColor: string, description: string): void {
     if (path.length === 0) {
       throw new Error('Path is empty')
     }
@@ -116,23 +93,33 @@ export default class BinarySearchTree implements Tree {
         framesAfterCall += FRAMES_AFTER_LAST_HIGHLIGHT
       }
 
-      this.functionQueue.push({ framesToWait, function: () => { node.displayNode.highlight(highlightColor); return { framesAfterCall, description } } })
+      this.functionQueue.push({ framesToWait, function: () => { node.highlight(highlightColor); return { framesAfterCall, description } } })
     }
   }
 
-  // Creates node and tells nodes to start moving to new target positions
-  private setupInsertionAnimation (value: number, parent: DataNode): DelayedFunctionCallFunctionResult {
-    if (value < parent.displayNode.value) {
-      parent.left = makeDataNode(parent.displayNode.targetX - TARGET_X_GAP, parent.displayNode.targetY + TARGET_Y_GAP, value)
+  // Prepares the placeholder node and tells nodes to start moving to new target positions
+  private setupInsertionAnimation (valueToInsert: number, shapeWithPlaceholder: DisplayTreeShape, placeholderNode: DisplayNode, parent: DisplayNode): DelayedFunctionCallFunctionResult {
+    this.preparePlaceholderColorsAndValue(placeholderNode, valueToInsert)
+    if (placeholderNode.value < parent.value) {
+      placeholderNode.x = parent.x - TARGET_X_GAP
     } else {
-      parent.right = makeDataNode(parent.displayNode.targetX + TARGET_X_GAP, parent.displayNode.targetY + TARGET_Y_GAP, value)
+      placeholderNode.x = parent.x + TARGET_X_GAP
     }
+    placeholderNode.y = parent.y + TARGET_Y_GAP
+
+    this.shape = shapeWithPlaceholder
     this.setTargetPositions()
     return { framesAfterCall: MOVE_DURATION_FRAMES, description: INSERTION_DESCRIPTIONS.INSERT_NEW_NODE }
   }
 
+  private preparePlaceholderColorsAndValue (placeholderNode: DisplayNode, value: number): void {
+    placeholderNode.fillColor = FILL_COLOR
+    placeholderNode.strokeColor = STROKE_COLOR
+    placeholderNode.value = value
+  }
+
   // Animation: highlight path, shrink victim node, then move other nodes to new target positions
-  delete (value: number): void {
+  /* delete (value: number): void {
     // If the tree is empty, do nothing
     if (this.root == null) {
       return
@@ -262,7 +249,7 @@ export default class BinarySearchTree implements Tree {
         } else return { framesAfterCall: FRAMES_AFTER_FIND, description: FIND_DESCRIPTIONS.DID_NOT_FIND_NODE }
       }
     })
-  }
+  } */
 
   // Updates the functionQueue, draws on the canvas, then requests another animation frame for itself
   animate (canvas: HTMLCanvasElement, context: CanvasRenderingContext2D): void {
@@ -295,32 +282,15 @@ export default class BinarySearchTree implements Tree {
       this.functionQueue[0].framesToWait -= this.animationSpeed
     }
 
-    if (this.root != null) {
-      const arbitraryTraversal = this.root.getInorderTraversal()
-      // Draw arrows first
-      if (this.arrowDirection === ArrowDirection.PARENT_TO_CHILD) {
-        arbitraryTraversal.forEach((node) => {
-          if (node.left != null) {
-            drawArrowFromNodeToNode(node, node.left, context)
-          }
-          if (node.right != null) {
-            drawArrowFromNodeToNode(node, node.right, context)
-          }
-        })
-      } else {
-        const traversal = this.root.getTraversal(this.arrowDirection)
-        for (let i = 0; i < traversal.length - 1; i++) {
-          const node = traversal[i]
-          const nextNode = traversal[i + 1]
-          drawArrowFromNodeToNode(node, nextNode, context)
-        }
-      }
+    // Draw arrows first
+    this.shape.arrows.forEach((pair) => {
+      drawArrowFromNodeToNode(pair[0], pair[1], context, ARROW_HEAD_ANGLE, ARROW_HEAD_LENGTH, ARROW_LINE_WIDTH)
+    })
 
-      // Draw nodes
-      arbitraryTraversal.forEach((node) => {
-        node.displayNode.drawAndUpdate(context, this.animationSpeed)
-      })
-    }
+    // Draw nodes
+    this.shape.inorderTraversal.forEach((node) => {
+      node.drawAndUpdate(context, this.animationSpeed)
+    })
 
     // Update description
     const animationDescription = document.getElementById('animationDescription') as HTMLParagraphElement
@@ -334,10 +304,11 @@ export default class BinarySearchTree implements Tree {
     const deleteDiv = document.getElementById('delete')
     const findDiv = document.getElementById('find')
     const clearButton = document.getElementById('clearButton')
-    if (insertDiv == null || deleteDiv == null || findDiv == null || clearButton == null) {
-      throw new Error('insert, delete, find, or clearButton not found')
+    const arrowButton = document.getElementById('arrowButton')
+    if (insertDiv == null || deleteDiv == null || findDiv == null || clearButton == null || arrowButton == null) {
+      throw new Error('insert, delete, find, clearButton, or arrowButton not found')
     }
-    const operations = [insertDiv, deleteDiv, findDiv, clearButton]
+    const operations = [insertDiv, deleteDiv, findDiv, clearButton, arrowButton]
     if (this.functionQueue.length === 0) {
       operations.forEach((operation) => {
         operation.classList.remove('disabled')
@@ -356,60 +327,36 @@ export default class BinarySearchTree implements Tree {
   }
 
   // Nodes are equally spaced horizontally based on their inorder traversal
-  private calculateTargetXs (): Map<DataNode, number> {
-    const nodeToTargetX = new Map<DataNode, number>()
-    if (this.root == null) {
-      throw new Error('Root is null')
-    }
-
-    const inorderTraversal = this.root.getInorderTraversal()
-    const rootIndex = inorderTraversal.indexOf(this.root)
-    for (let i = 0; i < inorderTraversal.length; i++) {
-      const node = inorderTraversal[i]
+  private calculateTargetXs (): Map<DisplayNode, number> {
+    const nodeToTargetX = new Map<DisplayNode, number>()
+    const root = this.shape.layers[0][0]
+    const rootIndex = this.shape.inorderTraversal.indexOf(root)
+    for (let i = 0; i < this.shape.inorderTraversal.length; i++) {
+      const node = this.shape.inorderTraversal[i]
       nodeToTargetX.set(node, ROOT_TARGET_X + (i - rootIndex) * TARGET_X_GAP)
     }
     return nodeToTargetX
   }
 
   // Layers are equally spaced vertically based on their depth
-  private calculateTargetYs (): Map<DataNode, number> {
-    const nodeToTargetY = new Map<DataNode, number>()
-    if (this.root == null) {
-      throw new Error('Root is null')
-    }
-
-    const queue = [this.root]
-    let depth = 0
-    while (queue.length > 0) {
-      const numNodesInLayer = queue.length
-      for (let _ = 0; _ < numNodesInLayer; _++) {
-        const node = queue.shift()
-        if (node == null) {
-          throw new Error('Node is null')
-        }
-
-        nodeToTargetY.set(node, ROOT_TARGET_Y + depth * TARGET_Y_GAP)
-        if (node.left != null) {
-          queue.push(node.left)
-        }
-        if (node.right != null) {
-          queue.push(node.right)
-        }
+  private calculateTargetYs (): Map<DisplayNode, number> {
+    const nodeToTargetY = new Map<DisplayNode, number>()
+    for (let i = 0; i < this.shape.layers.length; i++) {
+      const layer = this.shape.layers[i]
+      const layerY = ROOT_TARGET_Y + i * TARGET_Y_GAP
+      for (const node of layer) {
+        nodeToTargetY.set(node, layerY)
       }
-      depth++
     }
     return nodeToTargetY
   }
 
   // Tell all nodes to start moving to new targets
   private setTargetPositions (): void {
-    if (this.root == null) {
-      return
-    }
     const nodeToTargetX = this.calculateTargetXs()
     const nodeToTargetY = this.calculateTargetYs()
     // Use of inorder traversal here is arbitrary
-    for (const node of this.root.getInorderTraversal()) {
+    for (const node of this.shape.inorderTraversal) {
       const targetX = nodeToTargetX.get(node)
       if (targetX == null) {
         throw new Error('TargetX is null')
@@ -418,12 +365,8 @@ export default class BinarySearchTree implements Tree {
       if (targetY == null) {
         throw new Error('TargetY is null')
       }
-      node.displayNode.moveTo(targetX, targetY)
+      node.moveTo(targetX, targetY)
     }
-  }
-
-  setArrowDirection (arrowDirection: ArrowDirection): void {
-    this.arrowDirection = arrowDirection
   }
 
   setAnimationSpeed (speedSetting: number): void {

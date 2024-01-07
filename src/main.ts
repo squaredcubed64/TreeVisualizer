@@ -1,7 +1,8 @@
-import BinarySearchTree from './BinarySearchTree'
-import { ArrowDirection } from './Constants'
-import { resizeCanvas } from './Utils'
-import type Tree from './Tree'
+import BSTModel from './model/BSTModel'
+import { ArrowDirection } from './controller/ArrowDirection'
+import { resizeCanvas } from './view/Utils'
+import BSTView from './view/BSTView'
+import BSTController from './controller/BSTController'
 
 // Make canvas fill the screen
 const canvas = document.getElementById('canvas') as HTMLCanvasElement
@@ -11,7 +12,9 @@ window.addEventListener('resize', () => {
 })
 resizeCanvas(canvas)
 
-let tree: Tree = new BinarySearchTree()
+const model = new BSTModel()
+const view = new BSTView()
+const controller = new BSTController(model, view)
 
 // Attach tree operations to HTML elements insertButton, deleteButton, findButton, clearButton, arrowButton, and animationSpeedBar
 const insertButton = document.getElementById('insertButton') as HTMLButtonElement
@@ -24,10 +27,10 @@ insertButton.addEventListener('click', () => {
   if (isNaN(value)) {
     throw new Error('value must be a number')
   }
-  tree.insert(value)
+  controller.insert(value)
 })
 
-const deleteButton = document.getElementById('deleteButton') as HTMLButtonElement
+/* const deleteButton = document.getElementById('deleteButton') as HTMLButtonElement
 const deleteInput = document.getElementById('deleteInput') as HTMLInputElement
 if (deleteButton == null) {
   throw new Error('deleteButton not found')
@@ -59,7 +62,7 @@ if (clearButton == null) {
 }
 clearButton.addEventListener('click', () => {
   tree.stopAnimationPermanently()
-  tree = new BinarySearchTree()
+  tree = new BSTModel()
   animateTree(tree)
 })
 
@@ -76,7 +79,7 @@ arrowButton.addEventListener('click', () => {
   const currentText = 'Arrows: ' + arrowTexts[currentDirectionIndex]
   arrowButton.textContent = currentText
   tree.setArrowDirection(currentDirection)
-})
+}) */
 
 const animationSpeedBar = document.getElementById('animationSpeedBar') as HTMLInputElement
 if (animationSpeedBar == null) {
@@ -87,14 +90,7 @@ animationSpeedBar.addEventListener('input', () => {
   if (isNaN(animationSpeedSetting)) {
     throw new Error('speed must be a number')
   }
-  tree.setAnimationSpeed(animationSpeedSetting)
+  controller.setAnimationSpeed(animationSpeedSetting)
 })
 
-// Call tree.animate(), a recursive function that uses requestAnimationFrame
-function animateTree (tree: Tree): void {
-  if (context == null) {
-    throw new Error('context is null')
-  }
-  tree.animate(canvas, context)
-}
-animateTree(tree)
+controller.animate()

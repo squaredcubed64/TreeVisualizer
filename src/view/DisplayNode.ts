@@ -19,15 +19,15 @@ import {
 } from './Utils'
 
 export default class DisplayNode {
-  x: number
-  y: number
+  public x: number
+  public y: number
   private previousX: number
   private previousY: number
-  targetX: number
-  targetY: number
-  currentRadius: number
-  private readonly fillColor: string
-  private readonly strokeColor: string
+  private targetX: number
+  private targetY: number
+  public currentRadius: number
+  public fillColor: string
+  public strokeColor: string
   private highlightColor: string
   public value: number
   private framesUntilStop: number

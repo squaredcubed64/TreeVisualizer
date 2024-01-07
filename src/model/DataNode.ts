@@ -1,14 +1,12 @@
-import type DisplayNode from './DisplayNode'
-import { ArrowDirection } from './Constants'
+import { ArrowDirection } from '../controller/ArrowDirection'
 
 export default class DataNode {
-  // DisplayNode holds the numeric value
-  displayNode: DisplayNode
+  value: number
   left: DataNode | null
   right: DataNode | null
 
-  constructor (value: DisplayNode) {
-    this.displayNode = value
+  constructor (value: number) {
+    this.value = value
     this.left = null
     this.right = null
   }

@@ -55,10 +55,3 @@ export enum FIND_DESCRIPTIONS {
   FOUND_NODE = 'Found the node.',
   DID_NOT_FIND_NODE = 'Did not find the node.'
 }
-// How arrows are rendered
-export enum ArrowDirection {
-  PARENT_TO_CHILD,
-  PREORDER,
-  INORDER,
-  POSTORDER
-}

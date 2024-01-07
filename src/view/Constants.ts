@@ -29,12 +29,14 @@ export const ARROW_LINE_WIDTH = 2
 export const FRAMES_BETWEEN_HIGHLIGHTS = 60
 export const FRAMES_BEFORE_FIRST_HIGHLIGHT = 60
 export const FRAMES_AFTER_LAST_HIGHLIGHT = 60
-export const FRAMES_AFTER_SHRINK = 60
+export const FRAMES_AFTER_SHRINK = 0
 export const FRAMES_AFTER_HIGHLIGHTING_VICTIM_WITH_TWO_CHILDREN = 60
 export const FRAMES_BEFORE_HIGHLIGHT_SUCCESSOR = 60
 export const FRAMES_BEFORE_REPLACE_WITH_SUCCESSOR = 60
 export const FRAMES_BEFORE_UNHIGHLIGHT_VICTIM = 60
 export const FIND_SUCCESSOR_HIGHLIGHT_COLOR = 'green'
+export const FRAMES_AFTER_UNSUCCESSFUL_DELETE = 60
+
 export const HIGHLIGHT_COLOR_AFTER_SUCCESSFUL_FIND = 'green'
 export const HIGHLIGHT_DURATION_AFTER_SUCCESSFUL_FIND_FRAMES = 60
 export const FRAMES_AFTER_FIND = 0
@@ -48,17 +50,11 @@ export enum DELETION_DESCRIPTIONS {
   // These are for the case where the victim node has two children.
   FIND_SUCCESSOR = 'Find the successor of the node to set the node\'s value to.',
   REPLACE_NODE_WITH_SUCCESSOR = 'Replace the node\'s value with its successor.',
-  DELETE_SUCCESSOR = 'Delete the successor node.'
+  DELETE_SUCCESSOR = 'Delete the successor node.',
+  DID_NOT_FIND_NODE = 'Did not find the node.'
 }
 export enum FIND_DESCRIPTIONS {
   FIND_NODE = 'Find the node.',
   FOUND_NODE = 'Found the node.',
   DID_NOT_FIND_NODE = 'Did not find the node.'
-}
-// How arrows are rendered
-export enum ArrowDirection {
-  PARENT_TO_CHILD,
-  PREORDER,
-  INORDER,
-  POSTORDER
 }

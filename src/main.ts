@@ -63,13 +63,19 @@ if (clearButton == null) {
   throw new Error('clearButton not found')
 }
 clearButton.addEventListener('click', () => {
+  const animationSpeedSetting = controller.getAnimationSpeedSetting()
+  const arrowDirection = controller.getArrowDirection()
   controller.stopAnimationPermanently()
 
+  // Clear canvas
   const context = canvas.getContext('2d')
   assert(context !== null, 'context is null')
   context.clearRect(0, 0, canvas.width, canvas.height)
 
+  // Reset controller but keep old animation speed setting and arrow direction
   controller = makeBSTController()
+  controller.setAnimationSpeedSetting(animationSpeedSetting)
+  controller.setArrowDirection(arrowDirection)
   controller.animate()
 })
 
@@ -97,7 +103,7 @@ animationSpeedBar.addEventListener('input', () => {
   if (isNaN(animationSpeedSetting)) {
     throw new Error('speed must be a number')
   }
-  controller.setAnimationSpeed(animationSpeedSetting)
+  controller.setAnimationSpeedSetting(animationSpeedSetting)
 })
 
 controller.animate()

@@ -3,18 +3,13 @@ import {
   ROOT_TARGET_Y,
   TARGET_X_GAP,
   TARGET_Y_GAP,
-  FRAMES_BETWEEN_HIGHLIGHTS,
-  FRAMES_BEFORE_FIRST_HIGHLIGHT,
   MOVE_DURATION_FRAMES,
-  HIGHLIGHT_DURATION_FRAMES,
   SHRINK_DURATION_FRAMES,
   FRAMES_AFTER_SHRINK,
-  FRAMES_AFTER_LAST_HIGHLIGHT,
   FRAMES_AFTER_HIGHLIGHTING_VICTIM_WITH_TWO_CHILDREN,
   DEFAULT_HIGHLIGHT_COLOR,
   FIND_SUCCESSOR_HIGHLIGHT_COLOR,
   FRAMES_BEFORE_REPLACE_WITH_SUCCESSOR,
-  FRAMES_BEFORE_HIGHLIGHT_SUCCESSOR,
   FRAMES_BEFORE_UNHIGHLIGHT_VICTIM,
   HIGHLIGHT_DURATION_AFTER_SUCCESSFUL_FIND_FRAMES,
   HIGHLIGHT_COLOR_AFTER_SUCCESSFUL_FIND,
@@ -24,14 +19,9 @@ import {
   FIND_DESCRIPTIONS,
   FILL_COLOR,
   STROKE_COLOR,
-  ARROW_HEAD_ANGLE,
-  ARROW_HEAD_LENGTH,
-  ARROW_LINE_WIDTH,
   FRAMES_AFTER_UNSUCCESSFUL_DELETE
 } from './Constants'
-import { drawArrowFromNodeToNode } from './Utils'
 import type DisplayNode from './DisplayNode'
-import type DelayedFunctionCall from './DelayedFunctionCall'
 import type DelayedFunctionCallFunctionResult from './DelayedFunctionCallFunctionResult'
 import type DisplayTreeShape from './DisplayTreeShape'
 import type ViewInsertionInformation from './ViewInsertionInformation'
@@ -39,27 +29,11 @@ import type ViewDeletionInformationLEQ1Child from './ViewDeletionInformationLEQ1
 import type ViewDeletionInformation2Children from './ViewDeletionInformation2Children'
 import type ViewDeletionInformationVictimNotFound from './ViewDeletionInformationVictimNotFound'
 import type ViewFindInformation from './ViewFindInformation'
-import { ArrowDirection } from '../controller/ArrowDirection'
+import TreeView from './TreeView'
 
-export default class BSTView {
-  private shape: DisplayTreeShape
-  private readonly functionQueue: DelayedFunctionCall[]
-  private functionAtFrontOfQueueWasCalled: boolean
-  private currentDescription: string
-  private currentAnimationId: number
-  private animationSpeed: number
-
-  constructor () {
-    this.shape = { inorderTraversal: [], layers: [], arrows: [] }
-    this.functionQueue = []
-    this.functionAtFrontOfQueueWasCalled = false
-    this.currentDescription = ''
-    this.currentAnimationId = 0
-    this.animationSpeed = 1
-  }
-
+export default class BSTView extends TreeView {
   // Animation: highlight path, grow inserted node, then move nodes to new target positions
-  insert (viewInsertionInformation: ViewInsertionInformation): void {
+  public insert (viewInsertionInformation: ViewInsertionInformation): void {
     const { shapeWithPlaceholder, path, valueToInsert, placeholderNode } = viewInsertionInformation
 
     // If the tree is empty, set the root without animating
@@ -76,30 +50,6 @@ export default class BSTView {
 
     // Animate inserting
     this.functionQueue.push({ framesToWait: 0, function: () => this.setupInsertionAnimation(valueToInsert, shapeWithPlaceholder, placeholderNode, path[path.length - 1]) })
-  }
-
-  // Pushes methods onto functionQueue to highlight nodes along path
-  private pushNodeHighlightingOntoFunctionQueue (path: DisplayNode[], highlightColor: string, description: string): void {
-    if (path.length === 0) {
-      throw new Error('Path is empty')
-    }
-    for (let i = 0; i < path.length; i++) {
-      const node = path[i]
-      let framesToWait: number
-      if (i === 0) {
-        framesToWait = FRAMES_BEFORE_FIRST_HIGHLIGHT
-      } else {
-        framesToWait = FRAMES_BETWEEN_HIGHLIGHTS
-      }
-
-      let framesAfterCall: number
-      framesAfterCall = HIGHLIGHT_DURATION_FRAMES
-      if (i === path.length - 1) {
-        framesAfterCall += FRAMES_AFTER_LAST_HIGHLIGHT
-      }
-
-      this.functionQueue.push({ framesToWait, function: () => { node.highlight(highlightColor); return { framesAfterCall, description } } })
-    }
   }
 
   // Prepares the placeholder node and tells nodes to start moving to new target positions
@@ -122,7 +72,7 @@ export default class BSTView {
     placeholderNode.value = value
   }
 
-  delete (viewDeletionInformation: ViewDeletionInformationLEQ1Child | ViewDeletionInformation2Children | ViewDeletionInformationVictimNotFound): void {
+  public delete (viewDeletionInformation: ViewDeletionInformationLEQ1Child | ViewDeletionInformation2Children | ViewDeletionInformationVictimNotFound): void {
     switch (viewDeletionInformation.type) {
       // Animation: highlight path, shrink victim node, then move nodes to new target positions
       case 'LEQ1Child': {
@@ -173,134 +123,5 @@ export default class BSTView {
     } else {
       this.functionQueue.push({ framesToWait: 0, function: () => { return { framesAfterCall: FRAMES_AFTER_FIND, description: FIND_DESCRIPTIONS.DID_NOT_FIND_NODE } } })
     }
-  }
-
-  // Updates the functionQueue, draws on the canvas, then requests another animation frame for itself
-  animate (canvas: HTMLCanvasElement, context: CanvasRenderingContext2D): void {
-    context.clearRect(0, 0, canvas.width, canvas.height)
-
-    // Call ready functions in functionQueue
-    while (this.functionQueue.length > 0 && this.functionQueue[0].framesToWait <= 0) {
-      if (!this.functionAtFrontOfQueueWasCalled) {
-        const functionCall = this.functionQueue[0]
-        if (functionCall == null) {
-          throw new Error('Function call is null')
-        }
-        const result = functionCall.function()
-        this.currentDescription = result.description
-
-        // Keep function at front of queue for framesAfterCall frames, to give the animation time to complete and show the description
-        if (result.framesAfterCall > 0) {
-          this.functionAtFrontOfQueueWasCalled = true
-          this.functionQueue[0].framesToWait = result.framesAfterCall
-        } else {
-          this.functionQueue.shift()
-        }
-      } else {
-        this.functionAtFrontOfQueueWasCalled = false
-        this.functionQueue.shift()
-      }
-    }
-
-    if (this.functionQueue.length > 0) {
-      this.functionQueue[0].framesToWait -= this.animationSpeed
-    }
-
-    // Draw arrows first
-    this.shape.arrows.forEach((pair) => {
-      drawArrowFromNodeToNode(pair[0], pair[1], context, ARROW_HEAD_ANGLE, ARROW_HEAD_LENGTH, ARROW_LINE_WIDTH)
-    })
-
-    // Draw nodes
-    this.shape.inorderTraversal.forEach((node) => {
-      node.drawAndUpdate(context, this.animationSpeed)
-    })
-
-    // Update description
-    const animationDescription = document.getElementById('animationDescription') as HTMLParagraphElement
-    if (animationDescription == null) {
-      throw new Error('animationDescription not found')
-    }
-    animationDescription.textContent = this.currentDescription
-
-    // Disable buttons if animation is happening
-    const insertDiv = document.getElementById('insert')
-    const deleteDiv = document.getElementById('delete')
-    const findDiv = document.getElementById('find')
-    const clearButton = document.getElementById('clearButton')
-    const arrowButton = document.getElementById('arrowButton')
-    if (insertDiv == null || deleteDiv == null || findDiv == null || clearButton == null || arrowButton == null) {
-      throw new Error('insert, delete, find, clearButton, or arrowButton not found')
-    }
-    const operations = [insertDiv, deleteDiv, findDiv, clearButton, arrowButton]
-    if (this.functionQueue.length === 0) {
-      operations.forEach((operation) => {
-        operation.classList.remove('disabled')
-      })
-    } else {
-      operations.forEach((operation) => {
-        operation.classList.add('disabled')
-      })
-    }
-
-    this.currentAnimationId = requestAnimationFrame(() => { this.animate(canvas, context) })
-  }
-
-  stopAnimationPermanently (): void {
-    cancelAnimationFrame(this.currentAnimationId)
-  }
-
-  // Nodes are equally spaced horizontally based on their inorder traversal
-  private calculateTargetXs (): Map<DisplayNode, number> {
-    const nodeToTargetX = new Map<DisplayNode, number>()
-    const root = this.shape.layers[0][0]
-    const rootIndex = this.shape.inorderTraversal.indexOf(root)
-    for (let i = 0; i < this.shape.inorderTraversal.length; i++) {
-      const node = this.shape.inorderTraversal[i]
-      nodeToTargetX.set(node, ROOT_TARGET_X + (i - rootIndex) * TARGET_X_GAP)
-    }
-    return nodeToTargetX
-  }
-
-  // Layers are equally spaced vertically based on their depth
-  private calculateTargetYs (): Map<DisplayNode, number> {
-    const nodeToTargetY = new Map<DisplayNode, number>()
-    for (let i = 0; i < this.shape.layers.length; i++) {
-      const layer = this.shape.layers[i]
-      const layerY = ROOT_TARGET_Y + i * TARGET_Y_GAP
-      for (const node of layer) {
-        nodeToTargetY.set(node, layerY)
-      }
-    }
-    return nodeToTargetY
-  }
-
-  // Tell all nodes to start moving to new targets
-  private setTargetPositions (): void {
-    if (this.shape.inorderTraversal.length === 0) {
-      return
-    }
-    const nodeToTargetX = this.calculateTargetXs()
-    const nodeToTargetY = this.calculateTargetYs()
-    // Use of inorder traversal here is arbitrary
-    for (const node of this.shape.inorderTraversal) {
-      const targetX = nodeToTargetX.get(node)
-      if (targetX == null) {
-        throw new Error('TargetX is null')
-      }
-      const targetY = nodeToTargetY.get(node)
-      if (targetY == null) {
-        throw new Error('TargetY is null')
-      }
-      node.moveTo(targetX, targetY)
-    }
-  }
-
-  setAnimationSpeed (speedSetting: number): void {
-    this.animationSpeed = 1.2 ** (speedSetting - 10)
-  }
-
-  setArrows (arrows: Array<[DisplayNode, DisplayNode]>): void {
-    this.shape.arrows = arrows
   }
 }

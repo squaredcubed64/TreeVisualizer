@@ -127,8 +127,12 @@ export default class BSTController {
     this.view.animate(canvas, context)
   }
 
-  public setAnimationSpeed (speedSetting: number): void {
-    this.view.setAnimationSpeed(speedSetting)
+  public setAnimationSpeedSetting (animationSpeedSetting: number): void {
+    this.view.setAnimationSpeedSetting(animationSpeedSetting)
+  }
+
+  public getAnimationSpeedSetting (): number {
+    return this.view.getAnimationSpeedSetting()
   }
 
   public stopAnimationPermanently (): void {
@@ -136,7 +140,11 @@ export default class BSTController {
   }
 
   public setArrowDirection (arrowDirection: ArrowDirection): void {
-    this.model.setArrowDirection(arrowDirection)
+    this.model.arrowDirection = arrowDirection
     this.view.setArrows(this.translate2DArray(this.model.calculateArrows()) as Array<[DisplayNode, DisplayNode]>)
+  }
+
+  public getArrowDirection (): ArrowDirection {
+    return this.model.arrowDirection
   }
 }

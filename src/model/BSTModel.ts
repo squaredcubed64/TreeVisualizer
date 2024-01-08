@@ -9,7 +9,7 @@ import type ModelFindInformation from './ModelFindInformation'
 
 export default class BSTModel {
   private root: DataNode | null
-  private arrowDirection: ArrowDirection
+  public arrowDirection: ArrowDirection
 
   constructor () {
     this.root = null
@@ -203,9 +203,5 @@ export default class BSTModel {
     }
 
     return { path, nodeFound: currNode }
-  }
-
-  setArrowDirection (arrowDirection: ArrowDirection): void {
-    this.arrowDirection = arrowDirection
   }
 }

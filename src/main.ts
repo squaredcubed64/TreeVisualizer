@@ -1,5 +1,5 @@
 import BSTModel from './model/BSTModel'
-import { ArrowDirection } from './controller/ArrowDirection'
+import ArrowDirection from './controller/ArrowDirection'
 import { resizeCanvas } from './view/Utils'
 import BSTView from './view/BSTView'
 import BSTController from './controller/BSTController'

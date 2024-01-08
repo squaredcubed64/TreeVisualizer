@@ -1,6 +1,6 @@
 import DataNode from './DataNode'
 import type ModelInsertionInformation from './ModelInsertionInformation'
-import { ArrowDirection } from '../controller/ArrowDirection'
+import ArrowDirection from '../controller/ArrowDirection'
 import type DataTreeShape from './DataTreeShape'
 import type ModelDeletionInformationLEQ1Child from './ModelDeletionInformationLEQ1Child'
 import type ModelDeletionInformation2Children from './ModelDeletionInformation2Children'
@@ -21,7 +21,7 @@ export default class BSTModel {
       return { inorderTraversal: [], layers: [], arrows: [] }
     }
 
-    const inorderTraversal = this.root.getInorderTraversal()
+    const inorderTraversal = this.root.getTraversal(ArrowDirection.INORDER)
     const layers = this.calculateLayers()
     const arrows = this.calculateArrows()
     return { inorderTraversal, layers, arrows }
@@ -36,7 +36,7 @@ export default class BSTModel {
     const arrows: Array<[DataNode, DataNode]> = []
     // Draw arrows first
     if (this.arrowDirection === ArrowDirection.PARENT_TO_CHILD) {
-      const arbitraryTraversal = this.root.getInorderTraversal()
+      const arbitraryTraversal = this.root.getTraversal(ArrowDirection.INORDER)
       arbitraryTraversal.forEach((node) => {
         if (node.left != null) {
           arrows.push([node, node.left])

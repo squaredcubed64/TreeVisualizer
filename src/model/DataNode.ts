@@ -1,4 +1,4 @@
-import { ArrowDirection } from '../controller/ArrowDirection'
+import ArrowDirection from '../controller/ArrowDirection'
 
 export default class DataNode {
   value: number
@@ -11,25 +11,25 @@ export default class DataNode {
     this.right = null
   }
 
-  getPreorderTraversal (): DataNode[] {
+  private getPreorderTraversal (): DataNode[] {
     const leftNodes = (this.left != null) ? this.left.getPreorderTraversal() : []
     const rightNodes = (this.right != null) ? this.right.getPreorderTraversal() : []
     return [this, ...leftNodes, ...rightNodes]
   }
 
-  getInorderTraversal (): DataNode[] {
+  private getInorderTraversal (): DataNode[] {
     const leftNodes = (this.left != null) ? this.left.getInorderTraversal() : []
     const rightNodes = (this.right != null) ? this.right.getInorderTraversal() : []
     return [...leftNodes, this, ...rightNodes]
   }
 
-  getPostorderTraversal (): DataNode[] {
+  private getPostorderTraversal (): DataNode[] {
     const leftNodes = (this.left != null) ? this.left.getPostorderTraversal() : []
     const rightNodes = (this.right != null) ? this.right.getPostorderTraversal() : []
     return [...leftNodes, ...rightNodes, this]
   }
 
-  getTraversal (arrowDirection: ArrowDirection): DataNode[] {
+  public getTraversal (arrowDirection: ArrowDirection): DataNode[] {
     switch (arrowDirection) {
       case ArrowDirection.PREORDER:
         return this.getPreorderTraversal()

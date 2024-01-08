@@ -15,7 +15,7 @@ import type DataTreeShape from '../model/DataTreeShape'
 import type DisplayTreeShape from '../view/DisplayTreeShape'
 import type ModelFindInformation from '../model/ModelFindInformation'
 import type ViewFindInformation from '../view/ViewFindInformation'
-import { type ArrowDirection } from './ArrowDirection'
+import type ArrowDirection from './ArrowDirection'
 
 export default class BSTController {
   private readonly dataNodeToDisplayNode = new Map<DataNode, DisplayNode>()

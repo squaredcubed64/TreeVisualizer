@@ -30,7 +30,7 @@ insertButton.addEventListener('click', () => {
   controller.insert(value)
 })
 
-/* const deleteButton = document.getElementById('deleteButton') as HTMLButtonElement
+const deleteButton = document.getElementById('deleteButton') as HTMLButtonElement
 const deleteInput = document.getElementById('deleteInput') as HTMLInputElement
 if (deleteButton == null) {
   throw new Error('deleteButton not found')

@@ -28,7 +28,7 @@ export default class BSTModel {
   }
 
   // Returns an array of pairs of nodes to draw arrows between
-  private calculateArrows (): Array<[DataNode, DataNode]> {
+  public calculateArrows (): Array<[DataNode, DataNode]> {
     if (this.root == null) {
       return []
     }

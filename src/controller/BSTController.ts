@@ -13,8 +13,9 @@ import type ViewDeletionInformation2Children from '../view/ViewDeletionInformati
 import type ViewDeletionInformationVictimNotFound from '../view/ViewDeletionInformationVictimNotFound'
 import type DataTreeShape from '../model/DataTreeShape'
 import type DisplayTreeShape from '../view/DisplayTreeShape'
-import ModelFindInformation from '../model/ModelFindInformation'
-import ViewFindInformation from '../view/ViewFindInformation'
+import type ModelFindInformation from '../model/ModelFindInformation'
+import type ViewFindInformation from '../view/ViewFindInformation'
+import { type ArrowDirection } from './ArrowDirection'
 
 export default class BSTController {
   private readonly dataNodeToDisplayNode = new Map<DataNode, DisplayNode>()
@@ -132,5 +133,10 @@ export default class BSTController {
 
   public stopAnimationPermanently (): void {
     this.view.stopAnimationPermanently()
+  }
+
+  public setArrowDirection (arrowDirection: ArrowDirection): void {
+    this.model.setArrowDirection(arrowDirection)
+    this.view.setArrows(this.translate2DArray(this.model.calculateArrows()) as Array<[DisplayNode, DisplayNode]>)
   }
 }

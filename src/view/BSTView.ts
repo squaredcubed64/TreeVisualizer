@@ -39,6 +39,7 @@ import type ViewDeletionInformationLEQ1Child from './ViewDeletionInformationLEQ1
 import type ViewDeletionInformation2Children from './ViewDeletionInformation2Children'
 import type ViewDeletionInformationVictimNotFound from './ViewDeletionInformationVictimNotFound'
 import type ViewFindInformation from './ViewFindInformation'
+import { ArrowDirection } from '../controller/ArrowDirection'
 
 export default class BSTView {
   private shape: DisplayTreeShape
@@ -297,5 +298,9 @@ export default class BSTView {
 
   setAnimationSpeed (speedSetting: number): void {
     this.animationSpeed = 1.2 ** (speedSetting - 10)
+  }
+
+  setArrows (arrows: Array<[DisplayNode, DisplayNode]>): void {
+    this.shape.arrows = arrows
   }
 }

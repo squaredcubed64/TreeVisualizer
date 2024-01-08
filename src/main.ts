@@ -73,7 +73,7 @@ clearButton.addEventListener('click', () => {
   controller.animate()
 })
 
-/* const arrowButton = document.getElementById('arrowButton') as HTMLButtonElement
+const arrowButton = document.getElementById('arrowButton') as HTMLButtonElement
 const arrowDirections: ArrowDirection[] = [ArrowDirection.PARENT_TO_CHILD, ArrowDirection.PREORDER, ArrowDirection.INORDER, ArrowDirection.POSTORDER]
 const arrowTexts = ['Parent to Child', 'Preorder', 'Inorder', 'Postorder']
 let currentDirectionIndex = 0
@@ -85,8 +85,8 @@ arrowButton.addEventListener('click', () => {
   const currentDirection = arrowDirections[currentDirectionIndex]
   const currentText = 'Arrows: ' + arrowTexts[currentDirectionIndex]
   arrowButton.textContent = currentText
-  tree.setArrowDirection(currentDirection)
-}) */
+  controller.setArrowDirection(currentDirection)
+})
 
 const animationSpeedBar = document.getElementById('animationSpeedBar') as HTMLInputElement
 if (animationSpeedBar == null) {

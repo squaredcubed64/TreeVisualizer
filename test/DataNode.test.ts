@@ -36,15 +36,4 @@ describe('DataNode', () => {
   it('should throw an error when getting traversal for parent to child', () => {
     expect(() => rootNode.getTraversal(ArrowDirection.PARENT_TO_CHILD)).toThrow('Cannot get traversal for parent to child')
   })
-
-  it('should return true when the node is a parent of another node', () => {
-    if (rootNode.left != null) {
-      expect(rootNode.isParentOf(rootNode.left)).toBe(true)
-    }
-  })
-
-  it('should return false when the node is not a parent of another node', () => {
-    const otherNode = new DataNode(10)
-    expect(rootNode.isParentOf(otherNode)).toBe(false)
-  })
 })

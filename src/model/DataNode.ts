@@ -2,13 +2,15 @@ import ArrowDirection from '../controller/ArrowDirection'
 
 export default class DataNode {
   value: number
-  left: DataNode | null
-  right: DataNode | null
+  left: DataNode | null = null
+  right: DataNode | null = null
+  /**
+   * The number of vertices from this node to its deepest leaf. The Tree is responsible for updating this value.
+   */
+  height: number = 1
 
   constructor (value: number) {
     this.value = value
-    this.left = null
-    this.right = null
   }
 
   private getPreorderTraversal (): DataNode[] {
@@ -42,9 +44,5 @@ export default class DataNode {
       default:
         throw new Error('Invalid arrow direction')
     }
-  }
-
-  isParentOf (node: DataNode): boolean {
-    return this.left === node || this.right === node
   }
 }

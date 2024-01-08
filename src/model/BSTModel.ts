@@ -18,7 +18,7 @@ export default class BSTModel {
 
   private calculateShape (): DataTreeShape {
     if (this.root == null) {
-      return { inorderTraversal: [], layers: [], arrows: [] }
+      return { inorderTraversal: [], layers: [], arrows: new Set() }
     }
 
     const inorderTraversal = this.root.getTraversal(ArrowDirection.INORDER)
@@ -28,21 +28,21 @@ export default class BSTModel {
   }
 
   // Returns an array of pairs of nodes to draw arrows between
-  public calculateArrows (): Array<[DataNode, DataNode]> {
+  public calculateArrows (): Set<[DataNode, DataNode]> {
     if (this.root == null) {
-      return []
+      return new Set()
     }
 
-    const arrows: Array<[DataNode, DataNode]> = []
+    const arrows = new Set<[DataNode, DataNode]>()
     // Draw arrows first
     if (this.arrowDirection === ArrowDirection.PARENT_TO_CHILD) {
       const arbitraryTraversal = this.root.getTraversal(ArrowDirection.INORDER)
       arbitraryTraversal.forEach((node) => {
         if (node.left != null) {
-          arrows.push([node, node.left])
+          arrows.add([node, node.left])
         }
         if (node.right != null) {
-          arrows.push([node, node.right])
+          arrows.add([node, node.right])
         }
       })
     } else {
@@ -50,7 +50,7 @@ export default class BSTModel {
       for (let i = 0; i < traversal.length - 1; i++) {
         const node = traversal[i]
         const nextNode = traversal[i + 1]
-        arrows.push([node, nextNode])
+        arrows.add([node, nextNode])
       }
     }
     return arrows
@@ -86,7 +86,7 @@ export default class BSTModel {
   }
 
   // Note: equivalent values are inserted to the right
-  insert (value: number): ModelInsertionInformation {
+  public insert (value: number): ModelInsertionInformation {
     // If the tree is empty, insert without any animation
     if (this.root == null) {
       this.root = new DataNode(value)
@@ -119,7 +119,7 @@ export default class BSTModel {
 
   // If the victim node has 2 children, send different information to facilitate a different animation
   // If the tree is empty, return null
-  delete (value: number): ModelDeletionInformationLEQ1Child | ModelDeletionInformation2Children | ModelDeletionInformationVictimNotFound {
+  public delete (value: number): ModelDeletionInformationLEQ1Child | ModelDeletionInformation2Children | ModelDeletionInformationVictimNotFound {
     if (this.root == null) {
       return { type: 'VictimNotFound', path: [] }
     }
@@ -184,7 +184,7 @@ export default class BSTModel {
     }
   }
 
-  find (value: number): ModelFindInformation {
+  public find (value: number): ModelFindInformation {
     // Find the path the tree takes to find the node to delete
     const path: DataNode[] = []
     let currNode: DataNode | null = this.root

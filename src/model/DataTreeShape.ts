@@ -4,5 +4,5 @@ import type DataNode from './DataNode'
 export default interface DataTreeShape {
   inorderTraversal: DataNode[]
   layers: DataNode[][]
-  arrows: Array<[DataNode, DataNode]>
+  arrows: Set<[DataNode, DataNode]>
 }

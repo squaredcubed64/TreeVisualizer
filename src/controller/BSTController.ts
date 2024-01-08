@@ -44,6 +44,9 @@ export default class BSTController {
     const translate2DArray = (dataNodes: DataNode[][], insertedDataNode: DataNode, placeholderDisplayNode: DisplayNode): DisplayNode[][] => {
       return dataNodes.map((dataNodeArray) => translateArray(dataNodeArray, insertedDataNode, placeholderDisplayNode))
     }
+    const translateArrows = (arrows: Set<[DataNode, DataNode]>, insertedDataNode: DataNode, placeholderDisplayNode: DisplayNode): Set<[DisplayNode, DisplayNode]> => {
+      return new Set(Array.from(arrows).map((arrow) => translateArray(arrow, insertedDataNode, placeholderDisplayNode) as [DisplayNode, DisplayNode]))
+    }
 
     // Main logic
     const { shape, path, insertedNode } = modelInsertionInformation
@@ -55,7 +58,7 @@ export default class BSTController {
 
     const translatedInorderTraversal = translateArray(inorderTraversal, insertedNode, placeholderDisplayNode)
     const translatedLayers = translate2DArray(layers, insertedNode, placeholderDisplayNode)
-    const translatedArrows = translate2DArray(arrows, insertedNode, placeholderDisplayNode) as Array<[DisplayNode, DisplayNode]>
+    const translatedArrows = translateArrows(arrows, insertedNode, placeholderDisplayNode)
     const translatedShape = { inorderTraversal: translatedInorderTraversal, layers: translatedLayers, arrows: translatedArrows }
 
     const translatedPath = translateArray(path, insertedNode, placeholderDisplayNode)
@@ -112,9 +115,13 @@ export default class BSTController {
     return dataNode2DArray.map((dataNodeArray: DataNode[]) => this.translateArray(dataNodeArray))
   }
 
+  private translateArrows (arrows: Set<[DataNode, DataNode]>): Set<[DisplayNode, DisplayNode]> {
+    return new Set(Array.from(arrows).map((arrow) => this.translateArray(arrow) as [DisplayNode, DisplayNode]))
+  }
+
   private translateShape (shape: DataTreeShape): DisplayTreeShape {
     const { inorderTraversal, layers, arrows } = shape
-    return { inorderTraversal: this.translateArray(inorderTraversal), layers: this.translate2DArray(layers), arrows: this.translate2DArray(arrows) as Array<[DisplayNode, DisplayNode]> }
+    return { inorderTraversal: this.translateArray(inorderTraversal), layers: this.translate2DArray(layers), arrows: this.translateArrows(arrows) }
   }
 
   // Call BSTView.animate(), a recursive function that uses requestAnimationFrame
@@ -141,7 +148,7 @@ export default class BSTController {
 
   public setArrowDirection (arrowDirection: ArrowDirection): void {
     this.model.arrowDirection = arrowDirection
-    this.view.setArrows(this.translate2DArray(this.model.calculateArrows()) as Array<[DisplayNode, DisplayNode]>)
+    this.view.setArrows(this.translateArrows(this.model.calculateArrows()))
   }
 
   public getArrowDirection (): ArrowDirection {

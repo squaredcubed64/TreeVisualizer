@@ -26,7 +26,7 @@ export default class TreeView {
   private animationSpeedSetting: number
 
   constructor () {
-    this.shape = { inorderTraversal: [], layers: [], arrows: [] }
+    this.shape = { inorderTraversal: [], layers: [], arrows: new Set() }
     this.functionQueue = []
     this.functionAtFrontOfQueueWasCalled = false
     this.currentDescription = ''
@@ -189,7 +189,7 @@ export default class TreeView {
     return this.animationSpeedSetting
   }
 
-  public setArrows (arrows: Array<[DisplayNode, DisplayNode]>): void {
+  public setArrows (arrows: Set<[DisplayNode, DisplayNode]>): void {
     this.shape.arrows = arrows
   }
 }

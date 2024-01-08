@@ -2,9 +2,6 @@ import BSTModel from '../src/model/BSTModel'
 import DataNode from '../src/model/DataNode'
 import ArrowDirection from '../src/controller/ArrowDirection'
 import { describe, it, expect, beforeEach } from 'vitest'
-import type ModelDeletionInformationLEQ1Child from '../src/model/ModelDeletionInformationLEQ1Child'
-import type ModelDeletionInformation2Children from '../src/model/ModelDeletionInformation2Children'
-import type ModelInsertionInformation from '../src/model/ModelInsertionInformation'
 import type DataTreeShape from '../src/model/DataTreeShape'
 import { assert } from '../src/Utils'
 
@@ -89,7 +86,7 @@ describe('BSTModel', () => {
     expect(resultantShape.arrows).toEqual(expectedShape.arrows)
   })
 
-  function inorderTraversalAndLayersHaveSameValues (shape1: DataTreeShape, shape2: DataTreeShape) {
+  function inorderTraversalAndLayersHaveSameValues (shape1: DataTreeShape, shape2: DataTreeShape): boolean {
     const inorderTraversal1 = shape1.inorderTraversal
     const inorderTraversal2 = shape2.inorderTraversal
     if (inorderTraversal1.length !== inorderTraversal2.length) {

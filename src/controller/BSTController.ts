@@ -129,4 +129,8 @@ export default class BSTController {
   public setAnimationSpeed (speedSetting: number): void {
     this.view.setAnimationSpeed(speedSetting)
   }
+
+  public stopAnimationPermanently (): void {
+    this.view.stopAnimationPermanently()
+  }
 }

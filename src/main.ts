@@ -3,18 +3,20 @@ import { ArrowDirection } from './controller/ArrowDirection'
 import { resizeCanvas } from './view/Utils'
 import BSTView from './view/BSTView'
 import BSTController from './controller/BSTController'
+import { assert } from './Utils'
 
 // Make canvas fill the screen
 const canvas = document.getElementById('canvas') as HTMLCanvasElement
-const context = canvas.getContext('2d')
 window.addEventListener('resize', () => {
   resizeCanvas(canvas)
 })
 resizeCanvas(canvas)
 
-const model = new BSTModel()
-const view = new BSTView()
-const controller = new BSTController(model, view)
+// Initialize controller
+function makeBSTController (): BSTController {
+  return new BSTController(new BSTModel(), new BSTView())
+}
+let controller = makeBSTController()
 
 // Attach tree operations to HTML elements insertButton, deleteButton, findButton, clearButton, arrowButton, and animationSpeedBar
 const insertButton = document.getElementById('insertButton') as HTMLButtonElement
@@ -56,17 +58,22 @@ findButton.addEventListener('click', () => {
   controller.find(value)
 })
 
-/* const clearButton = document.getElementById('clearButton') as HTMLButtonElement
+const clearButton = document.getElementById('clearButton') as HTMLButtonElement
 if (clearButton == null) {
   throw new Error('clearButton not found')
 }
 clearButton.addEventListener('click', () => {
-  tree.stopAnimationPermanently()
-  tree = new BSTModel()
-  animateTree(tree)
+  controller.stopAnimationPermanently()
+
+  const context = canvas.getContext('2d')
+  assert(context !== null, 'context is null')
+  context.clearRect(0, 0, canvas.width, canvas.height)
+
+  controller = makeBSTController()
+  controller.animate()
 })
 
-const arrowButton = document.getElementById('arrowButton') as HTMLButtonElement
+/* const arrowButton = document.getElementById('arrowButton') as HTMLButtonElement
 const arrowDirections: ArrowDirection[] = [ArrowDirection.PARENT_TO_CHILD, ArrowDirection.PREORDER, ArrowDirection.INORDER, ArrowDirection.POSTORDER]
 const arrowTexts = ['Parent to Child', 'Preorder', 'Inorder', 'Postorder']
 let currentDirectionIndex = 0

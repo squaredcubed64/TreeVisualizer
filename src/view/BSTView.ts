@@ -38,7 +38,7 @@ import type ViewInsertionInformation from './ViewInsertionInformation'
 import type ViewDeletionInformationLEQ1Child from './ViewDeletionInformationLEQ1Child'
 import type ViewDeletionInformation2Children from './ViewDeletionInformation2Children'
 import type ViewDeletionInformationVictimNotFound from './ViewDeletionInformationVictimNotFound'
-import ViewFindInformation from './ViewFindInformation'
+import type ViewFindInformation from './ViewFindInformation'
 
 export default class BSTView {
   private shape: DisplayTreeShape
@@ -147,7 +147,9 @@ export default class BSTView {
       // Animation: highlight path, then do nothing
       case 'VictimNotFound': {
         const { path } = viewDeletionInformation
-        this.pushNodeHighlightingOntoFunctionQueue(path, DEFAULT_HIGHLIGHT_COLOR, DELETION_DESCRIPTIONS.FIND_NODE_TO_DELETE)
+        if (path.length !== 0) {
+          this.pushNodeHighlightingOntoFunctionQueue(path, DEFAULT_HIGHLIGHT_COLOR, DELETION_DESCRIPTIONS.FIND_NODE_TO_DELETE)
+        }
         this.functionQueue.push({ framesToWait: FRAMES_AFTER_UNSUCCESSFUL_DELETE, function: () => { return { framesAfterCall: 0, description: DELETION_DESCRIPTIONS.DID_NOT_FIND_NODE } } })
         break
       }
@@ -162,7 +164,9 @@ export default class BSTView {
   // Animation: highlight path, then highlight node if found
   find (viewFindInformation: ViewFindInformation): void {
     const { path, nodeFound } = viewFindInformation
-    this.pushNodeHighlightingOntoFunctionQueue(path, DEFAULT_HIGHLIGHT_COLOR, FIND_DESCRIPTIONS.FIND_NODE)
+    if (path.length !== 0) {
+      this.pushNodeHighlightingOntoFunctionQueue(path, DEFAULT_HIGHLIGHT_COLOR, FIND_DESCRIPTIONS.FIND_NODE)
+    }
     if (nodeFound != null) {
       this.functionQueue.push({ framesToWait: 0, function: () => { nodeFound.highlight(HIGHLIGHT_COLOR_AFTER_SUCCESSFUL_FIND, HIGHLIGHT_DURATION_AFTER_SUCCESSFUL_FIND_FRAMES); return { framesAfterCall: HIGHLIGHT_DURATION_AFTER_SUCCESSFUL_FIND_FRAMES + FRAMES_AFTER_FIND, description: FIND_DESCRIPTIONS.FOUND_NODE } } })
     } else {

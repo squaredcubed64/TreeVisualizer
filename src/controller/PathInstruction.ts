@@ -1,10 +1,9 @@
-import type SecondaryDescription from './SecondaryDescription'
+import type SecondaryDescription from './secondaryDescription/SecondaryDescription'
 
 export default interface PathInstruction<T, S extends SecondaryDescription> {
   node: T
   /**
-   * The info needed to explain why the path goes left or right.
+   * The info needed to explain why the path goes left, right, or stops.
    */
-  // TODO add an enum for the reasoning if necessary (e.g. 'simple', 'successor')
   secondaryDescription: S
 }

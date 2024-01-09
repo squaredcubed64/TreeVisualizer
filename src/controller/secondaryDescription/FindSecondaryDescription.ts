@@ -1,3 +1,6 @@
+/**
+ * The secondary description for finding the target node in find() and delete().
+ */
 export default interface FindSecondaryDescription {
   type: 'find'
   /**

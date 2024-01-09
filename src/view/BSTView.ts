@@ -22,13 +22,13 @@ import {
   FRAMES_AFTER_UNSUCCESSFUL_DELETE
 } from './Constants'
 import DisplayNode from './DisplayNode'
-import type DelayedFunctionCallFunctionResult from './DelayedFunctionCallFunctionResult'
+import type DelayedFunctionCallFunctionResult from './delayedFunctionCall/DelayedFunctionCallFunctionResult'
 import TreeView from './TreeView'
-import type InsertionInformation from '../controller/InsertionInformation'
+import type InsertionInformation from '../controller/operationInformation/InsertionInformation'
 import { assert } from '../Utils'
 import type TreeShape from '../controller/TreeShape'
-import type FindInformation from '../controller/FindInformation'
-import type DeletionInformation from '../controller/DeletionInformation'
+import type FindInformation from '../controller/operationInformation/FindInformation'
+import type DeletionInformation from '../controller/operationInformation/deletionInformation/DeletionInformation'
 
 export default class BSTView extends TreeView {
   // Animation: highlight path, grow inserted node, then move nodes to new target positions

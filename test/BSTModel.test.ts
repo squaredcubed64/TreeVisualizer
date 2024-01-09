@@ -5,7 +5,7 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { assert } from '../src/Utils'
 import type TreeShape from '../src/controller/TreeShape'
 import type PathInstruction from '../src/controller/PathInstruction'
-import type SecondaryDescription from '../src/controller/SecondaryDescription'
+import type SecondaryDescription from '../src/controller/secondaryDescription/SecondaryDescription'
 
 describe('BSTModel', () => {
   let bstModel: BSTModel

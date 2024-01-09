@@ -13,11 +13,11 @@ import {
 } from './Constants'
 import type DisplayNode from './DisplayNode'
 import { drawArrowFromNodeToNode } from './Utils'
-import type DelayedFunctionCall from './DelayedFunctionCall'
+import type DelayedFunctionCall from './delayedFunctionCall/DelayedFunctionCall'
 import type TreeShape from '../controller/TreeShape'
 import type PathInstruction from '../controller/PathInstruction'
 import { assert } from '../Utils'
-import type SecondaryDescription from '../controller/SecondaryDescription'
+import type SecondaryDescription from '../controller/secondaryDescription/SecondaryDescription'
 
 export default class TreeView {
   public shape: TreeShape<DisplayNode>

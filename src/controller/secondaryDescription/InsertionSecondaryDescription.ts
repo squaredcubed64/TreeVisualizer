@@ -1,3 +1,6 @@
+/**
+ * The secondary description for finding where to insert in insert().
+ */
 export default interface InsertionSecondaryDescription {
   type: 'insert'
   /**

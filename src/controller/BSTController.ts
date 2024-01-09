@@ -23,48 +23,15 @@ export default class BSTController {
     const [modelInsertionInformation, insertedDataNode] = this.model.insert(value)
     // A placeholder DisplayNode for the node that's being inserted. The view will update this upon insertion.
     const placeholderDisplayNode = this.view.makePlaceholderNode()
-    const viewInsertionInformation = this.translateInsertionInformation(modelInsertionInformation, insertedDataNode, placeholderDisplayNode)
-    this.view.insert(viewInsertionInformation)
     this.dataNodeToDisplayNode.set(insertedDataNode, placeholderDisplayNode)
+    const viewInsertionInformation = this.translateInsertionInformation(modelInsertionInformation)
+    this.view.insert(viewInsertionInformation)
   }
 
-  private translateInsertionInformation (modelInsertionInformation: InsertionInformation<DataNode>, insertedDataNode: DataNode, placeholderDisplayNode: DisplayNode): InsertionInformation<DisplayNode> {
-    // Helpers
-    const translateNode = (dataNode: DataNode): DisplayNode => {
-      if (dataNode === insertedDataNode) {
-        return placeholderDisplayNode
-      }
-      const displayNode = this.dataNodeToDisplayNode.get(dataNode)
-      assert(displayNode !== undefined, 'dataNode not found in map')
-      return displayNode
-    }
-    // Uses the map to translate from DataNode to DisplayNode unless the DataNode is the recently inserted node
-    const translateArray = (dataNodes: DataNode[]): DisplayNode[] => {
-      return dataNodes.map((dataNode) => translateNode(dataNode))
-    }
-    const translateLayers = (layers: DataNode[][]): DisplayNode[][] => {
-      return layers.map((layer) => translateArray(layer))
-    }
-    const translateArrows = (arrows: Set<[DataNode, DataNode]>): Set<[DisplayNode, DisplayNode]> => {
-      return new Set(Array.from(arrows).map((arrow) => translateArray(arrow) as [DisplayNode, DisplayNode]))
-    }
-    const translatePath = (path: Array<PathInstruction<DataNode>>): Array<PathInstruction<DisplayNode>> => {
-      return path.map((pathInstruction) => {
-        const { node, secondaryMessage } = pathInstruction
-        return { node: translateNode(node), secondaryMessage }
-      })
-    }
-
-    // Main logic
+  private translateInsertionInformation (modelInsertionInformation: InsertionInformation<DataNode>): InsertionInformation<DisplayNode> {
     const { shape, path, value } = modelInsertionInformation
-    const { inorderTraversal, layers, arrows } = shape
-
-    console.log(inorderTraversal)
-    const translatedInorderTraversal = translateArray(inorderTraversal)
-    const translatedLayers = translateLayers(layers)
-    const translatedArrows = translateArrows(arrows)
-    const translatedShape = { inorderTraversal: translatedInorderTraversal, layers: translatedLayers, arrows: translatedArrows }
-    const translatedPath = translatePath(path)
+    const translatedShape = this.translateShape(shape)
+    const translatedPath = this.translatePath(path)
     return { shape: translatedShape, path: translatedPath, value }
   }
 
@@ -102,8 +69,6 @@ export default class BSTController {
     return { path: this.translatePath(path), nodeFound: nodeFound !== null ? this.translateNode(nodeFound) : null }
   }
 
-  // Helpers for translateDeletionInformation and translateFindInformation
-  // Note: these do not account for a placeholder, unlike the insertion helpers
   private translateNode (dataNode: DataNode): DisplayNode {
     const displayNode = this.dataNodeToDisplayNode.get(dataNode)
     assert(displayNode !== undefined, 'dataNode not found in map')

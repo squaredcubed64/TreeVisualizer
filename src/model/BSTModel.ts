@@ -8,6 +8,9 @@ import type DeletionInformation2Children from '../controller/DeletionInformation
 import type FindInformation from '../controller/FindInformation'
 import { assert } from '../Utils'
 import type DeletionInformation from '../controller/DeletionInformation'
+import type FindSecondaryDescription from '../controller/FindSecondaryDescription'
+import type SuccessorSecondaryDescription from '../controller/SuccessorSecondaryDescription'
+import type InsertionSecondaryDescription from '../controller/InsertionSecondaryDescription'
 
 export default class BSTModel {
   private root: DataNode | null
@@ -98,13 +101,14 @@ export default class BSTModel {
     }
 
     // Find the path to where the new node will be inserted
-    const path: Array<PathInstruction<DataNode>> = []
+    const path: Array<PathInstruction<DataNode, InsertionSecondaryDescription>> = []
     let currNode: DataNode | null = this.root
     while (currNode != null) {
-      path.push({ node: currNode, secondaryMessage: undefined })
       if (value < currNode.value) {
+        path.push({ node: currNode, secondaryDescription: { type: 'insert', direction: 'left', targetValue: value, nodeValue: currNode.value } })
         currNode = currNode.left
       } else {
+        path.push({ node: currNode, secondaryDescription: { type: 'insert', direction: 'right', targetValue: value, nodeValue: currNode.value } })
         currNode = currNode.right
       }
     }
@@ -129,19 +133,24 @@ export default class BSTModel {
     }
 
     // Find the path the tree takes to find the node to delete
-    const path: Array<PathInstruction<DataNode>> = []
+    const path: Array<PathInstruction<DataNode, FindSecondaryDescription>> = []
     let currNode: DataNode | null = this.root
     let currParent: DataNode | null = null
     while (currNode != null && currNode.value !== value) {
       currParent = currNode
-      path.push({ node: currNode, secondaryMessage: undefined })
-      currNode = value < currNode.value ? currNode.left : currNode.right
+      if (value < currNode.value) {
+        path.push({ node: currNode, secondaryDescription: { type: 'find', direction: 'left', targetValue: value, nodeValue: currNode.value } })
+        currNode = currNode.left
+      } else {
+        path.push({ node: currNode, secondaryDescription: { type: 'find', direction: 'right', targetValue: value, nodeValue: currNode.value } })
+        currNode = currNode.right
+      }
     }
 
     if (currNode == null) {
       return { type: 'VictimNotFound', path }
     } else {
-      path.push({ node: currNode, secondaryMessage: undefined })
+      path.push({ node: currNode, secondaryDescription: { type: 'find', direction: 'stop', targetValue: value, nodeValue: currNode.value } })
     }
 
     // Node with no child or one child
@@ -161,19 +170,18 @@ export default class BSTModel {
       const deletionInformation: DeletionInformationLEQ1Child<DataNode> = { type: 'LEQ1Child', shape: this.calculateShape(), path, victimNode: currNode }
       return deletionInformation
     // Node with two children
-    // Return ModelDeleteInformation2Children
     } else {
       let successor = currNode.right
       let successorParent = currNode
-      const pathToSuccessor: Array<PathInstruction<DataNode>> = []
+      const pathToSuccessor: Array<PathInstruction<DataNode, SuccessorSecondaryDescription>> = []
 
       // Find the node with the minimum value (AKA successor) in the right subtree
       while (successor.left !== null) {
-        pathToSuccessor.push({ node: successor, secondaryMessage: undefined })
+        pathToSuccessor.push({ node: successor, secondaryDescription: { type: 'successor', direction: 'left' } })
         successorParent = successor
         successor = successor.left
       }
-      pathToSuccessor.push({ node: successor, secondaryMessage: undefined })
+      pathToSuccessor.push({ node: successor, secondaryDescription: { type: 'successor', direction: 'stop' } })
 
       // Replace the value of the node to delete with the found successor
       currNode.value = successor.value
@@ -192,20 +200,21 @@ export default class BSTModel {
 
   public find (value: number): FindInformation<DataNode> {
     // Find the path the tree takes to find the node to delete
-    const path: Array<PathInstruction<DataNode>> = []
+    const path: Array<PathInstruction<DataNode, FindSecondaryDescription>> = []
     let currNode: DataNode | null = this.root
     while (currNode != null && currNode.value !== value) {
-      path.push({ node: currNode, secondaryMessage: undefined })
       if (value < currNode.value) {
+        path.push({ node: currNode, secondaryDescription: { type: 'find', direction: 'left', targetValue: value, nodeValue: currNode.value } })
         currNode = currNode.left
       } else {
+        path.push({ node: currNode, secondaryDescription: { type: 'find', direction: 'right', targetValue: value, nodeValue: currNode.value } })
         currNode = currNode.right
       }
     }
 
     // If found
     if (currNode != null) {
-      path.push({ node: currNode, secondaryMessage: undefined })
+      path.push({ node: currNode, secondaryDescription: { type: 'find', direction: 'stop', targetValue: value, nodeValue: currNode.value } })
     }
 
     return { path, nodeFound: currNode }

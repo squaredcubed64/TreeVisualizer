@@ -17,6 +17,7 @@ import type DelayedFunctionCall from './DelayedFunctionCall'
 import type TreeShape from '../controller/TreeShape'
 import type PathInstruction from '../controller/PathInstruction'
 import { assert } from '../Utils'
+import type SecondaryDescription from '../controller/SecondaryDescription'
 
 export default class TreeView {
   public shape: TreeShape<DisplayNode>
@@ -33,7 +34,7 @@ export default class TreeView {
   }
 
   // Pushes methods onto functionQueue to highlight nodes along path
-  public pushNodeHighlightingOntoFunctionQueue (path: Array<PathInstruction<DisplayNode>>, highlightColor: string, description: string): void {
+  public pushNodeHighlightingOntoFunctionQueue<S extends SecondaryDescription> (path: Array<PathInstruction<DisplayNode, S>>, highlightColor: string, description: string): void {
     assert(path.length > 0, 'Path is empty')
     for (let i = 0; i < path.length; i++) {
       const node = path[i].node
@@ -51,7 +52,38 @@ export default class TreeView {
       }
 
       // TODO get secondary descriptions from path instructions
-      this.functionQueue.push({ framesToWait, function: () => { node.highlight(highlightColor); return { framesAfterCall, description, secondaryDescription: undefined } } })
+      this.functionQueue.push({ framesToWait, function: () => { node.highlight(highlightColor); return { framesAfterCall, description, secondaryDescription: this.convertSecondaryDescriptionToString(path[i].secondaryDescription) } } })
+    }
+  }
+
+  // TODO perhaps move this to BSTView, depending on if AVLView uses it
+  private convertSecondaryDescriptionToString (secondaryDescription: SecondaryDescription): string {
+    switch (secondaryDescription.type) {
+      case 'insert':
+        switch (secondaryDescription.direction) {
+          case 'left':
+            return `Go left because ${secondaryDescription.targetValue} < ${secondaryDescription.nodeValue}`
+          case 'right':
+            return `Go right because ${secondaryDescription.targetValue} >= ${secondaryDescription.nodeValue}`
+        }
+        break
+      case 'find':
+        switch (secondaryDescription.direction) {
+          case 'left':
+            return `Go left because ${secondaryDescription.targetValue} < ${secondaryDescription.nodeValue}`
+          case 'right':
+            return `Go right because ${secondaryDescription.targetValue} > ${secondaryDescription.nodeValue}`
+          case 'stop':
+            return `Stop because ${secondaryDescription.targetValue} = ${secondaryDescription.nodeValue}`
+        }
+        break
+      case 'successor':
+        switch (secondaryDescription.direction) {
+          case 'left':
+            return 'Go left because there is a left child'
+          case 'stop':
+            return 'Stop because there is no left child'
+        }
     }
   }
 

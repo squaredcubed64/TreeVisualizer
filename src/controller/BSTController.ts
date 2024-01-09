@@ -11,6 +11,7 @@ import type DeletionInformation2Children from './DeletionInformation2Children'
 import type FindInformation from './FindInformation'
 import type TreeShape from './TreeShape'
 import type DeletionInformation from './DeletionInformation'
+import type SecondaryDescription from './SecondaryDescription'
 
 export default class BSTController {
   private readonly dataNodeToDisplayNode = new Map<DataNode, DisplayNode>()
@@ -89,10 +90,10 @@ export default class BSTController {
     return new Set(Array.from(arrows).map((arrow) => this.translateArray(arrow) as [DisplayNode, DisplayNode]))
   }
 
-  private translatePath (path: Array<PathInstruction<DataNode>>): Array<PathInstruction<DisplayNode>> {
+  private translatePath<S extends SecondaryDescription> (path: Array<PathInstruction<DataNode, S>>): Array<PathInstruction<DisplayNode, S>> {
     return path.map((pathInstruction) => {
-      const { node, secondaryMessage } = pathInstruction
-      return { node: this.translateNode(node), secondaryMessage }
+      const { node, secondaryDescription } = pathInstruction
+      return { node: this.translateNode(node), secondaryDescription }
     })
   }
 
@@ -101,7 +102,9 @@ export default class BSTController {
     return { inorderTraversal: this.translateArray(inorderTraversal), layers: this.translateLayers(layers), arrows: this.translateArrows(arrows) }
   }
 
-  // Call BSTView.animate(), a recursive function that uses requestAnimationFrame
+  /**
+   * Call BSTView.animate(), a recursive function that uses requestAnimationFrame()
+   */
   public animate (): void {
     const canvas = document.getElementById('canvas') as HTMLCanvasElement
     const context = canvas.getContext('2d')

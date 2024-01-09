@@ -51,7 +51,7 @@ assert(clearButton !== null, 'clearButton not found')
 clearButton.addEventListener('click', () => {
   const animationSpeedSetting = controller.getAnimationSpeedSetting()
   const arrowDirection = controller.getArrowDirection()
-  controller.stopAnimationPermanently()
+  controller.stopAnimation()
 
   // Clear canvas
   const context = canvas.getContext('2d')
@@ -84,6 +84,20 @@ animationSpeedBar.addEventListener('input', () => {
   const animationSpeedSetting = parseInt(animationSpeedBar.value)
   assert(!isNaN(animationSpeedSetting), 'speed must be a number')
   controller.setAnimationSpeedSetting(animationSpeedSetting)
+})
+
+const pauseButton = document.getElementById('pauseButton') as HTMLButtonElement
+let paused = false
+assert(pauseButton !== null, 'pauseButton not found')
+pauseButton.addEventListener('click', () => {
+  paused = !paused
+  if (paused) {
+    controller.stopAnimation()
+    pauseButton.textContent = 'Play'
+  } else {
+    controller.animate()
+    pauseButton.textContent = 'Pause'
+  }
 })
 
 controller.animate()

@@ -162,7 +162,7 @@ export default class TreeView {
     this.currentAnimationId = requestAnimationFrame(() => { this.animate(canvas, context) })
   }
 
-  public stopAnimationPermanently (): void {
+  public stopAnimation (): void {
     cancelAnimationFrame(this.currentAnimationId)
   }
 

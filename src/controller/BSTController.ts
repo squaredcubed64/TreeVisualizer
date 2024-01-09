@@ -120,8 +120,8 @@ export default class BSTController {
     return this.view.getAnimationSpeedSetting()
   }
 
-  public stopAnimationPermanently (): void {
-    this.view.stopAnimationPermanently()
+  public stopAnimation (): void {
+    this.view.stopAnimation()
   }
 
   public setArrowDirection (arrowDirection: ArrowDirection): void {

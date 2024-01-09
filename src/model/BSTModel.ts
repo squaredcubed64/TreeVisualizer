@@ -5,9 +5,9 @@ import type InsertionInformation from '../controller/InsertionInformation'
 import type PathInstruction from '../controller/PathInstruction'
 import type DeletionInformationLEQ1Child from '../controller/DeletionInformationLEQ1Child'
 import type DeletionInformation2Children from '../controller/DeletionInformation2Children'
-import type DeletionInformationVictimNotFound from '../controller/DeletionInformationVictimNotFound'
 import type FindInformation from '../controller/FindInformation'
 import { assert } from '../Utils'
+import type DeletionInformation from '../controller/DeletionInformation'
 
 export default class BSTModel {
   private root: DataNode | null
@@ -123,7 +123,7 @@ export default class BSTModel {
 
   // If the victim node has 2 children, send different information to facilitate a different animation
   // If the tree is empty, return null
-  public delete (value: number): DeletionInformationLEQ1Child<DataNode> | DeletionInformation2Children<DataNode> | DeletionInformationVictimNotFound<DataNode> {
+  public delete (value: number): DeletionInformation<DataNode> {
     if (this.root == null) {
       return { type: 'VictimNotFound', path: [] }
     }
@@ -158,7 +158,8 @@ export default class BSTModel {
           currParent.right = childNode
         }
       }
-      return { type: 'LEQ1Child', shape: this.calculateShape(), path, victimNode: currNode }
+      const deletionInformation: DeletionInformationLEQ1Child<DataNode> = { type: 'LEQ1Child', shape: this.calculateShape(), path, victimNode: currNode }
+      return deletionInformation
     // Node with two children
     // Return ModelDeleteInformation2Children
     } else {
@@ -184,7 +185,8 @@ export default class BSTModel {
         successorParent.right = successor.right
       }
 
-      return { type: '2Children', shape: this.calculateShape(), path, victimNode: currNode, pathToSuccessor, successorNode: successor }
+      const deletionInformation: DeletionInformation2Children<DataNode> = { type: '2Children', shape: this.calculateShape(), path, victimNode: currNode, pathToSuccessor, successorNode: successor }
+      return deletionInformation
     }
   }
 

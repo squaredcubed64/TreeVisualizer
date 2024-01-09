@@ -8,9 +8,9 @@ import type InsertionInformation from './InsertionInformation'
 import type PathInstruction from './PathInstruction'
 import type DeletionInformationLEQ1Child from './DeletionInformationLEQ1Child'
 import type DeletionInformation2Children from './DeletionInformation2Children'
-import type DeletionInformationVictimNotFound from './DeletionInformationVictimNotFound'
 import type FindInformation from './FindInformation'
 import type TreeShape from './TreeShape'
+import type DeletionInformation from './DeletionInformation'
 
 export default class BSTController {
   private readonly dataNodeToDisplayNode = new Map<DataNode, DisplayNode>()
@@ -41,15 +41,17 @@ export default class BSTController {
     this.view.delete(viewDeletionInformation)
   }
 
-  private translateDeletionInformation (modelDeletionInformation: DeletionInformationLEQ1Child<DataNode> | DeletionInformation2Children<DataNode> | DeletionInformationVictimNotFound<DataNode>): DeletionInformationLEQ1Child<DisplayNode> | DeletionInformation2Children<DisplayNode> | DeletionInformationVictimNotFound<DisplayNode> {
+  private translateDeletionInformation (modelDeletionInformation: DeletionInformation<DataNode>): DeletionInformation<DisplayNode> {
     switch (modelDeletionInformation.type) {
       case 'LEQ1Child': {
         const { shape, path, victimNode } = modelDeletionInformation
-        return { type: 'LEQ1Child', shape: this.translateShape(shape), path: this.translatePath(path), victimNode: this.translateNode(victimNode) }
+        const viewDeletionInformation: DeletionInformationLEQ1Child<DisplayNode> = { type: 'LEQ1Child', shape: this.translateShape(shape), path: this.translatePath(path), victimNode: this.translateNode(victimNode) }
+        return viewDeletionInformation
       }
       case '2Children': {
         const { shape, path, victimNode, pathToSuccessor, successorNode } = modelDeletionInformation
-        return { type: '2Children', shape: this.translateShape(shape), path: this.translatePath(path), victimNode: this.translateNode(victimNode), pathToSuccessor: this.translatePath(pathToSuccessor), successorNode: this.translateNode(successorNode) }
+        const viewDeletionInformation: DeletionInformation2Children<DisplayNode> = { type: '2Children', shape: this.translateShape(shape), path: this.translatePath(path), victimNode: this.translateNode(victimNode), pathToSuccessor: this.translatePath(pathToSuccessor), successorNode: this.translateNode(successorNode) }
+        return viewDeletionInformation
       }
       case 'VictimNotFound': {
         const path = modelDeletionInformation.path
@@ -103,6 +105,7 @@ export default class BSTController {
   public animate (): void {
     const canvas = document.getElementById('canvas') as HTMLCanvasElement
     const context = canvas.getContext('2d')
+    assert(context !== null, 'context is null')
     this.view.animate(canvas, context)
   }
 

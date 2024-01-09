@@ -1,5 +1,6 @@
-import type OperationInformation from './OperationInformation'
+import type DeletionInformation2Children from './DeletionInformation2Children'
+import type DeletionInformationLEQ1Child from './DeletionInformationLEQ1Child'
+import type DeletionInformationVictimNotFound from './DeletionInformationVictimNotFound'
 
-export default interface DeletionInformation<T> extends OperationInformation<T> {
-  type: 'LEQ1Child' | '2Children' | 'VictimNotFound'
-}
+type DeletionInformation<T> = DeletionInformationLEQ1Child<T> | DeletionInformation2Children<T> | DeletionInformationVictimNotFound<T>
+export default DeletionInformation

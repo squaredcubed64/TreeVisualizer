@@ -27,10 +27,8 @@ import TreeView from './TreeView'
 import type InsertionInformation from '../controller/InsertionInformation'
 import { assert } from '../Utils'
 import type TreeShape from '../controller/TreeShape'
-import type DeletionInformationLEQ1Child from '../controller/DeletionInformationLEQ1Child'
-import type DeletionInformation2Children from '../controller/DeletionInformation2Children'
-import type DeletionInformationVictimNotFound from '../controller/DeletionInformationVictimNotFound'
 import type FindInformation from '../controller/FindInformation'
+import type DeletionInformation from '../controller/DeletionInformation'
 
 export default class BSTView extends TreeView {
   // Animation: highlight path, grow inserted node, then move nodes to new target positions
@@ -75,7 +73,7 @@ export default class BSTView extends TreeView {
     placeholderNode.value = value
   }
 
-  public delete (viewDeletionInformation: DeletionInformationLEQ1Child<DisplayNode> | DeletionInformation2Children<DisplayNode> | DeletionInformationVictimNotFound<DisplayNode>): void {
+  public delete (viewDeletionInformation: DeletionInformation<DisplayNode>): void {
     switch (viewDeletionInformation.type) {
       // Animation: highlight path, shrink victim node, then move nodes to new target positions
       case 'LEQ1Child': {

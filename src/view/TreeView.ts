@@ -5,7 +5,7 @@ import {
   FRAMES_AFTER_LAST_HIGHLIGHT,
   FRAMES_BEFORE_FIRST_HIGHLIGHT,
   FRAMES_BETWEEN_HIGHLIGHTS,
-  HIGHLIGHT_DURATION_FRAMES,
+  DEFAULT_HIGHLIGHT_DURATION_FRAMES,
   ROOT_TARGET_X,
   ROOT_TARGET_Y,
   TARGET_X_GAP,
@@ -45,7 +45,7 @@ export default class TreeView {
       }
 
       let framesAfterCall: number
-      framesAfterCall = HIGHLIGHT_DURATION_FRAMES
+      framesAfterCall = DEFAULT_HIGHLIGHT_DURATION_FRAMES
       if (i === path.length - 1) {
         framesAfterCall += FRAMES_AFTER_LAST_HIGHLIGHT
       }

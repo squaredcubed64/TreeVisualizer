@@ -2,7 +2,7 @@ import { resizeCanvas } from './Utils'
 
 // Node constants
 export const MOVE_DURATION_FRAMES = 150
-export const HIGHLIGHT_DURATION_FRAMES = 60
+export const DEFAULT_HIGHLIGHT_DURATION_FRAMES = 60
 export const DEFAULT_HIGHLIGHT_COLOR = 'blue'
 export const BORDER_WIDTH = 1
 export const HIGHLIGHT_WIDTH = 5

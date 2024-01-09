@@ -1,21 +1,16 @@
 import type DataNode from '../model/DataNode'
-import DisplayNode from '../view/DisplayNode'
+import type DisplayNode from '../view/DisplayNode'
 import type BSTModel from '../model/BSTModel'
 import type BSTView from '../view/BSTView'
-import type ModelInsertionInformation from '../model/ModelInsertionInformation'
-import type ViewInsertionInformation from '../view/ViewInsertionInformation'
 import { assert } from '../Utils'
-import type ModelDeletionInformationLEQ1Child from '../model/ModelDeletionInformationLEQ1Child'
-import type ModelDeletionInformation2Children from '../model/ModelDeletionInformation2Children'
-import type ModelDeletionInformationVictimNotFound from '../model/ModelDeletionInformationVictimNotFound'
-import type ViewDeletionInformationLEQ1Child from '../view/ViewDeletionInformationLEQ1Child'
-import type ViewDeletionInformation2Children from '../view/ViewDeletionInformation2Children'
-import type ViewDeletionInformationVictimNotFound from '../view/ViewDeletionInformationVictimNotFound'
-import type DataTreeShape from '../model/DataTreeShape'
-import type DisplayTreeShape from '../view/DisplayTreeShape'
-import type ModelFindInformation from '../model/ModelFindInformation'
-import type ViewFindInformation from '../view/ViewFindInformation'
 import type ArrowDirection from './ArrowDirection'
+import type InsertionInformation from './InsertionInformation'
+import type PathInstruction from './PathInstruction'
+import type DeletionInformationLEQ1Child from './DeletionInformationLEQ1Child'
+import type DeletionInformation2Children from './DeletionInformation2Children'
+import type DeletionInformationVictimNotFound from './DeletionInformationVictimNotFound'
+import type FindInformation from './FindInformation'
+import type TreeShape from './TreeShape'
 
 export default class BSTController {
   private readonly dataNodeToDisplayNode = new Map<DataNode, DisplayNode>()
@@ -25,44 +20,52 @@ export default class BSTController {
   }
 
   public insert (value: number): void {
-    const modelInsertionInformation = this.model.insert(value)
-    const viewInsertionInformation = this.translateInsertionInformation(modelInsertionInformation)
+    const [modelInsertionInformation, insertedDataNode] = this.model.insert(value)
+    // A placeholder DisplayNode for the node that's being inserted. The view will update this upon insertion.
+    const placeholderDisplayNode = this.view.makePlaceholderNode()
+    const viewInsertionInformation = this.translateInsertionInformation(modelInsertionInformation, insertedDataNode, placeholderDisplayNode)
     this.view.insert(viewInsertionInformation)
+    this.dataNodeToDisplayNode.set(insertedDataNode, placeholderDisplayNode)
   }
 
-  private translateInsertionInformation (modelInsertionInformation: ModelInsertionInformation): ViewInsertionInformation {
+  private translateInsertionInformation (modelInsertionInformation: InsertionInformation<DataNode>, insertedDataNode: DataNode, placeholderDisplayNode: DisplayNode): InsertionInformation<DisplayNode> {
     // Helpers
     const translateNode = (dataNode: DataNode): DisplayNode => {
+      if (dataNode === insertedDataNode) {
+        return placeholderDisplayNode
+      }
       const displayNode = this.dataNodeToDisplayNode.get(dataNode)
       assert(displayNode !== undefined, 'dataNode not found in map')
       return displayNode
     }
     // Uses the map to translate from DataNode to DisplayNode unless the DataNode is the recently inserted node
-    const translateArray = (dataNodes: DataNode[], insertedDataNode: DataNode, placeholderDisplayNode: DisplayNode): DisplayNode[] => {
-      return dataNodes.map((dataNode) => dataNode === insertedDataNode ? placeholderDisplayNode : translateNode(dataNode))
+    const translateArray = (dataNodes: DataNode[]): DisplayNode[] => {
+      return dataNodes.map((dataNode) => translateNode(dataNode))
     }
-    const translate2DArray = (dataNodes: DataNode[][], insertedDataNode: DataNode, placeholderDisplayNode: DisplayNode): DisplayNode[][] => {
-      return dataNodes.map((dataNodeArray) => translateArray(dataNodeArray, insertedDataNode, placeholderDisplayNode))
+    const translateLayers = (layers: DataNode[][]): DisplayNode[][] => {
+      return layers.map((layer) => translateArray(layer))
     }
-    const translateArrows = (arrows: Set<[DataNode, DataNode]>, insertedDataNode: DataNode, placeholderDisplayNode: DisplayNode): Set<[DisplayNode, DisplayNode]> => {
-      return new Set(Array.from(arrows).map((arrow) => translateArray(arrow, insertedDataNode, placeholderDisplayNode) as [DisplayNode, DisplayNode]))
+    const translateArrows = (arrows: Set<[DataNode, DataNode]>): Set<[DisplayNode, DisplayNode]> => {
+      return new Set(Array.from(arrows).map((arrow) => translateArray(arrow) as [DisplayNode, DisplayNode]))
+    }
+    const translatePath = (path: Array<PathInstruction<DataNode>>): Array<PathInstruction<DisplayNode>> => {
+      return path.map((pathInstruction) => {
+        const { node, secondaryMessage } = pathInstruction
+        return { node: translateNode(node), secondaryMessage }
+      })
     }
 
     // Main logic
-    const { shape, path, insertedNode } = modelInsertionInformation
+    const { shape, path, value } = modelInsertionInformation
     const { inorderTraversal, layers, arrows } = shape
 
-    // Create a placeholder DisplayNode for the node that's being inserted
-    const placeholderDisplayNode = new DisplayNode(NaN, NaN, 'placeholder', 'placeholder', NaN)
-    this.dataNodeToDisplayNode.set(insertedNode, placeholderDisplayNode)
-
-    const translatedInorderTraversal = translateArray(inorderTraversal, insertedNode, placeholderDisplayNode)
-    const translatedLayers = translate2DArray(layers, insertedNode, placeholderDisplayNode)
-    const translatedArrows = translateArrows(arrows, insertedNode, placeholderDisplayNode)
+    console.log(inorderTraversal)
+    const translatedInorderTraversal = translateArray(inorderTraversal)
+    const translatedLayers = translateLayers(layers)
+    const translatedArrows = translateArrows(arrows)
     const translatedShape = { inorderTraversal: translatedInorderTraversal, layers: translatedLayers, arrows: translatedArrows }
-
-    const translatedPath = translateArray(path, insertedNode, placeholderDisplayNode)
-    return { shapeWithPlaceholder: translatedShape, path: translatedPath, valueToInsert: insertedNode.value, placeholderNode: placeholderDisplayNode }
+    const translatedPath = translatePath(path)
+    return { shape: translatedShape, path: translatedPath, value }
   }
 
   public delete (value: number): void {
@@ -71,19 +74,19 @@ export default class BSTController {
     this.view.delete(viewDeletionInformation)
   }
 
-  private translateDeletionInformation (modelDeletionInformation: ModelDeletionInformationLEQ1Child | ModelDeletionInformation2Children | ModelDeletionInformationVictimNotFound): ViewDeletionInformationLEQ1Child | ViewDeletionInformation2Children | ViewDeletionInformationVictimNotFound {
+  private translateDeletionInformation (modelDeletionInformation: DeletionInformationLEQ1Child<DataNode> | DeletionInformation2Children<DataNode> | DeletionInformationVictimNotFound<DataNode>): DeletionInformationLEQ1Child<DisplayNode> | DeletionInformation2Children<DisplayNode> | DeletionInformationVictimNotFound<DisplayNode> {
     switch (modelDeletionInformation.type) {
       case 'LEQ1Child': {
         const { shape, path, victimNode } = modelDeletionInformation
-        return { type: 'LEQ1Child', shape: this.translateShape(shape), path: this.translateArray(path), victimNode: this.translateNode(victimNode) }
+        return { type: 'LEQ1Child', shape: this.translateShape(shape), path: this.translatePath(path), victimNode: this.translateNode(victimNode) }
       }
       case '2Children': {
         const { shape, path, victimNode, pathToSuccessor, successorNode } = modelDeletionInformation
-        return { type: '2Children', shape: this.translateShape(shape), path: this.translateArray(path), victimNode: this.translateNode(victimNode), pathToSuccessor: this.translateArray(pathToSuccessor), successorNode: this.translateNode(successorNode) }
+        return { type: '2Children', shape: this.translateShape(shape), path: this.translatePath(path), victimNode: this.translateNode(victimNode), pathToSuccessor: this.translatePath(pathToSuccessor), successorNode: this.translateNode(successorNode) }
       }
       case 'VictimNotFound': {
         const path = modelDeletionInformation.path
-        return { type: 'VictimNotFound', path: this.translateArray(path) }
+        return { type: 'VictimNotFound', path: this.translatePath(path) }
       }
     }
   }
@@ -94,9 +97,9 @@ export default class BSTController {
     this.view.find(viewFindInformation)
   }
 
-  private translateFindInformation (modelFindInformation: ModelFindInformation): ViewFindInformation {
+  private translateFindInformation (modelFindInformation: FindInformation<DataNode>): FindInformation<DisplayNode> {
     const { path, nodeFound } = modelFindInformation
-    return { path: this.translateArray(path), nodeFound: nodeFound !== null ? this.translateNode(nodeFound) : null }
+    return { path: this.translatePath(path), nodeFound: nodeFound !== null ? this.translateNode(nodeFound) : null }
   }
 
   // Helpers for translateDeletionInformation and translateFindInformation
@@ -111,17 +114,24 @@ export default class BSTController {
     return dataNodeArray.map((dataNode: DataNode) => this.translateNode(dataNode))
   }
 
-  private translate2DArray (dataNode2DArray: DataNode[][]): DisplayNode[][] {
-    return dataNode2DArray.map((dataNodeArray: DataNode[]) => this.translateArray(dataNodeArray))
+  private translateLayers (layers: DataNode[][]): DisplayNode[][] {
+    return layers.map((layer: DataNode[]) => this.translateArray(layer))
   }
 
   private translateArrows (arrows: Set<[DataNode, DataNode]>): Set<[DisplayNode, DisplayNode]> {
     return new Set(Array.from(arrows).map((arrow) => this.translateArray(arrow) as [DisplayNode, DisplayNode]))
   }
 
-  private translateShape (shape: DataTreeShape): DisplayTreeShape {
+  private translatePath (path: Array<PathInstruction<DataNode>>): Array<PathInstruction<DisplayNode>> {
+    return path.map((pathInstruction) => {
+      const { node, secondaryMessage } = pathInstruction
+      return { node: this.translateNode(node), secondaryMessage }
+    })
+  }
+
+  private translateShape (shape: TreeShape<DataNode>): TreeShape<DisplayNode> {
     const { inorderTraversal, layers, arrows } = shape
-    return { inorderTraversal: this.translateArray(inorderTraversal), layers: this.translate2DArray(layers), arrows: this.translateArrows(arrows) }
+    return { inorderTraversal: this.translateArray(inorderTraversal), layers: this.translateLayers(layers), arrows: this.translateArrows(arrows) }
   }
 
   // Call BSTView.animate(), a recursive function that uses requestAnimationFrame

@@ -2,8 +2,9 @@ import BSTModel from '../src/model/BSTModel'
 import DataNode from '../src/model/DataNode'
 import ArrowDirection from '../src/controller/ArrowDirection'
 import { describe, it, expect, beforeEach } from 'vitest'
-import type DataTreeShape from '../src/model/DataTreeShape'
 import { assert } from '../src/Utils'
+import type TreeShape from '../src/controller/TreeShape'
+import type PathInstruction from '../src/controller/PathInstruction'
 
 describe('BSTModel', () => {
   let bstModel: BSTModel
@@ -12,14 +13,14 @@ describe('BSTModel', () => {
     bstModel = new BSTModel()
   })
 
-  function insertValuesAndReturnResultantAndExpectedShape (arrowDirection: ArrowDirection = ArrowDirection.PARENT_TO_CHILD): [DataTreeShape, DataTreeShape] {
+  function insertValuesAndReturnResultantAndExpectedShape (arrowDirection: ArrowDirection = ArrowDirection.PARENT_TO_CHILD): [TreeShape<DataNode>, TreeShape<DataNode>] {
     bstModel.arrowDirection = arrowDirection
     const parentValue = 5
     const leftChildValue = 3
     const rightChildValue = 7
     bstModel.insert(parentValue)
     bstModel.insert(leftChildValue)
-    const resultantShape = bstModel.insert(rightChildValue).shape
+    const resultantShape = bstModel.insert(rightChildValue)[0].shape
 
     const parentNode = new DataNode(parentValue)
     const leftChildNode = new DataNode(leftChildValue)
@@ -86,7 +87,7 @@ describe('BSTModel', () => {
     expect(resultantShape.arrows).toEqual(expectedShape.arrows)
   })
 
-  function inorderTraversalAndLayersHaveSameValues (shape1: DataTreeShape, shape2: DataTreeShape): boolean {
+  function inorderTraversalAndLayersHaveSameValues (shape1: TreeShape<DataNode>, shape2: TreeShape<DataNode>): boolean {
     const inorderTraversal1 = shape1.inorderTraversal
     const inorderTraversal2 = shape2.inorderTraversal
     if (inorderTraversal1.length !== inorderTraversal2.length) {
@@ -237,6 +238,20 @@ describe('BSTModel', () => {
     expect(modelDeletionInformation.type).toBe('VictimNotFound')
   })
 
+  function pathsHaveSameValues (path1: Array<PathInstruction<DataNode>>, path2: DataNode[]): boolean {
+    if (path1.length !== path2.length) {
+      return false
+    }
+    for (let i = 0; i < path1.length; i++) {
+      const pathInstruction1 = path1[i]
+      const pathNode2 = path2[i]
+      if (pathInstruction1.node.value !== pathNode2.value) {
+        return false
+      }
+    }
+    return true
+  }
+
   it('should find a node correctly', () => {
     const value = 5
     bstModel.insert(value)
@@ -246,7 +261,7 @@ describe('BSTModel', () => {
 
     const findInfo = bstModel.find(value)
 
-    expect(findInfo.path).toEqual(expectedPath)
+    expect(pathsHaveSameValues(findInfo.path, expectedPath)).toBe(true)
     expect(findInfo.nodeFound).toEqual(expectedNodeFound)
   })
 })

@@ -14,34 +14,30 @@ import {
 import type DisplayNode from './DisplayNode'
 import { drawArrowFromNodeToNode } from './Utils'
 import type DelayedFunctionCall from './DelayedFunctionCall'
-import type DisplayTreeShape from './DisplayTreeShape'
+import type TreeShape from '../controller/TreeShape'
+import type PathInstruction from '../controller/PathInstruction'
 
 export default class TreeView {
-  public shape: DisplayTreeShape
-  public functionQueue: DelayedFunctionCall[]
-  private functionAtFrontOfQueueWasCalled: boolean
-  private currentDescription: string
-  private currentAnimationId: number
-  private animationSpeed: number
-  private animationSpeedSetting: number
+  public shape: TreeShape<DisplayNode>
+  public functionQueue: DelayedFunctionCall[] = []
+  private functionAtFrontOfQueueWasCalled: boolean = false
+  private description: string = ''
+  private secondaryDescription?: string = undefined
+  private currentAnimationId: number = -1
+  private animationSpeed: number = 1
+  private animationSpeedSetting: number = 10
 
   constructor () {
     this.shape = { inorderTraversal: [], layers: [], arrows: new Set() }
-    this.functionQueue = []
-    this.functionAtFrontOfQueueWasCalled = false
-    this.currentDescription = ''
-    this.currentAnimationId = -1
-    this.animationSpeed = 1
-    this.animationSpeedSetting = 10
   }
 
   // Pushes methods onto functionQueue to highlight nodes along path
-  public pushNodeHighlightingOntoFunctionQueue (path: DisplayNode[], highlightColor: string, description: string): void {
+  public pushNodeHighlightingOntoFunctionQueue (path: Array<PathInstruction<DisplayNode>>, highlightColor: string, description: string): void {
     if (path.length === 0) {
       throw new Error('Path is empty')
     }
     for (let i = 0; i < path.length; i++) {
-      const node = path[i]
+      const node = path[i].node
       let framesToWait: number
       if (i === 0) {
         framesToWait = FRAMES_BEFORE_FIRST_HIGHLIGHT
@@ -55,7 +51,8 @@ export default class TreeView {
         framesAfterCall += FRAMES_AFTER_LAST_HIGHLIGHT
       }
 
-      this.functionQueue.push({ framesToWait, function: () => { node.highlight(highlightColor); return { framesAfterCall, description } } })
+      // TODO get secondary descriptions from path instructions
+      this.functionQueue.push({ framesToWait, function: () => { node.highlight(highlightColor); return { framesAfterCall, description, secondaryDescription: undefined } } })
     }
   }
 
@@ -71,7 +68,8 @@ export default class TreeView {
           throw new Error('Function call is null')
         }
         const result = functionCall.function()
-        this.currentDescription = result.description
+        this.description = result.description
+        this.secondaryDescription = result.secondaryDescription
 
         // Keep function at front of queue for framesAfterCall frames, to give the animation time to complete and show the description
         if (result.framesAfterCall > 0) {
@@ -105,7 +103,18 @@ export default class TreeView {
     if (animationDescription == null) {
       throw new Error('animationDescription not found')
     }
-    animationDescription.textContent = this.currentDescription
+    animationDescription.textContent = this.description
+
+    // Update secondary description
+    const secondaryAnimationDescription = document.getElementById('secondaryAnimationDescription') as HTMLParagraphElement
+    if (secondaryAnimationDescription == null) {
+      throw new Error('secondaryAnimationDescription not found')
+    }
+    if (this.secondaryDescription == null) {
+      secondaryAnimationDescription.textContent = ''
+    } else {
+      secondaryAnimationDescription.textContent = this.secondaryDescription
+    }
 
     // Disable buttons if animation is happening
     const insertDiv = document.getElementById('insert')

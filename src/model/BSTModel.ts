@@ -1,11 +1,12 @@
 import DataNode from './DataNode'
-import type ModelInsertionInformation from './ModelInsertionInformation'
 import ArrowDirection from '../controller/ArrowDirection'
-import type DataTreeShape from './DataTreeShape'
-import type ModelDeletionInformationLEQ1Child from './ModelDeletionInformationLEQ1Child'
-import type ModelDeletionInformation2Children from './ModelDeletionInformation2Children'
-import type ModelDeletionInformationVictimNotFound from './ModelDeletionInformationVictimNotFound'
-import type ModelFindInformation from './ModelFindInformation'
+import type TreeShape from '../controller/TreeShape'
+import type InsertionInformation from '../controller/InsertionInformation'
+import type PathInstruction from '../controller/PathInstruction'
+import type DeletionInformationLEQ1Child from '../controller/DeletionInformationLEQ1Child'
+import type DeletionInformation2Children from '../controller/DeletionInformation2Children'
+import type DeletionInformationVictimNotFound from '../controller/DeletionInformationVictimNotFound'
+import type FindInformation from '../controller/FindInformation'
 
 export default class BSTModel {
   private root: DataNode | null
@@ -16,7 +17,7 @@ export default class BSTModel {
     this.arrowDirection = ArrowDirection.PARENT_TO_CHILD
   }
 
-  private calculateShape (): DataTreeShape {
+  private calculateShape (): TreeShape<DataNode> {
     if (this.root == null) {
       return { inorderTraversal: [], layers: [], arrows: new Set() }
     }
@@ -85,19 +86,23 @@ export default class BSTModel {
     return layers
   }
 
-  // Note: equivalent values are inserted to the right
-  public insert (value: number): ModelInsertionInformation {
+  /**
+   * Inserts a new node into the model
+   * @param value The value to insert
+   * @returns The information needed to animate the insertion and the inserted node
+   */
+  public insert (value: number): [InsertionInformation<DataNode>, DataNode] {
     // If the tree is empty, insert without any animation
     if (this.root == null) {
       this.root = new DataNode(value)
-      return { shape: this.calculateShape(), path: [], insertedNode: this.root }
+      return [{ shape: this.calculateShape(), path: [], value: this.root.value }, this.root]
     }
 
     // Find the path to where the new node will be inserted
-    const path: DataNode[] = []
+    const path: Array<PathInstruction<DataNode>> = []
     let currNode: DataNode | null = this.root
     while (currNode != null) {
-      path.push(currNode)
+      path.push({ node: currNode, secondaryMessage: undefined })
       if (value < currNode.value) {
         currNode = currNode.left
       } else {
@@ -106,38 +111,38 @@ export default class BSTModel {
     }
 
     // Insert the new node
-    const parent = path[path.length - 1]
+    const parentNode = path[path.length - 1].node
     const insertedNode = new DataNode(value)
-    if (value < parent.value) {
-      parent.left = insertedNode
+    if (value < parentNode.value) {
+      parentNode.left = insertedNode
     } else {
-      parent.right = insertedNode
+      parentNode.right = insertedNode
     }
 
-    return { shape: this.calculateShape(), path, insertedNode }
+    return [{ shape: this.calculateShape(), path, value: insertedNode.value }, insertedNode]
   }
 
   // If the victim node has 2 children, send different information to facilitate a different animation
   // If the tree is empty, return null
-  public delete (value: number): ModelDeletionInformationLEQ1Child | ModelDeletionInformation2Children | ModelDeletionInformationVictimNotFound {
+  public delete (value: number): DeletionInformationLEQ1Child<DataNode> | DeletionInformation2Children<DataNode> | DeletionInformationVictimNotFound<DataNode> {
     if (this.root == null) {
       return { type: 'VictimNotFound', path: [] }
     }
 
     // Find the path the tree takes to find the node to delete
-    const path: DataNode[] = []
+    const path: Array<PathInstruction<DataNode>> = []
     let currNode: DataNode | null = this.root
     let currParent: DataNode | null = null
     while (currNode != null && currNode.value !== value) {
       currParent = currNode
-      path.push(currNode)
+      path.push({ node: currNode, secondaryMessage: undefined })
       currNode = value < currNode.value ? currNode.left : currNode.right
     }
 
     if (currNode == null) {
       return { type: 'VictimNotFound', path }
     } else {
-      path.push(currNode)
+      path.push({ node: currNode, secondaryMessage: undefined })
     }
 
     // Node with no child or one child
@@ -160,15 +165,15 @@ export default class BSTModel {
     } else {
       let successor = currNode.right
       let successorParent = currNode
-      const pathToSuccessor: DataNode[] = []
+      const pathToSuccessor: Array<PathInstruction<DataNode>> = []
 
       // Find the node with the minimum value (AKA successor) in the right subtree
       while (successor.left !== null) {
-        pathToSuccessor.push(successor)
+        pathToSuccessor.push({ node: successor, secondaryMessage: undefined })
         successorParent = successor
         successor = successor.left
       }
-      pathToSuccessor.push(successor)
+      pathToSuccessor.push({ node: successor, secondaryMessage: undefined })
 
       // Replace the value of the node to delete with the found successor
       currNode.value = successor.value
@@ -184,12 +189,12 @@ export default class BSTModel {
     }
   }
 
-  public find (value: number): ModelFindInformation {
+  public find (value: number): FindInformation<DataNode> {
     // Find the path the tree takes to find the node to delete
-    const path: DataNode[] = []
+    const path: Array<PathInstruction<DataNode>> = []
     let currNode: DataNode | null = this.root
     while (currNode != null && currNode.value !== value) {
-      path.push(currNode)
+      path.push({ node: currNode, secondaryMessage: undefined })
       if (value < currNode.value) {
         currNode = currNode.left
       } else {
@@ -199,7 +204,7 @@ export default class BSTModel {
 
     // If found
     if (currNode != null) {
-      path.push(currNode)
+      path.push({ node: currNode, secondaryMessage: undefined })
     }
 
     return { path, nodeFound: currNode }

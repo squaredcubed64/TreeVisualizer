@@ -4,4 +4,5 @@ export default interface DelayedFunctionCallFunctionResult {
   framesAfterCall: number
   // What should be displayed while the animation occurs
   description: string
+  secondaryDescription?: string
 }

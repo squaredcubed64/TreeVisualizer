@@ -69,9 +69,15 @@ body {
   width: 10%;
 }
 
-p {
+.animationDescription {
   min-height: 1em;
   color: rgb(72, 0, 72);
+}
+
+.secondaryAnimationDescription {
+  min-height: 0.8em;
+  color: rgb(72, 0, 72);
+  font-size: 0.8em;
 }
 
 canvas {

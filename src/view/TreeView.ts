@@ -16,6 +16,7 @@ import { drawArrowFromNodeToNode } from './Utils'
 import type DelayedFunctionCall from './DelayedFunctionCall'
 import type TreeShape from '../controller/TreeShape'
 import type PathInstruction from '../controller/PathInstruction'
+import { assert } from '../Utils'
 
 export default class TreeView {
   public shape: TreeShape<DisplayNode>
@@ -33,9 +34,7 @@ export default class TreeView {
 
   // Pushes methods onto functionQueue to highlight nodes along path
   public pushNodeHighlightingOntoFunctionQueue (path: Array<PathInstruction<DisplayNode>>, highlightColor: string, description: string): void {
-    if (path.length === 0) {
-      throw new Error('Path is empty')
-    }
+    assert(path.length > 0, 'Path is empty')
     for (let i = 0; i < path.length; i++) {
       const node = path[i].node
       let framesToWait: number
@@ -64,9 +63,7 @@ export default class TreeView {
     while (this.functionQueue.length > 0 && this.functionQueue[0].framesToWait <= 0) {
       if (!this.functionAtFrontOfQueueWasCalled) {
         const functionCall = this.functionQueue[0]
-        if (functionCall == null) {
-          throw new Error('Function call is null')
-        }
+        assert(functionCall !== undefined, 'Function call is undefined')
         const result = functionCall.function()
         this.description = result.description
         this.secondaryDescription = result.secondaryDescription
@@ -100,16 +97,12 @@ export default class TreeView {
 
     // Update description
     const animationDescription = document.getElementById('animationDescription') as HTMLParagraphElement
-    if (animationDescription == null) {
-      throw new Error('animationDescription not found')
-    }
+    assert(animationDescription !== null, 'animationDescription not found')
     animationDescription.textContent = this.description
 
     // Update secondary description
     const secondaryAnimationDescription = document.getElementById('secondaryAnimationDescription') as HTMLParagraphElement
-    if (secondaryAnimationDescription == null) {
-      throw new Error('secondaryAnimationDescription not found')
-    }
+    assert(secondaryAnimationDescription !== null, 'secondaryAnimationDescription not found')
     if (this.secondaryDescription == null) {
       secondaryAnimationDescription.textContent = ''
     } else {
@@ -122,9 +115,7 @@ export default class TreeView {
     const findDiv = document.getElementById('find')
     const clearButton = document.getElementById('clearButton')
     const arrowButton = document.getElementById('arrowButton')
-    if (insertDiv == null || deleteDiv == null || findDiv == null || clearButton == null || arrowButton == null) {
-      throw new Error('insert, delete, find, clearButton, or arrowButton not found')
-    }
+    assert(insertDiv !== null && deleteDiv !== null && findDiv !== null && clearButton !== null && arrowButton !== null, 'insert, delete, find, clearButton, or arrowButton not found')
     const operations = [insertDiv, deleteDiv, findDiv, clearButton, arrowButton]
     if (this.functionQueue.length === 0) {
       operations.forEach((operation) => {
@@ -178,13 +169,9 @@ export default class TreeView {
     // Use of inorder traversal here is arbitrary
     for (const node of this.shape.inorderTraversal) {
       const targetX = nodeToTargetX.get(node)
-      if (targetX == null) {
-        throw new Error('TargetX is null')
-      }
+      assert(targetX !== undefined, 'TargetX is undefined')
       const targetY = nodeToTargetY.get(node)
-      if (targetY == null) {
-        throw new Error('TargetY is null')
-      }
+      assert(targetY !== undefined, 'TargetY is undefined')
       node.moveTo(targetX, targetY)
     }
   }

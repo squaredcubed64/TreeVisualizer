@@ -7,6 +7,7 @@ import type DeletionInformationLEQ1Child from '../controller/DeletionInformation
 import type DeletionInformation2Children from '../controller/DeletionInformation2Children'
 import type DeletionInformationVictimNotFound from '../controller/DeletionInformationVictimNotFound'
 import type FindInformation from '../controller/FindInformation'
+import { assert } from '../Utils'
 
 export default class BSTModel {
   private root: DataNode | null
@@ -70,9 +71,7 @@ export default class BSTModel {
       const layer: DataNode[] = []
       for (let _ = 0; _ < numNodesInLayer; _++) {
         const node = queue.shift()
-        if (node == null) {
-          throw new Error('Node is null')
-        }
+        assert(node !== undefined, 'Node is undefined')
         layer.push(node)
         if (node.left != null) {
           queue.push(node.left)

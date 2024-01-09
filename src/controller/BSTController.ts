@@ -103,9 +103,6 @@ export default class BSTController {
   public animate (): void {
     const canvas = document.getElementById('canvas') as HTMLCanvasElement
     const context = canvas.getContext('2d')
-    if (context == null) {
-      throw new Error('context is null')
-    }
     this.view.animate(canvas, context)
   }
 

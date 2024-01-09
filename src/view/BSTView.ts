@@ -24,15 +24,15 @@ import {
 import DisplayNode from './DisplayNode'
 import type DelayedFunctionCallFunctionResult from './delayedFunctionCall/DelayedFunctionCallFunctionResult'
 import TreeView from './TreeView'
-import type InsertionInformation from '../controller/operationInformation/InsertionInformation'
+import type BSTInsertionInformation from '../controller/operationInformation/BSTInsertionInformation'
 import { assert } from '../Utils'
 import type TreeShape from '../controller/TreeShape'
-import type FindInformation from '../controller/operationInformation/FindInformation'
-import type DeletionInformation from '../controller/operationInformation/deletionInformation/DeletionInformation'
+import type BSTFindInformation from '../controller/operationInformation/BSTFindInformation'
+import type BSTDeletionInformation from '../controller/operationInformation/deletionInformation/BSTDeletionInformation'
 
 export default class BSTView extends TreeView {
   // Animation: highlight path, grow inserted node, then move nodes to new target positions
-  public insert (viewInsertionInformation: InsertionInformation<DisplayNode>): void {
+  public insert (viewInsertionInformation: BSTInsertionInformation<DisplayNode>): void {
     const { shape: shapeWithPlaceholder, path, value } = viewInsertionInformation
     const placeholderNode = shapeWithPlaceholder.inorderTraversal.find(node => node.fillColor === 'placeholder')
     assert(placeholderNode != null, 'Placeholder node not found')
@@ -73,7 +73,7 @@ export default class BSTView extends TreeView {
     placeholderNode.value = value
   }
 
-  public delete (viewDeletionInformation: DeletionInformation<DisplayNode>): void {
+  public delete (viewDeletionInformation: BSTDeletionInformation<DisplayNode>): void {
     switch (viewDeletionInformation.type) {
       // Animation: highlight path, shrink victim node, then move nodes to new target positions
       case 'LEQ1Child': {
@@ -114,7 +114,7 @@ export default class BSTView extends TreeView {
   }
 
   // Animation: highlight path, then highlight node if found
-  find (viewFindInformation: FindInformation<DisplayNode>): void {
+  find (viewFindInformation: BSTFindInformation<DisplayNode>): void {
     const { path, nodeFound } = viewFindInformation
     if (path.length !== 0) {
       this.pushNodeHighlightingOntoFunctionQueue(path, DEFAULT_HIGHLIGHT_COLOR, FIND_DESCRIPTIONS.FIND_NODE)

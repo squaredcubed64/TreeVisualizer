@@ -17,7 +17,7 @@ import type DelayedFunctionCall from './delayedFunctionCall/DelayedFunctionCall'
 import type TreeShape from '../controller/TreeShape'
 import type PathInstruction from '../controller/PathInstruction'
 import { assert } from '../Utils'
-import type SecondaryDescription from '../controller/secondaryDescription/SecondaryDescription'
+import type BSTSecondaryDescription from '../controller/secondaryDescription/BSTSecondaryDescription'
 
 export default class TreeView {
   public shape: TreeShape<DisplayNode>
@@ -34,7 +34,7 @@ export default class TreeView {
   }
 
   // Pushes methods onto functionQueue to highlight nodes along path
-  public pushNodeHighlightingOntoFunctionQueue<S extends SecondaryDescription> (path: Array<PathInstruction<DisplayNode, S>>, highlightColor: string, description: string): void {
+  public pushNodeHighlightingOntoFunctionQueue<S extends BSTSecondaryDescription> (path: Array<PathInstruction<DisplayNode, S>>, highlightColor: string, description: string): void {
     assert(path.length > 0, 'Path is empty')
     for (let i = 0; i < path.length; i++) {
       const node = path[i].node
@@ -57,7 +57,7 @@ export default class TreeView {
   }
 
   // TODO perhaps move this to BSTView, depending on if AVLView uses it
-  private convertSecondaryDescriptionToString (secondaryDescription: SecondaryDescription): string {
+  private convertSecondaryDescriptionToString (secondaryDescription: BSTSecondaryDescription): string {
     switch (secondaryDescription.type) {
       case 'insert':
         switch (secondaryDescription.direction) {

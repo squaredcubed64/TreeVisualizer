@@ -1,4 +1,4 @@
-export default interface SuccessorSecondaryDescription {
+export default interface BSTSuccessorSecondaryDescription {
   type: 'successor'
   /**
    * The direction taken at this node.

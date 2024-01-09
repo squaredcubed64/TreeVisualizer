@@ -1,19 +1,19 @@
 import DataNode from './DataNode'
 import ArrowDirection from '../controller/ArrowDirection'
 import type TreeShape from '../controller/TreeShape'
-import type InsertionInformation from '../controller/operationInformation/InsertionInformation'
+import type BSTInsertionInformation from '../controller/operationInformation/BSTInsertionInformation'
 import type PathInstruction from '../controller/PathInstruction'
-import type DeletionInformationLEQ1Child from '../controller/operationInformation/deletionInformation/DeletionInformationLEQ1Child'
-import type DeletionInformation2Children from '../controller/operationInformation/deletionInformation/DeletionInformation2Children'
-import type FindInformation from '../controller/operationInformation/FindInformation'
+import type BSTDeletionInformationLEQ1Child from '../controller/operationInformation/deletionInformation/BSTDeletionInformationLEQ1Child'
+import type BSTDeletionInformation2Children from '../controller/operationInformation/deletionInformation/BSTDeletionInformation2Children'
+import type BSTFindInformation from '../controller/operationInformation/BSTFindInformation'
 import { assert } from '../Utils'
-import type DeletionInformation from '../controller/operationInformation/deletionInformation/DeletionInformation'
-import type FindSecondaryDescription from '../controller/secondaryDescription/FindSecondaryDescription'
-import type SuccessorSecondaryDescription from '../controller/secondaryDescription/SuccessorSecondaryDescription'
-import type InsertionSecondaryDescription from '../controller/secondaryDescription/InsertionSecondaryDescription'
+import type BSTDeletionInformation from '../controller/operationInformation/deletionInformation/BSTDeletionInformation'
+import type BSTFindSecondaryDescription from '../controller/secondaryDescription/BSTFindSecondaryDescription'
+import type BSTSuccessorSecondaryDescription from '../controller/secondaryDescription/BSTSuccessorSecondaryDescription'
+import type BSTInsertionSecondaryDescription from '../controller/secondaryDescription/BSTInsertionSecondaryDescription'
 
 export default class BSTModel {
-  private root: DataNode | null
+  protected root: DataNode | null
   public arrowDirection: ArrowDirection
 
   constructor () {
@@ -21,7 +21,7 @@ export default class BSTModel {
     this.arrowDirection = ArrowDirection.PARENT_TO_CHILD
   }
 
-  private calculateShape (): TreeShape<DataNode> {
+  protected calculateShape (): TreeShape<DataNode> {
     if (this.root == null) {
       return { inorderTraversal: [], layers: [], arrows: new Set() }
     }
@@ -93,7 +93,7 @@ export default class BSTModel {
    * @param value The value to insert
    * @returns The information needed to animate the insertion and the inserted node
    */
-  public insert (value: number): [InsertionInformation<DataNode>, DataNode] {
+  public insert (value: number): [BSTInsertionInformation<DataNode>, DataNode] {
     // If the tree is empty, insert without any animation
     if (this.root == null) {
       this.root = new DataNode(value)
@@ -101,7 +101,7 @@ export default class BSTModel {
     }
 
     // Find the path to where the new node will be inserted
-    const path: Array<PathInstruction<DataNode, InsertionSecondaryDescription>> = []
+    const path: Array<PathInstruction<DataNode, BSTInsertionSecondaryDescription>> = []
     let currNode: DataNode | null = this.root
     while (currNode != null) {
       if (value < currNode.value) {
@@ -127,13 +127,13 @@ export default class BSTModel {
 
   // If the victim node has 2 children, send different information to facilitate a different animation
   // If the tree is empty, return null
-  public delete (value: number): DeletionInformation<DataNode> {
+  public delete (value: number): BSTDeletionInformation<DataNode> {
     if (this.root == null) {
       return { type: 'VictimNotFound', path: [] }
     }
 
     // Find the path the tree takes to find the node to delete
-    const path: Array<PathInstruction<DataNode, FindSecondaryDescription>> = []
+    const path: Array<PathInstruction<DataNode, BSTFindSecondaryDescription>> = []
     let currNode: DataNode | null = this.root
     let currParent: DataNode | null = null
     while (currNode != null && currNode.value !== value) {
@@ -167,22 +167,11 @@ export default class BSTModel {
           currParent.right = childNode
         }
       }
-      const deletionInformation: DeletionInformationLEQ1Child<DataNode> = { type: 'LEQ1Child', shape: this.calculateShape(), path, victimNode: currNode }
+      const deletionInformation: BSTDeletionInformationLEQ1Child<DataNode> = { type: 'LEQ1Child', shape: this.calculateShape(), path, victimNode: currNode }
       return deletionInformation
     // Node with two children
     } else {
-      let successor = currNode.right
-      let successorParent = currNode
-      const pathToSuccessor: Array<PathInstruction<DataNode, SuccessorSecondaryDescription>> = []
-
-      // Find the node with the minimum value (AKA successor) in the right subtree
-      while (successor.left !== null) {
-        pathToSuccessor.push({ node: successor, secondaryDescription: { type: 'successor', direction: 'left' } })
-        successorParent = successor
-        successor = successor.left
-      }
-      pathToSuccessor.push({ node: successor, secondaryDescription: { type: 'successor', direction: 'stop' } })
-
+      const { successor, successorParent, pathToSuccessor } = this.findSuccessorAndParentAndPath(currNode)
       // Replace the value of the node to delete with the found successor
       currNode.value = successor.value
 
@@ -193,14 +182,30 @@ export default class BSTModel {
         successorParent.right = successor.right
       }
 
-      const deletionInformation: DeletionInformation2Children<DataNode> = { type: '2Children', shape: this.calculateShape(), path, victimNode: currNode, pathToSuccessor, successorNode: successor }
+      const deletionInformation: BSTDeletionInformation2Children<DataNode> = { type: '2Children', shape: this.calculateShape(), path, victimNode: currNode, pathToSuccessor, successorNode: successor }
       return deletionInformation
     }
   }
 
-  public find (value: number): FindInformation<DataNode> {
+  protected findSuccessorAndParentAndPath (node: DataNode): { successor: DataNode, successorParent: DataNode, pathToSuccessor: Array<PathInstruction<DataNode, BSTSuccessorSecondaryDescription>> } {
+    assert(node.left !== null && node.right !== null, 'Node does not have 2 children')
+    let successor = node.right
+    let successorParent = node
+    const pathToSuccessor: Array<PathInstruction<DataNode, BSTSuccessorSecondaryDescription>> = []
+
+    // Find the node with the minimum value (AKA successor) in the right subtree
+    while (successor.left !== null) {
+      pathToSuccessor.push({ node: successor, secondaryDescription: { type: 'successor', direction: 'left' } })
+      successorParent = successor
+      successor = successor.left
+    }
+    pathToSuccessor.push({ node: successor, secondaryDescription: { type: 'successor', direction: 'stop' } })
+    return { successor, successorParent, pathToSuccessor }
+  }
+
+  public find (value: number): BSTFindInformation<DataNode> {
     // Find the path the tree takes to find the node to delete
-    const path: Array<PathInstruction<DataNode, FindSecondaryDescription>> = []
+    const path: Array<PathInstruction<DataNode, BSTFindSecondaryDescription>> = []
     let currNode: DataNode | null = this.root
     while (currNode != null && currNode.value !== value) {
       if (value < currNode.value) {

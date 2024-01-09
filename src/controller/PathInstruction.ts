@@ -1,8 +1,8 @@
 import type DataNode from '../model/DataNode'
 import type DisplayNode from '../view/DisplayNode'
-import type SecondaryDescription from './secondaryDescription/SecondaryDescription'
+import type BSTSecondaryDescription from './secondaryDescription/BSTSecondaryDescription'
 
-export default interface PathInstruction<T extends DataNode | DisplayNode, S extends SecondaryDescription> {
+export default interface PathInstruction<T extends DataNode | DisplayNode, S extends BSTSecondaryDescription> {
   node: T
   /**
    * The info needed to explain why the path goes left, right, or stops.

@@ -1,7 +1,7 @@
 /**
  * The secondary description for finding where to insert in insert().
  */
-export default interface InsertionSecondaryDescription {
+export default interface BSTInsertionSecondaryDescription {
   type: 'insert'
   /**
    * The direction taken at this node.

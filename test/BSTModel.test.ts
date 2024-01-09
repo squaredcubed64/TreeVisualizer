@@ -5,7 +5,7 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { assert } from '../src/Utils'
 import type TreeShape from '../src/controller/TreeShape'
 import type PathInstruction from '../src/controller/PathInstruction'
-import type SecondaryDescription from '../src/controller/secondaryDescription/SecondaryDescription'
+import type BSTSecondaryDescription from '../src/controller/secondaryDescription/BSTSecondaryDescription'
 
 describe('BSTModel', () => {
   let bstModel: BSTModel
@@ -239,7 +239,7 @@ describe('BSTModel', () => {
     expect(modelDeletionInformation.type).toBe('VictimNotFound')
   })
 
-  function pathsHaveSameValues (path1: Array<PathInstruction<DataNode, SecondaryDescription>>, path2: DataNode[]): boolean {
+  function pathsHaveSameValues (path1: Array<PathInstruction<DataNode, BSTSecondaryDescription>>, path2: DataNode[]): boolean {
     if (path1.length !== path2.length) {
       return false
     }

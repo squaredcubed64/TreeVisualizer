@@ -4,14 +4,14 @@ import type BSTModel from '../model/BSTModel'
 import type BSTView from '../view/BSTView'
 import { assert } from '../Utils'
 import type ArrowDirection from './ArrowDirection'
-import type InsertionInformation from './operationInformation/InsertionInformation'
+import type BSTInsertionInformation from './operationInformation/BSTInsertionInformation'
 import type PathInstruction from './PathInstruction'
-import type DeletionInformationLEQ1Child from './operationInformation/deletionInformation/DeletionInformationLEQ1Child'
-import type DeletionInformation2Children from './operationInformation/deletionInformation/DeletionInformation2Children'
-import type FindInformation from './operationInformation/FindInformation'
+import type BSTDeletionInformationLEQ1Child from './operationInformation/deletionInformation/BSTDeletionInformationLEQ1Child'
+import type BSTDeletionInformation2Children from './operationInformation/deletionInformation/BSTDeletionInformation2Children'
+import type BSTFindInformation from './operationInformation/BSTFindInformation'
 import type TreeShape from './TreeShape'
-import type DeletionInformation from './operationInformation/deletionInformation/DeletionInformation'
-import type SecondaryDescription from './secondaryDescription/SecondaryDescription'
+import type BSTDeletionInformation from './operationInformation/deletionInformation/BSTDeletionInformation'
+import type BSTSecondaryDescription from './secondaryDescription/BSTSecondaryDescription'
 
 export default class BSTController {
   private readonly dataNodeToDisplayNode = new Map<DataNode, DisplayNode>()
@@ -29,7 +29,7 @@ export default class BSTController {
     this.view.insert(viewInsertionInformation)
   }
 
-  private translateInsertionInformation (modelInsertionInformation: InsertionInformation<DataNode>): InsertionInformation<DisplayNode> {
+  private translateInsertionInformation (modelInsertionInformation: BSTInsertionInformation<DataNode>): BSTInsertionInformation<DisplayNode> {
     const { shape, path, value } = modelInsertionInformation
     const translatedShape = this.translateShape(shape)
     const translatedPath = this.translatePath(path)
@@ -42,16 +42,16 @@ export default class BSTController {
     this.view.delete(viewDeletionInformation)
   }
 
-  private translateDeletionInformation (modelDeletionInformation: DeletionInformation<DataNode>): DeletionInformation<DisplayNode> {
+  private translateDeletionInformation (modelDeletionInformation: BSTDeletionInformation<DataNode>): BSTDeletionInformation<DisplayNode> {
     switch (modelDeletionInformation.type) {
       case 'LEQ1Child': {
         const { shape, path, victimNode } = modelDeletionInformation
-        const viewDeletionInformation: DeletionInformationLEQ1Child<DisplayNode> = { type: 'LEQ1Child', shape: this.translateShape(shape), path: this.translatePath(path), victimNode: this.translateNode(victimNode) }
+        const viewDeletionInformation: BSTDeletionInformationLEQ1Child<DisplayNode> = { type: 'LEQ1Child', shape: this.translateShape(shape), path: this.translatePath(path), victimNode: this.translateNode(victimNode) }
         return viewDeletionInformation
       }
       case '2Children': {
         const { shape, path, victimNode, pathToSuccessor, successorNode } = modelDeletionInformation
-        const viewDeletionInformation: DeletionInformation2Children<DisplayNode> = { type: '2Children', shape: this.translateShape(shape), path: this.translatePath(path), victimNode: this.translateNode(victimNode), pathToSuccessor: this.translatePath(pathToSuccessor), successorNode: this.translateNode(successorNode) }
+        const viewDeletionInformation: BSTDeletionInformation2Children<DisplayNode> = { type: '2Children', shape: this.translateShape(shape), path: this.translatePath(path), victimNode: this.translateNode(victimNode), pathToSuccessor: this.translatePath(pathToSuccessor), successorNode: this.translateNode(successorNode) }
         return viewDeletionInformation
       }
       case 'VictimNotFound': {
@@ -67,7 +67,7 @@ export default class BSTController {
     this.view.find(viewFindInformation)
   }
 
-  private translateFindInformation (modelFindInformation: FindInformation<DataNode>): FindInformation<DisplayNode> {
+  private translateFindInformation (modelFindInformation: BSTFindInformation<DataNode>): BSTFindInformation<DisplayNode> {
     const { path, nodeFound } = modelFindInformation
     return { path: this.translatePath(path), nodeFound: nodeFound !== null ? this.translateNode(nodeFound) : null }
   }
@@ -90,7 +90,7 @@ export default class BSTController {
     return new Set(Array.from(arrows).map((arrow) => this.translateArray(arrow) as [DisplayNode, DisplayNode]))
   }
 
-  private translatePath<S extends SecondaryDescription> (path: Array<PathInstruction<DataNode, S>>): Array<PathInstruction<DisplayNode, S>> {
+  private translatePath<S extends BSTSecondaryDescription> (path: Array<PathInstruction<DataNode, S>>): Array<PathInstruction<DisplayNode, S>> {
     return path.map((pathInstruction) => {
       const { node, secondaryDescription } = pathInstruction
       return { node: this.translateNode(node), secondaryDescription }

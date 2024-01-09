@@ -1,19 +1,30 @@
 import { assert } from '../Utils'
 import type DisplayNode from './DisplayNode'
 
+const easeInOutCurve = (x: number): number => {
+  return x * x * (3 - 2 * x)
+}
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const bounceCurve = (x: number): number => {
+  if (x < 0.6) {
+    return easeInOutCurve(x) / 0.648
+  } else {
+    return 1 + Math.sin(7.5 * Math.PI * (x - 0.6)) / Math.exp(4 * x)
+  }
+}
 // Curves that start at 0, 0 and go to 1, 1
 export const motionCurve = (progress: number): number => {
   assert(progress >= 0 && progress <= 1, 'progress must be between 0 and 1')
-  return progress * progress * (3 - 2 * progress)
+  return easeInOutCurve(progress)
 }
 export const radiusGrowthCurve = (progress: number): number => {
   assert(progress >= 0 && progress <= 1, 'progress must be between 0 and 1')
-  return progress * progress * (3 - 2 * progress)
+  return easeInOutCurve(progress)
 }
 // Curve that starts at 1, 1 and goes to 0, 0
 export const radiusShrinkingCurve = (progress: number): number => {
   assert(progress >= 0 && progress <= 1, 'progress must be between 0 and 1')
-  return 1 - progress * progress * (3 - 2 * progress)
+  return 1 - easeInOutCurve(progress)
 }
 
 export const resizeCanvas = (canvas: HTMLCanvasElement): void => {

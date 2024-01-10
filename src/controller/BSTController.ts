@@ -5,7 +5,7 @@ import type BSTView from '../view/BSTView'
 import { assert } from '../Utils'
 import type ArrowDirection from './ArrowDirection'
 import type BSTInsertionInformation from './operationInformation/BSTInsertionInformation'
-import type PathInstruction from './PathInstruction'
+import type BSTPathInstruction from './pathInstruction/BSTPathInstruction'
 import type BSTDeletionInformationLEQ1Child from './operationInformation/deletionInformation/BSTDeletionInformationLEQ1Child'
 import type BSTDeletionInformation2Children from './operationInformation/deletionInformation/BSTDeletionInformation2Children'
 import type BSTFindInformation from './operationInformation/BSTFindInformation'
@@ -21,7 +21,7 @@ export default class BSTController {
   }
 
   public insert (value: number): void {
-    const [modelInsertionInformation, insertedDataNode] = this.model.insert(value)
+    const { insertionInformation: modelInsertionInformation, insertedNode: insertedDataNode } = this.model.insert(value)
     // A placeholder DisplayNode for the node that's being inserted. The view will update this upon insertion.
     const placeholderDisplayNode = this.view.makePlaceholderNode()
     this.dataNodeToDisplayNode.set(insertedDataNode, placeholderDisplayNode)
@@ -90,7 +90,7 @@ export default class BSTController {
     return new Set(Array.from(arrows).map((arrow) => this.translateArray(arrow) as [DisplayNode, DisplayNode]))
   }
 
-  private translatePath<S extends BSTSecondaryDescription> (path: Array<PathInstruction<DataNode, S>>): Array<PathInstruction<DisplayNode, S>> {
+  private translatePath<S extends BSTSecondaryDescription> (path: Array<BSTPathInstruction<DataNode, S>>): Array<BSTPathInstruction<DisplayNode, S>> {
     return path.map((pathInstruction) => {
       const { node, secondaryDescription } = pathInstruction
       return { node: this.translateNode(node), secondaryDescription }

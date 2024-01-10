@@ -1,28 +1,30 @@
 import { assert } from '../Utils'
+import type AVLInsertionInformation from '../controller/operationInformation/AVLInsertionInformation'
 import DataNode from './DataNode'
+import TreeModel from './TreeModel'
 
-export default class AVLTreeModel {
+export default class AVLTreeModel extends TreeModel {
   root: DataNode | null = null
 
-  getHeight (node: DataNode | null): number {
+  private getHeight (node: DataNode | null): number {
     if (node === null) {
       return 0
     }
     return node.height
   }
 
-  updateHeight (node: DataNode): void {
+  private updateHeight (node: DataNode): void {
     node.height = Math.max(this.getHeight(node.left), this.getHeight(node.right)) + 1
   }
 
-  getBalance (node: DataNode | null): number {
+  private getBalance (node: DataNode | null): number {
     if (node === null) {
       return 0
     }
     return this.getHeight(node.left) - this.getHeight(node.right)
   }
 
-  rotateRight (y: DataNode): DataNode {
+  private rotateRight (y: DataNode): DataNode {
     assert(y.left !== null, 'y.left is null')
     const x = y.left
     const T2 = x.right
@@ -33,7 +35,7 @@ export default class AVLTreeModel {
     return x
   }
 
-  rotateLeft (x: DataNode): DataNode {
+  private rotateLeft (x: DataNode): DataNode {
     assert(x.right !== null, 'x.right is null')
     const y = x.right
     const T2 = y.left
@@ -44,51 +46,80 @@ export default class AVLTreeModel {
     return y
   }
 
-  insertNode (node: DataNode | null, value: number): DataNode {
+  private insertNode (node: DataNode | null, value: number): { insertionInformation: AVLInsertionInformation<DataNode>, insertedNode: DataNode, resultantSubtree: DataNode } {
     if (node === null) {
-      return new DataNode(value)
+      const insertedNode = new DataNode(value)
+      const bstInsertionInformation = { path: [], shape: this.calculateShape(), value }
+      const avlInsertionInformation = { bstInsertionInformation, rotationPath: [] }
+      return { insertionInformation: avlInsertionInformation, insertedNode, resultantSubtree: insertedNode }
     }
 
+    // Recursively get the insertion information, then add the current node to the start of the path
+    let returnValue: { insertionInformation: AVLInsertionInformation<DataNode>, insertedNode: DataNode, resultantSubtree: DataNode }
     if (value < node.value) {
-      node.left = this.insertNode(node.left, value)
-    } else if (value > node.value) {
-      node.right = this.insertNode(node.right, value)
+      returnValue = this.insertNode(node.left, value)
+      returnValue.insertionInformation.bstInsertionInformation.path.unshift({ node, secondaryDescription: { type: 'insert', direction: 'left', targetValue: value, nodeValue: node.value } })
+      node.left = returnValue.resultantSubtree
     } else {
-      return node
+      returnValue = this.insertNode(node.right, value)
+      returnValue.insertionInformation.bstInsertionInformation.path.unshift({ node, secondaryDescription: { type: 'insert', direction: 'right', targetValue: value, nodeValue: node.value } })
+      node.right = returnValue.resultantSubtree
     }
+    const { insertionInformation, insertedNode } = returnValue
 
     this.updateHeight(node)
 
     const balance = this.getBalance(node)
 
+    // If this node is unbalanced, there are 4 cases
     if (balance > 1) {
       assert(node.left !== null, 'node.left is null')
       if (value < node.left.value) {
-        return this.rotateRight(node)
+        const resultantSubtree = this.rotateRight(node)
+        const leftHeight = this.getHeight(node.left)
+        const rightHeight = this.getHeight(node.right)
+        insertionInformation.rotationPath.push({ node, shapesAfterRotation: [this.calculateShape()], secondaryDescription: { type: 'avl', leftHeight, rightHeight, newBalanceFactor: leftHeight - rightHeight, newHeight: this.getHeight(node) } })
+        return { insertionInformation, insertedNode, resultantSubtree }
       } else {
         node.left = this.rotateLeft(node.left)
-        return this.rotateRight(node)
+        const shapeAfterFirstRotation = this.calculateShape()
+        const resultantSubtree = this.rotateRight(node)
+        const leftHeight = this.getHeight(node.left)
+        const rightHeight = this.getHeight(node.right)
+        insertionInformation.rotationPath.push({ node, shapesAfterRotation: [shapeAfterFirstRotation, this.calculateShape()], secondaryDescription: { type: 'avl', leftHeight, rightHeight, newBalanceFactor: leftHeight - rightHeight, newHeight: this.getHeight(node) } })
+        return { insertionInformation, insertedNode, resultantSubtree }
       }
-    }
-
-    if (balance < -1) {
+    } else if (balance < -1) {
       assert(node.right !== null, 'node.right is null')
       if (value > node.right.value) {
-        return this.rotateLeft(node)
+        const resultantSubtree = this.rotateLeft(node)
+        const leftHeight = this.getHeight(node.left)
+        const rightHeight = this.getHeight(node.right)
+        insertionInformation.rotationPath.push({ node, shapesAfterRotation: [this.calculateShape()], secondaryDescription: { type: 'avl', leftHeight, rightHeight, newBalanceFactor: leftHeight - rightHeight, newHeight: this.getHeight(node) } })
+        return { insertionInformation, insertedNode, resultantSubtree }
       } else {
         node.right = this.rotateRight(node.right)
-        return this.rotateLeft(node)
+        const shapeAfterFirstRotation = this.calculateShape()
+        const resultantSubtree = this.rotateLeft(node)
+        const leftHeight = this.getHeight(node.left)
+        const rightHeight = this.getHeight(node.right)
+        insertionInformation.rotationPath.push({ node, shapesAfterRotation: [shapeAfterFirstRotation, this.calculateShape()], secondaryDescription: { type: 'avl', leftHeight, rightHeight, newBalanceFactor: leftHeight - rightHeight, newHeight: this.getHeight(node) } })
+        return { insertionInformation, insertedNode, resultantSubtree }
       }
     }
 
-    return node
+    insertionInformation.rotationPath.push({ node, shapesAfterRotation: [], secondaryDescription: { type: 'avl', leftHeight: this.getHeight(node.left), rightHeight: this.getHeight(node.right), newBalanceFactor: balance, newHeight: this.getHeight(node) } })
+
+    return { insertionInformation, insertedNode, resultantSubtree: node }
   }
 
-  insert (value: number): void {
-    this.root = this.insertNode(this.root, value)
+  public insert (value: number): { insertionInformation: AVLInsertionInformation<DataNode>, insertedNode: DataNode } {
+    const { insertionInformation, insertedNode, resultantSubtree } = this.insertNode(this.root, value)
+    this.root = resultantSubtree
+    return { insertionInformation, insertedNode }
   }
 
-  minValueNode (node: DataNode): DataNode {
+  /* private minValueNode (node: DataNode): DataNode {
     let current = node
     while (current.left !== null) {
       current = current.left
@@ -96,7 +127,7 @@ export default class AVLTreeModel {
     return current
   }
 
-  deleteNode (root: DataNode | null, value: number): DataNode | null {
+  private deleteNode (root: DataNode | null, value: number): DataNode | null {
     if (root === null) {
       return root
     }
@@ -158,7 +189,7 @@ export default class AVLTreeModel {
     return root
   }
 
-  delete (value: number): void {
+  public delete (value: number): void {
     this.root = this.deleteNode(this.root, value)
-  }
+  } */
 }

@@ -1,107 +1,30 @@
 import DataNode from './DataNode'
-import ArrowDirection from '../controller/ArrowDirection'
-import type TreeShape from '../controller/TreeShape'
 import type BSTInsertionInformation from '../controller/operationInformation/BSTInsertionInformation'
-import type PathInstruction from '../controller/PathInstruction'
+import type BSTPathInstruction from '../controller/pathInstruction/BSTPathInstruction'
 import type BSTDeletionInformationLEQ1Child from '../controller/operationInformation/deletionInformation/BSTDeletionInformationLEQ1Child'
 import type BSTDeletionInformation2Children from '../controller/operationInformation/deletionInformation/BSTDeletionInformation2Children'
-import type BSTFindInformation from '../controller/operationInformation/BSTFindInformation'
 import { assert } from '../Utils'
 import type BSTDeletionInformation from '../controller/operationInformation/deletionInformation/BSTDeletionInformation'
 import type BSTFindSecondaryDescription from '../controller/secondaryDescription/BSTFindSecondaryDescription'
 import type BSTSuccessorSecondaryDescription from '../controller/secondaryDescription/BSTSuccessorSecondaryDescription'
 import type BSTInsertionSecondaryDescription from '../controller/secondaryDescription/BSTInsertionSecondaryDescription'
+import TreeModel from './TreeModel'
 
-export default class BSTModel {
-  protected root: DataNode | null
-  public arrowDirection: ArrowDirection
-
-  constructor () {
-    this.root = null
-    this.arrowDirection = ArrowDirection.PARENT_TO_CHILD
-  }
-
-  protected calculateShape (): TreeShape<DataNode> {
-    if (this.root == null) {
-      return { inorderTraversal: [], layers: [], arrows: new Set() }
-    }
-
-    const inorderTraversal = this.root.getTraversal(ArrowDirection.INORDER)
-    const layers = this.calculateLayers()
-    const arrows = this.calculateArrows()
-    return { inorderTraversal, layers, arrows }
-  }
-
-  // Returns an array of pairs of nodes to draw arrows between
-  public calculateArrows (): Set<[DataNode, DataNode]> {
-    if (this.root == null) {
-      return new Set()
-    }
-
-    const arrows = new Set<[DataNode, DataNode]>()
-    // Draw arrows first
-    if (this.arrowDirection === ArrowDirection.PARENT_TO_CHILD) {
-      const arbitraryTraversal = this.root.getTraversal(ArrowDirection.INORDER)
-      arbitraryTraversal.forEach((node) => {
-        if (node.left != null) {
-          arrows.add([node, node.left])
-        }
-        if (node.right != null) {
-          arrows.add([node, node.right])
-        }
-      })
-    } else {
-      const traversal = this.root.getTraversal(this.arrowDirection)
-      for (let i = 0; i < traversal.length - 1; i++) {
-        const node = traversal[i]
-        const nextNode = traversal[i + 1]
-        arrows.add([node, nextNode])
-      }
-    }
-    return arrows
-  }
-
-  // Returns an array of arrays of nodes, where each array is a layer of the tree
-  private calculateLayers (): DataNode[][] {
-    if (this.root == null) {
-      return []
-    }
-
-    const layers: DataNode[][] = []
-    const queue = [this.root]
-    while (queue.length > 0) {
-      const numNodesInLayer = queue.length
-      const layer: DataNode[] = []
-      for (let _ = 0; _ < numNodesInLayer; _++) {
-        const node = queue.shift()
-        assert(node !== undefined, 'Node is undefined')
-        layer.push(node)
-        if (node.left != null) {
-          queue.push(node.left)
-        }
-        if (node.right != null) {
-          queue.push(node.right)
-        }
-      }
-      layers.push(layer)
-    }
-    return layers
-  }
-
+export default class BSTModel extends TreeModel {
   /**
    * Inserts a new node into the model
    * @param value The value to insert
    * @returns The information needed to animate the insertion and the inserted node
    */
-  public insert (value: number): [BSTInsertionInformation<DataNode>, DataNode] {
+  public insert (value: number): { insertionInformation: BSTInsertionInformation<DataNode>, insertedNode: DataNode } {
     // If the tree is empty, insert without any animation
     if (this.root == null) {
       this.root = new DataNode(value)
-      return [{ shape: this.calculateShape(), path: [], value: this.root.value }, this.root]
+      return { insertionInformation: { shape: this.calculateShape(), path: [], value: this.root.value }, insertedNode: this.root }
     }
 
     // Find the path to where the new node will be inserted
-    const path: Array<PathInstruction<DataNode, BSTInsertionSecondaryDescription>> = []
+    const path: Array<BSTPathInstruction<DataNode, BSTInsertionSecondaryDescription>> = []
     let currNode: DataNode | null = this.root
     while (currNode != null) {
       if (value < currNode.value) {
@@ -122,7 +45,7 @@ export default class BSTModel {
       parentNode.right = insertedNode
     }
 
-    return [{ shape: this.calculateShape(), path, value: insertedNode.value }, insertedNode]
+    return { insertionInformation: { shape: this.calculateShape(), path, value: insertedNode.value }, insertedNode }
   }
 
   // If the victim node has 2 children, send different information to facilitate a different animation
@@ -133,7 +56,7 @@ export default class BSTModel {
     }
 
     // Find the path the tree takes to find the node to delete
-    const path: Array<PathInstruction<DataNode, BSTFindSecondaryDescription>> = []
+    const path: Array<BSTPathInstruction<DataNode, BSTFindSecondaryDescription>> = []
     let currNode: DataNode | null = this.root
     let currParent: DataNode | null = null
     while (currNode != null && currNode.value !== value) {
@@ -187,11 +110,11 @@ export default class BSTModel {
     }
   }
 
-  protected findSuccessorAndParentAndPath (node: DataNode): { successor: DataNode, successorParent: DataNode, pathToSuccessor: Array<PathInstruction<DataNode, BSTSuccessorSecondaryDescription>> } {
+  protected findSuccessorAndParentAndPath (node: DataNode): { successor: DataNode, successorParent: DataNode, pathToSuccessor: Array<BSTPathInstruction<DataNode, BSTSuccessorSecondaryDescription>> } {
     assert(node.left !== null && node.right !== null, 'Node does not have 2 children')
     let successor = node.right
     let successorParent = node
-    const pathToSuccessor: Array<PathInstruction<DataNode, BSTSuccessorSecondaryDescription>> = []
+    const pathToSuccessor: Array<BSTPathInstruction<DataNode, BSTSuccessorSecondaryDescription>> = []
 
     // Find the node with the minimum value (AKA successor) in the right subtree
     while (successor.left !== null) {
@@ -201,27 +124,5 @@ export default class BSTModel {
     }
     pathToSuccessor.push({ node: successor, secondaryDescription: { type: 'successor', direction: 'stop' } })
     return { successor, successorParent, pathToSuccessor }
-  }
-
-  public find (value: number): BSTFindInformation<DataNode> {
-    // Find the path the tree takes to find the node to delete
-    const path: Array<PathInstruction<DataNode, BSTFindSecondaryDescription>> = []
-    let currNode: DataNode | null = this.root
-    while (currNode != null && currNode.value !== value) {
-      if (value < currNode.value) {
-        path.push({ node: currNode, secondaryDescription: { type: 'find', direction: 'left', targetValue: value, nodeValue: currNode.value } })
-        currNode = currNode.left
-      } else {
-        path.push({ node: currNode, secondaryDescription: { type: 'find', direction: 'right', targetValue: value, nodeValue: currNode.value } })
-        currNode = currNode.right
-      }
-    }
-
-    // If found
-    if (currNode != null) {
-      path.push({ node: currNode, secondaryDescription: { type: 'find', direction: 'stop', targetValue: value, nodeValue: currNode.value } })
-    }
-
-    return { path, nodeFound: currNode }
   }
 }

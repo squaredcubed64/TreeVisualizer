@@ -4,7 +4,7 @@ import ArrowDirection from '../src/controller/ArrowDirection'
 import { describe, it, expect, beforeEach } from 'vitest'
 import { assert } from '../src/Utils'
 import type TreeShape from '../src/controller/TreeShape'
-import type PathInstruction from '../src/controller/PathInstruction'
+import type BSTPathInstruction from '../src/controller/pathInstruction/BSTPathInstruction'
 import type BSTSecondaryDescription from '../src/controller/secondaryDescription/BSTSecondaryDescription'
 
 describe('BSTModel', () => {
@@ -21,7 +21,7 @@ describe('BSTModel', () => {
     const rightChildValue = 7
     bstModel.insert(parentValue)
     bstModel.insert(leftChildValue)
-    const resultantShape = bstModel.insert(rightChildValue)[0].shape
+    const resultantShape = bstModel.insert(rightChildValue).insertionInformation.shape
 
     const parentNode = new DataNode(parentValue)
     const leftChildNode = new DataNode(leftChildValue)
@@ -239,7 +239,7 @@ describe('BSTModel', () => {
     expect(modelDeletionInformation.type).toBe('VictimNotFound')
   })
 
-  function pathsHaveSameValues (path1: Array<PathInstruction<DataNode, BSTSecondaryDescription>>, path2: DataNode[]): boolean {
+  function pathsHaveSameValues (path1: Array<BSTPathInstruction<DataNode, BSTSecondaryDescription>>, path2: DataNode[]): boolean {
     if (path1.length !== path2.length) {
       return false
     }

@@ -1,9 +1,10 @@
 export default interface AVLSecondaryDescription {
   type: 'avl'
+  leftHeight: number
+  rightHeight: number
   /**
-   * The direction taken at this node.
+   * The height of the left subtree minus the height of the right subtree at this node.
    */
-  direction: 'left' | 'right' | 'stop'
-  targetValue: number
-  nodeValue: number
+  newBalanceFactor: number
+  newHeight: number
 }

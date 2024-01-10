@@ -1,5 +1,5 @@
 import type BSTDeletionInformationBase from './BSTDeletionInformationBase'
-import type PathInstruction from '../../PathInstruction'
+import type BSTPathInstruction from '../../pathInstruction/BSTPathInstruction'
 import type BSTSuccessorSecondaryDescription from '../../secondaryDescription/BSTSuccessorSecondaryDescription'
 import type TreeShape from '../../TreeShape'
 import type DataNode from '../../../model/DataNode'
@@ -10,6 +10,6 @@ export default interface BSTDeletionInformation2Children<T extends DataNode | Di
   type: '2Children'
   shape: TreeShape<T>
   victimNode: T
-  pathToSuccessor: Array<PathInstruction<T, BSTSuccessorSecondaryDescription>>
+  pathToSuccessor: Array<BSTPathInstruction<T, BSTSuccessorSecondaryDescription>>
   successorNode: T
 }

@@ -15,11 +15,11 @@ import type DisplayNode from './DisplayNode'
 import { drawArrowFromNodeToNode } from './Utils'
 import type DelayedFunctionCall from './delayedFunctionCall/DelayedFunctionCall'
 import type TreeShape from '../controller/TreeShape'
-import type PathInstruction from '../controller/PathInstruction'
+import type BSTPathInstruction from '../controller/pathInstruction/BSTPathInstruction'
 import { assert } from '../Utils'
 import type BSTSecondaryDescription from '../controller/secondaryDescription/BSTSecondaryDescription'
 
-export default class TreeView {
+export default abstract class TreeView {
   public shape: TreeShape<DisplayNode>
   public functionQueue: DelayedFunctionCall[] = []
   private functionAtFrontOfQueueWasCalled: boolean = false
@@ -34,7 +34,7 @@ export default class TreeView {
   }
 
   // Pushes methods onto functionQueue to highlight nodes along path
-  public pushNodeHighlightingOntoFunctionQueue<S extends BSTSecondaryDescription> (path: Array<PathInstruction<DisplayNode, S>>, highlightColor: string, description: string): void {
+  public pushNodeHighlightingOntoFunctionQueue<S extends BSTSecondaryDescription> (path: Array<BSTPathInstruction<DisplayNode, S>>, highlightColor: string, description: string): void {
     assert(path.length > 0, 'Path is empty')
     for (let i = 0; i < path.length; i++) {
       const node = path[i].node

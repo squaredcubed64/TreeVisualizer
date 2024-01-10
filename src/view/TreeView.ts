@@ -1,24 +1,21 @@
-import {
-  ARROW_HEAD_ANGLE,
-  ARROW_HEAD_LENGTH,
-  ARROW_LINE_WIDTH,
-  FRAMES_BETWEEN_HIGHLIGHTS,
-  DEFAULT_HIGHLIGHT_DURATION_FRAMES,
-  ROOT_TARGET_X,
-  ROOT_TARGET_Y,
-  TARGET_X_GAP,
-  TARGET_Y_GAP,
-  FILL_COLOR,
-  STROKE_COLOR
-} from './Constants'
 import DisplayNode from './DisplayNode'
 import type DelayedFunctionCall from './delayedFunctionCall/DelayedFunctionCall'
 import type TreeShape from '../controller/TreeShape'
-import type BSTPathInstruction from '../controller/pathInstruction/BSTPathInstruction'
 import { assert } from '../Utils'
-import type BSTSecondaryDescription from '../controller/secondaryDescription/BSTSecondaryDescription'
 
 export default abstract class TreeView {
+  // const canvas = document.getElementById('canvas') as HTMLCanvasElement
+  // TODO: have this change when the canvas is resized (so it shouldn't be a const)
+  protected static readonly ROOT_TARGET_X = 300 // canvas.width / 2
+  protected static readonly ROOT_TARGET_Y = 50
+  protected static readonly TARGET_X_GAP = 75
+  protected static readonly TARGET_Y_GAP = 75
+  private static readonly FILL_COLOR = 'pink'
+  private static readonly STROKE_COLOR = 'red'
+  private static readonly ARROW_HEAD_ANGLE = Math.PI / 6
+  private static readonly ARROW_HEAD_LENGTH = 10
+  private static readonly ARROW_LINE_WIDTH = 2
+
   public shape: TreeShape<DisplayNode>
   public functionQueue: DelayedFunctionCall[] = []
   private functionAtFrontOfQueueWasCalled: boolean = false
@@ -32,45 +29,68 @@ export default abstract class TreeView {
     this.shape = { inorderTraversal: [], layers: [], arrows: new Set() }
   }
 
-  // Pushes methods onto functionQueue to highlight nodes along path
-  public pushNodeHighlightingOntoFunctionQueue<S extends BSTSecondaryDescription> (path: Array<BSTPathInstruction<DisplayNode, S>>, highlightColor: string, description: string): void {
-    // TODO see if this can be removed, and refactor to use enhanced for loop
-    assert(path.length > 0, 'Path is empty')
-    for (let i = 0; i < path.length; i++) {
-      const node = path[i].node
-      this.functionQueue.push({ framesToWait: FRAMES_BETWEEN_HIGHLIGHTS, function: () => { node.highlight(highlightColor); return { framesAfterCall: DEFAULT_HIGHLIGHT_DURATION_FRAMES, description, secondaryDescription: this.convertSecondaryDescriptionToString(path[i].secondaryDescription) } } })
+  public static makePlaceholderNode (): DisplayNode {
+    return new DisplayNode(NaN, NaN, 'placeholder', 'placeholder', NaN)
+  }
+
+  protected static preparePlaceholderColorsAndValue (placeholderNode: DisplayNode, value: number): void {
+    placeholderNode.fillColor = TreeView.FILL_COLOR
+    placeholderNode.strokeColor = TreeView.STROKE_COLOR
+    placeholderNode.value = value
+  }
+
+  private static drawArrow (fromX: number, fromY: number, toX: number, toY: number, context: CanvasRenderingContext2D): void {
+    const dx = toX - fromX
+    const dy = toY - fromY
+    const angle = Math.atan2(dy, dx)
+
+    context.beginPath()
+    context.lineWidth = TreeView.ARROW_LINE_WIDTH
+    context.moveTo(fromX, fromY)
+    context.lineTo(toX, toY)
+    context.lineTo(toX - TreeView.ARROW_HEAD_LENGTH * Math.cos(angle - TreeView.ARROW_HEAD_ANGLE), toY - TreeView.ARROW_HEAD_LENGTH * Math.sin(angle - TreeView.ARROW_HEAD_ANGLE))
+    context.moveTo(toX, toY)
+    context.lineTo(toX - TreeView.ARROW_HEAD_LENGTH * Math.cos(angle + TreeView.ARROW_HEAD_ANGLE), toY - TreeView.ARROW_HEAD_LENGTH * Math.sin(angle + TreeView.ARROW_HEAD_ANGLE))
+    context.stroke()
+  }
+
+  private static drawArrowFromNodeToNode (fromNode: DisplayNode, toNode: DisplayNode, context: CanvasRenderingContext2D): void {
+    const dx = toNode.x - fromNode.x
+    const dy = toNode.y - fromNode.y
+    const dist = Math.sqrt(dx * dx + dy * dy)
+    const xOffsetFromCenter = dx * toNode.currentRadius / dist
+    const yOffsetFromCenter = dy * toNode.currentRadius / dist
+    TreeView.drawArrow(fromNode.x, fromNode.y, toNode.x - xOffsetFromCenter, toNode.y - yOffsetFromCenter, context)
+  }
+
+  // Tell all nodes to start moving to new targets
+  public setTargetPositions (): void {
+    if (this.shape.inorderTraversal.length === 0) {
+      return
+    }
+    const nodeToTargetX = this.calculateTargetXs()
+    const nodeToTargetY = this.calculateTargetYs()
+    // Use of inorder traversal here is arbitrary
+    for (const node of this.shape.inorderTraversal) {
+      const targetX = nodeToTargetX.get(node)
+      assert(targetX !== undefined, 'TargetX is undefined')
+      const targetY = nodeToTargetY.get(node)
+      assert(targetY !== undefined, 'TargetY is undefined')
+      node.moveTo(targetX, targetY)
     }
   }
 
-  // TODO perhaps move this to BSTView, depending on if AVLView uses it
-  protected convertSecondaryDescriptionToString (secondaryDescription: BSTSecondaryDescription): string {
-    switch (secondaryDescription.type) {
-      case 'insert':
-        switch (secondaryDescription.direction) {
-          case 'left':
-            return `Go left because ${secondaryDescription.targetValue} < ${secondaryDescription.nodeValue}`
-          case 'right':
-            return `Go right because ${secondaryDescription.targetValue} >= ${secondaryDescription.nodeValue}`
-        }
-        break
-      case 'find':
-        switch (secondaryDescription.direction) {
-          case 'left':
-            return `Go left because ${secondaryDescription.targetValue} < ${secondaryDescription.nodeValue}`
-          case 'right':
-            return `Go right because ${secondaryDescription.targetValue} > ${secondaryDescription.nodeValue}`
-          case 'stop':
-            return `Stop because ${secondaryDescription.targetValue} = ${secondaryDescription.nodeValue}`
-        }
-        break
-      case 'successor':
-        switch (secondaryDescription.direction) {
-          case 'left':
-            return 'Go left because there is a left child'
-          case 'stop':
-            return 'Stop because there is no left child'
-        }
-    }
+  public setAnimationSpeedSetting (animationSpeedSetting: number): void {
+    this.animationSpeedSetting = animationSpeedSetting
+    this.animationSpeed = 1.2 ** (animationSpeedSetting - 10)
+  }
+
+  public getAnimationSpeedSetting (): number {
+    return this.animationSpeedSetting
+  }
+
+  public setArrows (arrows: Set<[DisplayNode, DisplayNode]>): void {
+    this.shape.arrows = arrows
   }
 
   // Updates the functionQueue, draws on the canvas, then requests another animation frame for itself
@@ -152,6 +172,11 @@ export default abstract class TreeView {
     cancelAnimationFrame(this.currentAnimationId)
   }
 
+  protected animateShapeChange (newShape: TreeShape<DisplayNode>): void {
+    this.shape = newShape
+    this.setTargetPositions()
+  }
+
   // Nodes are equally spaced horizontally based on their inorder traversal
   private calculateTargetXs (): Map<DisplayNode, number> {
     const nodeToTargetX = new Map<DisplayNode, number>()
@@ -159,7 +184,7 @@ export default abstract class TreeView {
     const rootIndex = this.shape.inorderTraversal.indexOf(root)
     for (let i = 0; i < this.shape.inorderTraversal.length; i++) {
       const node = this.shape.inorderTraversal[i]
-      nodeToTargetX.set(node, ROOT_TARGET_X + (i - rootIndex) * TARGET_X_GAP)
+      nodeToTargetX.set(node, TreeView.ROOT_TARGET_X + (i - rootIndex) * TreeView.TARGET_X_GAP)
     }
     return nodeToTargetX
   }
@@ -169,80 +194,11 @@ export default abstract class TreeView {
     const nodeToTargetY = new Map<DisplayNode, number>()
     for (let i = 0; i < this.shape.layers.length; i++) {
       const layer = this.shape.layers[i]
-      const layerY = ROOT_TARGET_Y + i * TARGET_Y_GAP
+      const layerY = TreeView.ROOT_TARGET_Y + i * TreeView.TARGET_Y_GAP
       for (const node of layer) {
         nodeToTargetY.set(node, layerY)
       }
     }
     return nodeToTargetY
-  }
-
-  // Tell all nodes to start moving to new targets
-  public setTargetPositions (): void {
-    if (this.shape.inorderTraversal.length === 0) {
-      return
-    }
-    const nodeToTargetX = this.calculateTargetXs()
-    const nodeToTargetY = this.calculateTargetYs()
-    // Use of inorder traversal here is arbitrary
-    for (const node of this.shape.inorderTraversal) {
-      const targetX = nodeToTargetX.get(node)
-      assert(targetX !== undefined, 'TargetX is undefined')
-      const targetY = nodeToTargetY.get(node)
-      assert(targetY !== undefined, 'TargetY is undefined')
-      node.moveTo(targetX, targetY)
-    }
-  }
-
-  protected animateShapeChange (newShape: TreeShape<DisplayNode>): void {
-    this.shape = newShape
-    this.setTargetPositions()
-  }
-
-  public setAnimationSpeedSetting (animationSpeedSetting: number): void {
-    this.animationSpeedSetting = animationSpeedSetting
-    this.animationSpeed = 1.2 ** (animationSpeedSetting - 10)
-  }
-
-  public getAnimationSpeedSetting (): number {
-    return this.animationSpeedSetting
-  }
-
-  public setArrows (arrows: Set<[DisplayNode, DisplayNode]>): void {
-    this.shape.arrows = arrows
-  }
-
-  protected static preparePlaceholderColorsAndValue (placeholderNode: DisplayNode, value: number): void {
-    placeholderNode.fillColor = FILL_COLOR
-    placeholderNode.strokeColor = STROKE_COLOR
-    placeholderNode.value = value
-  }
-
-  public static makePlaceholderNode (): DisplayNode {
-    return new DisplayNode(NaN, NaN, 'placeholder', 'placeholder', NaN)
-  }
-
-  private static drawArrow (fromX: number, fromY: number, toX: number, toY: number, context: CanvasRenderingContext2D): void {
-    const dx = toX - fromX
-    const dy = toY - fromY
-    const angle = Math.atan2(dy, dx)
-
-    context.beginPath()
-    context.lineWidth = ARROW_LINE_WIDTH
-    context.moveTo(fromX, fromY)
-    context.lineTo(toX, toY)
-    context.lineTo(toX - ARROW_HEAD_LENGTH * Math.cos(angle - ARROW_HEAD_ANGLE), toY - ARROW_HEAD_LENGTH * Math.sin(angle - ARROW_HEAD_ANGLE))
-    context.moveTo(toX, toY)
-    context.lineTo(toX - ARROW_HEAD_LENGTH * Math.cos(angle + ARROW_HEAD_ANGLE), toY - ARROW_HEAD_LENGTH * Math.sin(angle + ARROW_HEAD_ANGLE))
-    context.stroke()
-  }
-
-  private static drawArrowFromNodeToNode (fromNode: DisplayNode, toNode: DisplayNode, context: CanvasRenderingContext2D): void {
-    const dx = toNode.x - fromNode.x
-    const dy = toNode.y - fromNode.y
-    const dist = Math.sqrt(dx * dx + dy * dy)
-    const xOffsetFromCenter = dx * toNode.currentRadius / dist
-    const yOffsetFromCenter = dy * toNode.currentRadius / dist
-    TreeView.drawArrow(fromNode.x, fromNode.y, toNode.x - xOffsetFromCenter, toNode.y - yOffsetFromCenter, context)
   }
 }

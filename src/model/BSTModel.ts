@@ -11,6 +11,22 @@ import type BSTInsertionSecondaryDescription from '../controller/secondaryDescri
 import TreeModel from './TreeModel'
 
 export default class BSTModel extends TreeModel {
+  protected static findSuccessorAndParentAndPath (node: DataNode): { successor: DataNode, successorParent: DataNode, pathToSuccessor: Array<BSTPathInstruction<DataNode, BSTSuccessorSecondaryDescription>> } {
+    assert(node.left !== null && node.right !== null, 'Node does not have 2 children')
+    let successor = node.right
+    let successorParent = node
+    const pathToSuccessor: Array<BSTPathInstruction<DataNode, BSTSuccessorSecondaryDescription>> = []
+
+    // Find the node with the minimum value (AKA successor) in the right subtree
+    while (successor.left !== null) {
+      pathToSuccessor.push({ node: successor, secondaryDescription: { type: 'successor', direction: 'left' } })
+      successorParent = successor
+      successor = successor.left
+    }
+    pathToSuccessor.push({ node: successor, secondaryDescription: { type: 'successor', direction: 'stop' } })
+    return { successor, successorParent, pathToSuccessor }
+  }
+
   /**
    * Inserts a new node into the model
    * @param value The value to insert
@@ -94,7 +110,7 @@ export default class BSTModel extends TreeModel {
       return deletionInformation
     // Node with two children
     } else {
-      const { successor, successorParent, pathToSuccessor } = this.findSuccessorAndParentAndPath(currNode)
+      const { successor, successorParent, pathToSuccessor } = BSTModel.findSuccessorAndParentAndPath(currNode)
       // Replace the value of the node to delete with the found successor
       currNode.value = successor.value
 
@@ -108,21 +124,5 @@ export default class BSTModel extends TreeModel {
       const deletionInformation: BSTDeletionInformation2Children<DataNode> = { type: '2Children', shape: this.calculateShape(), path, victimNode: currNode, pathToSuccessor, successorNode: successor }
       return deletionInformation
     }
-  }
-
-  protected findSuccessorAndParentAndPath (node: DataNode): { successor: DataNode, successorParent: DataNode, pathToSuccessor: Array<BSTPathInstruction<DataNode, BSTSuccessorSecondaryDescription>> } {
-    assert(node.left !== null && node.right !== null, 'Node does not have 2 children')
-    let successor = node.right
-    let successorParent = node
-    const pathToSuccessor: Array<BSTPathInstruction<DataNode, BSTSuccessorSecondaryDescription>> = []
-
-    // Find the node with the minimum value (AKA successor) in the right subtree
-    while (successor.left !== null) {
-      pathToSuccessor.push({ node: successor, secondaryDescription: { type: 'successor', direction: 'left' } })
-      successorParent = successor
-      successor = successor.left
-    }
-    pathToSuccessor.push({ node: successor, secondaryDescription: { type: 'successor', direction: 'stop' } })
-    return { successor, successorParent, pathToSuccessor }
   }
 }

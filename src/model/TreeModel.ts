@@ -7,21 +7,32 @@ import type BSTFindSecondaryDescription from '../controller/secondaryDescription
 import type DataNode from './DataNode'
 
 export default abstract class TreeModel {
-  protected root: DataNode | null = null
   public arrowDirection: ArrowDirection = ArrowDirection.PARENT_TO_CHILD
+  protected root: DataNode | null = null
 
   abstract insert (value: number): any
   // abstract delete (value: number): any
 
-  protected calculateShape (): TreeShape<DataNode> {
-    if (this.root == null) {
-      return { inorderTraversal: [], layers: [], arrows: new Set() }
+  public find (value: number): BSTFindInformation<DataNode> {
+    // Find the path the tree takes to find the node to delete
+    const path: Array<BSTPathInstruction<DataNode, BSTFindSecondaryDescription>> = []
+    let currNode: DataNode | null = this.root
+    while (currNode != null && currNode.value !== value) {
+      if (value < currNode.value) {
+        path.push({ node: currNode, secondaryDescription: { type: 'find', direction: 'left', targetValue: value, nodeValue: currNode.value } })
+        currNode = currNode.left
+      } else {
+        path.push({ node: currNode, secondaryDescription: { type: 'find', direction: 'right', targetValue: value, nodeValue: currNode.value } })
+        currNode = currNode.right
+      }
     }
 
-    const inorderTraversal = this.root.getTraversal(ArrowDirection.INORDER)
-    const layers = this.calculateLayers()
-    const arrows = this.calculateArrows()
-    return { inorderTraversal, layers, arrows }
+    // If found
+    if (currNode != null) {
+      path.push({ node: currNode, secondaryDescription: { type: 'find', direction: 'stop', targetValue: value, nodeValue: currNode.value } })
+    }
+
+    return { path, nodeFound: currNode }
   }
 
   // Returns an array of pairs of nodes to draw arrows between
@@ -53,6 +64,17 @@ export default abstract class TreeModel {
     return arrows
   }
 
+  protected calculateShape (): TreeShape<DataNode> {
+    if (this.root == null) {
+      return { inorderTraversal: [], layers: [], arrows: new Set() }
+    }
+
+    const inorderTraversal = this.root.getTraversal(ArrowDirection.INORDER)
+    const layers = this.calculateLayers()
+    const arrows = this.calculateArrows()
+    return { inorderTraversal, layers, arrows }
+  }
+
   // Returns an array of arrays of nodes, where each array is a layer of the tree
   protected calculateLayers (): DataNode[][] {
     if (this.root == null) {
@@ -78,27 +100,5 @@ export default abstract class TreeModel {
       layers.push(layer)
     }
     return layers
-  }
-
-  public find (value: number): BSTFindInformation<DataNode> {
-    // Find the path the tree takes to find the node to delete
-    const path: Array<BSTPathInstruction<DataNode, BSTFindSecondaryDescription>> = []
-    let currNode: DataNode | null = this.root
-    while (currNode != null && currNode.value !== value) {
-      if (value < currNode.value) {
-        path.push({ node: currNode, secondaryDescription: { type: 'find', direction: 'left', targetValue: value, nodeValue: currNode.value } })
-        currNode = currNode.left
-      } else {
-        path.push({ node: currNode, secondaryDescription: { type: 'find', direction: 'right', targetValue: value, nodeValue: currNode.value } })
-        currNode = currNode.right
-      }
-    }
-
-    // If found
-    if (currNode != null) {
-      path.push({ node: currNode, secondaryDescription: { type: 'find', direction: 'stop', targetValue: value, nodeValue: currNode.value } })
-    }
-
-    return { path, nodeFound: currNode }
   }
 }

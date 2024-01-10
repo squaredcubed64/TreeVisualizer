@@ -3,10 +3,27 @@ import type AVLInsertionInformation from '../controller/operationInformation/AVL
 import type RotationPathInstruction from '../controller/pathInstruction/RotationPathInstruction'
 import type RotationSecondaryDescription from '../controller/secondaryDescription/RotationSecondaryDescription'
 import BSTView from './BSTView'
-import { FRAMES_AFTER_ROTATION, FRAMES_BETWEEN_HIGHLIGHTS, MOVE_DURATION_FRAMES, ROTATION_PATH_DESCRIPTION, ROTATION_PATH_HIGHLIGHT_COLOR } from './Constants'
-import type DisplayNode from './DisplayNode'
+import DisplayNode from './DisplayNode'
 
 export default class AVLView extends BSTView {
+  private static readonly ROTATION_PATH_DESCRIPTION = 'Go back up the tree, rotating nodes as necessary to maintain the AVL property.'
+  private static readonly ROTATION_PATH_HIGHLIGHT_COLOR = 'red'
+  private static readonly FRAMES_AFTER_ROTATION = 60
+
+  private static convertRotationSecondaryDescriptionToString (secondaryDescription: RotationSecondaryDescription): string {
+    const { leftHeight, rightHeight, newHeight, newBalanceFactor } = secondaryDescription
+    let out = ''
+    out += `The node's height is Max(${leftHeight}, ${rightHeight}) + 1 = ${newHeight}. The node's balance factor is ${leftHeight} - ${rightHeight} = ${newBalanceFactor}. `
+    if (newBalanceFactor < -1) {
+      out += 'Rotate because balance factor < -1'
+    } else if (newBalanceFactor > 1) {
+      out += 'Rotate because balance factor > 1'
+    } else {
+      out += 'Do not rotate because balance factor is between -1 and 1'
+    }
+    return out
+  }
+
   public insert (viewInsertionInformation: AVLInsertionInformation<DisplayNode>): void {
     const { path, shape, value, rotationPath } = viewInsertionInformation
     super.insert({ path, shape, value })
@@ -20,7 +37,7 @@ export default class AVLView extends BSTView {
         framesToWait: 0,
         function: () => {
           this.animateShapeChange(shapeAfterRotation)
-          return { framesAfterCall: MOVE_DURATION_FRAMES + FRAMES_AFTER_ROTATION, description: ROTATION_PATH_DESCRIPTION, secondaryDescription }
+          return { framesAfterCall: DisplayNode.MOVE_DURATION_FRAMES + AVLView.FRAMES_AFTER_ROTATION, description: AVLView.ROTATION_PATH_DESCRIPTION, secondaryDescription }
         }
       })
     }
@@ -29,10 +46,10 @@ export default class AVLView extends BSTView {
 
       // Highlight the node and explain if a rotation must be performed and why
       this.functionQueue.push({
-        framesToWait: FRAMES_BETWEEN_HIGHLIGHTS,
+        framesToWait: BSTView.FRAMES_BETWEEN_HIGHLIGHTS,
         function: () => {
-          node.highlight(ROTATION_PATH_HIGHLIGHT_COLOR, Infinity)
-          return { framesAfterCall: 0, description: ROTATION_PATH_DESCRIPTION, secondaryDescription: this.convertRotationSecondaryDescriptionToString(secondaryDescription) }
+          node.highlight(AVLView.ROTATION_PATH_HIGHLIGHT_COLOR, Infinity)
+          return { framesAfterCall: 0, description: AVLView.ROTATION_PATH_DESCRIPTION, secondaryDescription: AVLView.convertRotationSecondaryDescriptionToString(secondaryDescription) }
         }
       })
 
@@ -44,19 +61,5 @@ export default class AVLView extends BSTView {
         pushRotationOntoFunctionQueue(shapesAfterRotation[1], 'Second rotation')
       }
     }
-  }
-
-  private convertRotationSecondaryDescriptionToString (secondaryDescription: RotationSecondaryDescription): string {
-    const { leftHeight, rightHeight, newHeight, newBalanceFactor } = secondaryDescription
-    let out = ''
-    out += `The node's height is Max(${leftHeight}, ${rightHeight}) + 1 = ${newHeight}. The node's balance factor is ${leftHeight} - ${rightHeight} = ${newBalanceFactor}. `
-    if (newBalanceFactor < -1) {
-      out += 'Rotate because balance factor < -1'
-    } else if (newBalanceFactor > 1) {
-      out += 'Rotate because balance factor > 1'
-    } else {
-      out += 'Do not rotate because balance factor is between -1 and 1'
-    }
-    return out
   }
 }

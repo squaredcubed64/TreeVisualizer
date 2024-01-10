@@ -16,9 +16,43 @@ import TreeView from '../view/TreeView'
 
 export default class BSTController {
   private readonly dataNodeToDisplayNode = new Map<DataNode, DisplayNode>()
+  private readonly model: BSTModel
+  private readonly view: BSTView
 
-  constructor (private readonly model: BSTModel, private readonly view: BSTView) {
-    this.dataNodeToDisplayNode = new Map<DataNode, DisplayNode>()
+  constructor (model: BSTModel, view: BSTView) {
+    this.model = model
+    this.view = view
+  }
+
+  public setArrowDirection (arrowDirection: ArrowDirection): void {
+    this.model.arrowDirection = arrowDirection
+    this.view.setArrows(this.translateArrows(this.model.calculateArrows()))
+  }
+
+  public getArrowDirection (): ArrowDirection {
+    return this.model.arrowDirection
+  }
+
+  public setAnimationSpeedSetting (animationSpeedSetting: number): void {
+    this.view.setAnimationSpeedSetting(animationSpeedSetting)
+  }
+
+  public getAnimationSpeedSetting (): number {
+    return this.view.getAnimationSpeedSetting()
+  }
+
+  /**
+   * Call BSTView.animate(), a recursive function that uses requestAnimationFrame()
+   */
+  public animate (): void {
+    const canvas = document.getElementById('canvas') as HTMLCanvasElement
+    const context = canvas.getContext('2d')
+    assert(context !== null, 'context is null')
+    this.view.animate(canvas, context)
+  }
+
+  public stopAnimation (): void {
+    this.view.stopAnimation()
   }
 
   public insert (value: number): void {
@@ -30,17 +64,23 @@ export default class BSTController {
     this.view.insert(viewInsertionInformation)
   }
 
+  public delete (value: number): void {
+    const modelDeletionInformation = this.model.delete(value)
+    const viewDeletionInformation = this.translateDeletionInformation(modelDeletionInformation)
+    this.view.delete(viewDeletionInformation)
+  }
+
+  public find (value: number): void {
+    const modelFindInformation = this.model.find(value)
+    const viewFindInformation = this.translateFindInformation(modelFindInformation)
+    this.view.find(viewFindInformation)
+  }
+
   private translateInsertionInformation (modelInsertionInformation: BSTInsertionInformation<DataNode>): BSTInsertionInformation<DisplayNode> {
     const { shape, path, value } = modelInsertionInformation
     const translatedShape = this.translateShape(shape)
     const translatedPath = this.translatePath(path)
     return { shape: translatedShape, path: translatedPath, value }
-  }
-
-  public delete (value: number): void {
-    const modelDeletionInformation = this.model.delete(value)
-    const viewDeletionInformation = this.translateDeletionInformation(modelDeletionInformation)
-    this.view.delete(viewDeletionInformation)
   }
 
   private translateDeletionInformation (modelDeletionInformation: BSTDeletionInformation<DataNode>): BSTDeletionInformation<DisplayNode> {
@@ -60,12 +100,6 @@ export default class BSTController {
         return { type: 'VictimNotFound', path: this.translatePath(path) }
       }
     }
-  }
-
-  public find (value: number): void {
-    const modelFindInformation = this.model.find(value)
-    const viewFindInformation = this.translateFindInformation(modelFindInformation)
-    this.view.find(viewFindInformation)
   }
 
   private translateFindInformation (modelFindInformation: BSTFindInformation<DataNode>): BSTFindInformation<DisplayNode> {
@@ -101,36 +135,5 @@ export default class BSTController {
   private translateShape (shape: TreeShape<DataNode>): TreeShape<DisplayNode> {
     const { inorderTraversal, layers, arrows } = shape
     return { inorderTraversal: this.translateArray(inorderTraversal), layers: this.translateLayers(layers), arrows: this.translateArrows(arrows) }
-  }
-
-  /**
-   * Call BSTView.animate(), a recursive function that uses requestAnimationFrame()
-   */
-  public animate (): void {
-    const canvas = document.getElementById('canvas') as HTMLCanvasElement
-    const context = canvas.getContext('2d')
-    assert(context !== null, 'context is null')
-    this.view.animate(canvas, context)
-  }
-
-  public setAnimationSpeedSetting (animationSpeedSetting: number): void {
-    this.view.setAnimationSpeedSetting(animationSpeedSetting)
-  }
-
-  public getAnimationSpeedSetting (): number {
-    return this.view.getAnimationSpeedSetting()
-  }
-
-  public stopAnimation (): void {
-    this.view.stopAnimation()
-  }
-
-  public setArrowDirection (arrowDirection: ArrowDirection): void {
-    this.model.arrowDirection = arrowDirection
-    this.view.setArrows(this.translateArrows(this.model.calculateArrows()))
-  }
-
-  public getArrowDirection (): ArrowDirection {
-    return this.model.arrowDirection
   }
 }

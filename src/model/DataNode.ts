@@ -13,6 +13,21 @@ export default class DataNode {
     this.value = value
   }
 
+  public getTraversal (arrowDirection: ArrowDirection): DataNode[] {
+    switch (arrowDirection) {
+      case ArrowDirection.PREORDER:
+        return this.getPreorderTraversal()
+      case ArrowDirection.INORDER:
+        return this.getInorderTraversal()
+      case ArrowDirection.POSTORDER:
+        return this.getPostorderTraversal()
+      case ArrowDirection.PARENT_TO_CHILD:
+        throw new Error('Cannot get traversal for parent to child')
+      default:
+        throw new Error('Invalid arrow direction')
+    }
+  }
+
   private getPreorderTraversal (): DataNode[] {
     const leftNodes = (this.left != null) ? this.left.getPreorderTraversal() : []
     const rightNodes = (this.right != null) ? this.right.getPreorderTraversal() : []
@@ -29,20 +44,5 @@ export default class DataNode {
     const leftNodes = (this.left != null) ? this.left.getPostorderTraversal() : []
     const rightNodes = (this.right != null) ? this.right.getPostorderTraversal() : []
     return [...leftNodes, ...rightNodes, this]
-  }
-
-  public getTraversal (arrowDirection: ArrowDirection): DataNode[] {
-    switch (arrowDirection) {
-      case ArrowDirection.PREORDER:
-        return this.getPreorderTraversal()
-      case ArrowDirection.INORDER:
-        return this.getInorderTraversal()
-      case ArrowDirection.POSTORDER:
-        return this.getPostorderTraversal()
-      case ArrowDirection.PARENT_TO_CHILD:
-        throw new Error('Cannot get traversal for parent to child')
-      default:
-        throw new Error('Invalid arrow direction')
-    }
   }
 }

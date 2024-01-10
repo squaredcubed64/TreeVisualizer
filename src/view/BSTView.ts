@@ -5,7 +5,6 @@ import {
   TARGET_Y_GAP,
   MOVE_DURATION_FRAMES,
   SHRINK_DURATION_FRAMES,
-  FRAMES_AFTER_SHRINK,
   FRAMES_AFTER_HIGHLIGHTING_VICTIM_WITH_TWO_CHILDREN,
   DEFAULT_HIGHLIGHT_COLOR,
   FIND_SUCCESSOR_HIGHLIGHT_COLOR,
@@ -17,11 +16,9 @@ import {
   INSERTION_DESCRIPTIONS,
   DELETION_DESCRIPTIONS,
   FIND_DESCRIPTIONS,
-  FILL_COLOR,
-  STROKE_COLOR,
   FRAMES_AFTER_UNSUCCESSFUL_DELETE
 } from './Constants'
-import DisplayNode from './DisplayNode'
+import type DisplayNode from './DisplayNode'
 import type DelayedFunctionCallFunctionResult from './delayedFunctionCall/DelayedFunctionCallFunctionResult'
 import TreeView from './TreeView'
 import type BSTInsertionInformation from '../controller/operationInformation/BSTInsertionInformation'
@@ -39,7 +36,7 @@ export default class BSTView extends TreeView {
 
     // If the tree is empty, set the root without animating
     if (this.shape.inorderTraversal.length === 0) {
-      this.preparePlaceholderColorsAndValue(placeholderNode, value)
+      TreeView.preparePlaceholderColorsAndValue(placeholderNode, value)
       placeholderNode.x = ROOT_TARGET_X
       placeholderNode.y = ROOT_TARGET_Y
       this.animateShapeChange(shapeWithPlaceholder)
@@ -55,7 +52,7 @@ export default class BSTView extends TreeView {
 
   // Prepares the placeholder node and tells nodes to start moving to new target positions
   private setupInsertionAnimation (valueToInsert: number, shapeWithPlaceholder: TreeShape<DisplayNode>, placeholderNode: DisplayNode, parent: DisplayNode): DelayedFunctionCallFunctionResult {
-    this.preparePlaceholderColorsAndValue(placeholderNode, valueToInsert)
+    TreeView.preparePlaceholderColorsAndValue(placeholderNode, valueToInsert)
     if (placeholderNode.value < parent.value) {
       placeholderNode.x = parent.x - TARGET_X_GAP
     } else {
@@ -67,19 +64,13 @@ export default class BSTView extends TreeView {
     return { framesAfterCall: MOVE_DURATION_FRAMES, description: INSERTION_DESCRIPTIONS.INSERT_NEW_NODE }
   }
 
-  private preparePlaceholderColorsAndValue (placeholderNode: DisplayNode, value: number): void {
-    placeholderNode.fillColor = FILL_COLOR
-    placeholderNode.strokeColor = STROKE_COLOR
-    placeholderNode.value = value
-  }
-
   public delete (viewDeletionInformation: BSTDeletionInformation<DisplayNode>): void {
     switch (viewDeletionInformation.type) {
       // Animation: highlight path, shrink victim node, then move nodes to new target positions
       case 'LEQ1Child': {
         const { shape, path, victimNode } = viewDeletionInformation
         this.pushNodeHighlightingOntoFunctionQueue(path, DEFAULT_HIGHLIGHT_COLOR, DELETION_DESCRIPTIONS.FIND_NODE_TO_DELETE)
-        this.functionQueue.push({ framesToWait: 0, function: () => { victimNode.startShrinkingIntoNothing(); return { framesAfterCall: SHRINK_DURATION_FRAMES + FRAMES_AFTER_SHRINK, description: DELETION_DESCRIPTIONS.DELETE_NODE } } })
+        this.functionQueue.push({ framesToWait: 0, function: () => { victimNode.startShrinkingIntoNothing(); return { framesAfterCall: SHRINK_DURATION_FRAMES, description: DELETION_DESCRIPTIONS.DELETE_NODE } } })
         this.functionQueue.push({ framesToWait: 0, function: () => { this.animateShapeChange(shape); return { framesAfterCall: MOVE_DURATION_FRAMES, description: DELETION_DESCRIPTIONS.DELETE_NODE } } })
         break
       }
@@ -92,7 +83,7 @@ export default class BSTView extends TreeView {
         this.functionQueue.push({ framesToWait: 0, function: () => { successorNode.highlight(FIND_SUCCESSOR_HIGHLIGHT_COLOR, Infinity); return { framesAfterCall: 0, description: DELETION_DESCRIPTIONS.REPLACE_NODE_WITH_SUCCESSOR } } })
         this.functionQueue.push({ framesToWait: FRAMES_BEFORE_REPLACE_WITH_SUCCESSOR, function: () => { victimNode.value = successorNode.value; return { framesAfterCall: 0, description: DELETION_DESCRIPTIONS.REPLACE_NODE_WITH_SUCCESSOR } } })
         this.functionQueue.push({ framesToWait: FRAMES_BEFORE_UNHIGHLIGHT_VICTIM, function: () => { victimNode.unhighlight(); successorNode.unhighlight(); return { framesAfterCall: 0, description: DELETION_DESCRIPTIONS.REPLACE_NODE_WITH_SUCCESSOR } } })
-        this.functionQueue.push({ framesToWait: FRAMES_AFTER_HIGHLIGHTING_VICTIM_WITH_TWO_CHILDREN, function: () => { successorNode.startShrinkingIntoNothing(); return { framesAfterCall: SHRINK_DURATION_FRAMES + FRAMES_AFTER_SHRINK, description: DELETION_DESCRIPTIONS.DELETE_SUCCESSOR } } })
+        this.functionQueue.push({ framesToWait: FRAMES_AFTER_HIGHLIGHTING_VICTIM_WITH_TWO_CHILDREN, function: () => { successorNode.startShrinkingIntoNothing(); return { framesAfterCall: SHRINK_DURATION_FRAMES, description: DELETION_DESCRIPTIONS.DELETE_SUCCESSOR } } })
         this.functionQueue.push({ framesToWait: 0, function: () => { this.animateShapeChange(shape); return { framesAfterCall: MOVE_DURATION_FRAMES, description: DELETION_DESCRIPTIONS.DELETE_SUCCESSOR } } })
         break
       }
@@ -108,11 +99,6 @@ export default class BSTView extends TreeView {
     }
   }
 
-  private animateShapeChange (newShape: TreeShape<DisplayNode>): void {
-    this.shape = newShape
-    this.setTargetPositions()
-  }
-
   // Animation: highlight path, then highlight node if found
   find (viewFindInformation: BSTFindInformation<DisplayNode>): void {
     const { path, nodeFound } = viewFindInformation
@@ -124,9 +110,5 @@ export default class BSTView extends TreeView {
     } else {
       this.functionQueue.push({ framesToWait: 0, function: () => { return { framesAfterCall: FRAMES_AFTER_FIND, description: FIND_DESCRIPTIONS.DID_NOT_FIND_NODE } } })
     }
-  }
-
-  public makePlaceholderNode (): DisplayNode {
-    return new DisplayNode(NaN, NaN, 'placeholder', 'placeholder', NaN)
   }
 }

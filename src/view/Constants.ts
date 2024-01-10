@@ -1,5 +1,3 @@
-import { resizeCanvas } from './Utils'
-
 // Node constants
 export const MOVE_DURATION_FRAMES = 150
 export const DEFAULT_HIGHLIGHT_DURATION_FRAMES = 60
@@ -14,9 +12,9 @@ export const SHRINK_DURATION_FRAMES = 60
 export const MIN_RADIUS_TO_DRAW_TEXT = 10
 
 // Tree constants
-const canvas = document.getElementById('canvas') as HTMLCanvasElement
-resizeCanvas(canvas)
-export const ROOT_TARGET_X = canvas.width / 2
+// const canvas = document.getElementById('canvas') as HTMLCanvasElement
+// TODO: have this change when the canvas is resized (so it shouldn't be a const)
+export const ROOT_TARGET_X = 300 // canvas.width / 2
 export const ROOT_TARGET_Y = 50
 export const TARGET_X_GAP = 75
 export const TARGET_Y_GAP = 75
@@ -27,9 +25,6 @@ export const ARROW_HEAD_ANGLE = Math.PI / 6
 export const ARROW_HEAD_LENGTH = 10
 export const ARROW_LINE_WIDTH = 2
 export const FRAMES_BETWEEN_HIGHLIGHTS = 60
-export const FRAMES_BEFORE_FIRST_HIGHLIGHT = 60
-export const FRAMES_AFTER_LAST_HIGHLIGHT = 60
-export const FRAMES_AFTER_SHRINK = 0
 export const FRAMES_AFTER_HIGHLIGHTING_VICTIM_WITH_TWO_CHILDREN = 60
 export const FRAMES_BEFORE_REPLACE_WITH_SUCCESSOR = 60
 export const FRAMES_BEFORE_UNHIGHLIGHT_VICTIM = 60
@@ -57,3 +52,7 @@ export enum FIND_DESCRIPTIONS {
   FOUND_NODE = 'Found the node.',
   DID_NOT_FIND_NODE = 'Did not find the node.'
 }
+export const ROTATION_PATH_DESCRIPTION = 'Go back up the tree, rotating nodes as necessary to maintain the AVL property.'
+
+export const ROTATION_PATH_HIGHLIGHT_COLOR = 'red'
+export const FRAMES_AFTER_ROTATION = 60

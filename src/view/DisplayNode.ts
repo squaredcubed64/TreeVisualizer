@@ -1,3 +1,4 @@
+import { assert } from '../Utils'
 import {
   MOVE_DURATION_FRAMES,
   DEFAULT_HIGHLIGHT_DURATION_FRAMES,
@@ -12,11 +13,6 @@ import {
   MAX_RADIUS,
   MIN_RADIUS_TO_DRAW_TEXT
 } from './Constants'
-import {
-  motionCurve,
-  radiusGrowthCurve,
-  radiusShrinkingCurve
-} from './Utils'
 
 export default class DisplayNode {
   public x: number
@@ -68,16 +64,16 @@ export default class DisplayNode {
 
     // 0 < motionProgress < 1
     const motionProgress = (MOVE_DURATION_FRAMES - this.framesUntilStop) / MOVE_DURATION_FRAMES
-    this.x = this.previousX + (this.targetX - this.previousX) * motionCurve(motionProgress)
-    this.y = this.previousY + (this.targetY - this.previousY) * motionCurve(motionProgress)
+    this.x = this.previousX + (this.targetX - this.previousX) * DisplayNode.motionCurve(motionProgress)
+    this.y = this.previousY + (this.targetY - this.previousY) * DisplayNode.motionCurve(motionProgress)
 
     // If it is being deleted
     if (this.framesUntilShrunk >= 0) {
       const shrinkingProgress = (SHRINK_DURATION_FRAMES - this.framesUntilShrunk) / SHRINK_DURATION_FRAMES
-      this.currentRadius = MAX_RADIUS * radiusShrinkingCurve(shrinkingProgress)
+      this.currentRadius = MAX_RADIUS * DisplayNode.radiusShrinkingCurve(shrinkingProgress)
     } else {
       const growthProgress = (GROW_DURATION_FRAMES - this.framesUntilGrown) / GROW_DURATION_FRAMES
-      this.currentRadius = MAX_RADIUS * radiusGrowthCurve(growthProgress)
+      this.currentRadius = MAX_RADIUS * DisplayNode.radiusGrowthCurve(growthProgress)
     }
   }
 
@@ -133,5 +129,34 @@ export default class DisplayNode {
 
   startShrinkingIntoNothing (): void {
     this.framesUntilShrunk = SHRINK_DURATION_FRAMES
+  }
+
+  private static easeInOutCurve (x: number): number {
+    return x * x * (3 - 2 * x)
+  }
+
+  private static bounceCurve (x: number): number {
+    if (x < 0.6) {
+      return DisplayNode.easeInOutCurve(x) / 0.648
+    } else {
+      return 1 + Math.sin(7.5 * Math.PI * (x - 0.6)) / Math.exp(4 * x)
+    }
+  }
+
+  // Curves that start at 0, 0 and go to 1, 1
+  private static motionCurve (progress: number): number {
+    assert(progress >= 0 && progress <= 1, 'progress must be between 0 and 1')
+    return DisplayNode.easeInOutCurve(progress)
+  }
+
+  private static radiusGrowthCurve (progress: number): number {
+    assert(progress >= 0 && progress <= 1, 'progress must be between 0 and 1')
+    return DisplayNode.easeInOutCurve(progress)
+  }
+
+  // Curve that starts at 1, 1 and goes to 0, 0
+  private static radiusShrinkingCurve (progress: number): number {
+    assert(progress >= 0 && progress <= 1, 'progress must be between 0 and 1')
+    return 1 - DisplayNode.easeInOutCurve(progress)
   }
 }

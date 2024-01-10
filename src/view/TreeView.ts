@@ -2,17 +2,16 @@ import {
   ARROW_HEAD_ANGLE,
   ARROW_HEAD_LENGTH,
   ARROW_LINE_WIDTH,
-  FRAMES_AFTER_LAST_HIGHLIGHT,
-  FRAMES_BEFORE_FIRST_HIGHLIGHT,
   FRAMES_BETWEEN_HIGHLIGHTS,
   DEFAULT_HIGHLIGHT_DURATION_FRAMES,
   ROOT_TARGET_X,
   ROOT_TARGET_Y,
   TARGET_X_GAP,
-  TARGET_Y_GAP
+  TARGET_Y_GAP,
+  FILL_COLOR,
+  STROKE_COLOR
 } from './Constants'
-import type DisplayNode from './DisplayNode'
-import { drawArrowFromNodeToNode } from './Utils'
+import DisplayNode from './DisplayNode'
 import type DelayedFunctionCall from './delayedFunctionCall/DelayedFunctionCall'
 import type TreeShape from '../controller/TreeShape'
 import type BSTPathInstruction from '../controller/pathInstruction/BSTPathInstruction'
@@ -35,29 +34,16 @@ export default abstract class TreeView {
 
   // Pushes methods onto functionQueue to highlight nodes along path
   public pushNodeHighlightingOntoFunctionQueue<S extends BSTSecondaryDescription> (path: Array<BSTPathInstruction<DisplayNode, S>>, highlightColor: string, description: string): void {
+    // TODO see if this can be removed, and refactor to use enhanced for loop
     assert(path.length > 0, 'Path is empty')
     for (let i = 0; i < path.length; i++) {
       const node = path[i].node
-      let framesToWait: number
-      if (i === 0) {
-        framesToWait = FRAMES_BEFORE_FIRST_HIGHLIGHT
-      } else {
-        framesToWait = FRAMES_BETWEEN_HIGHLIGHTS
-      }
-
-      let framesAfterCall: number
-      framesAfterCall = DEFAULT_HIGHLIGHT_DURATION_FRAMES
-      if (i === path.length - 1) {
-        framesAfterCall += FRAMES_AFTER_LAST_HIGHLIGHT
-      }
-
-      // TODO get secondary descriptions from path instructions
-      this.functionQueue.push({ framesToWait, function: () => { node.highlight(highlightColor); return { framesAfterCall, description, secondaryDescription: this.convertSecondaryDescriptionToString(path[i].secondaryDescription) } } })
+      this.functionQueue.push({ framesToWait: FRAMES_BETWEEN_HIGHLIGHTS, function: () => { node.highlight(highlightColor); return { framesAfterCall: DEFAULT_HIGHLIGHT_DURATION_FRAMES, description, secondaryDescription: this.convertSecondaryDescriptionToString(path[i].secondaryDescription) } } })
     }
   }
 
   // TODO perhaps move this to BSTView, depending on if AVLView uses it
-  private convertSecondaryDescriptionToString (secondaryDescription: BSTSecondaryDescription): string {
+  protected convertSecondaryDescriptionToString (secondaryDescription: BSTSecondaryDescription): string {
     switch (secondaryDescription.type) {
       case 'insert':
         switch (secondaryDescription.direction) {
@@ -119,7 +105,7 @@ export default abstract class TreeView {
 
     // Draw arrows first
     this.shape.arrows.forEach((pair) => {
-      drawArrowFromNodeToNode(pair[0], pair[1], context, ARROW_HEAD_ANGLE, ARROW_HEAD_LENGTH, ARROW_LINE_WIDTH)
+      TreeView.drawArrowFromNodeToNode(pair[0], pair[1], context)
     })
 
     // Draw nodes
@@ -208,6 +194,11 @@ export default abstract class TreeView {
     }
   }
 
+  protected animateShapeChange (newShape: TreeShape<DisplayNode>): void {
+    this.shape = newShape
+    this.setTargetPositions()
+  }
+
   public setAnimationSpeedSetting (animationSpeedSetting: number): void {
     this.animationSpeedSetting = animationSpeedSetting
     this.animationSpeed = 1.2 ** (animationSpeedSetting - 10)
@@ -219,5 +210,39 @@ export default abstract class TreeView {
 
   public setArrows (arrows: Set<[DisplayNode, DisplayNode]>): void {
     this.shape.arrows = arrows
+  }
+
+  protected static preparePlaceholderColorsAndValue (placeholderNode: DisplayNode, value: number): void {
+    placeholderNode.fillColor = FILL_COLOR
+    placeholderNode.strokeColor = STROKE_COLOR
+    placeholderNode.value = value
+  }
+
+  public static makePlaceholderNode (): DisplayNode {
+    return new DisplayNode(NaN, NaN, 'placeholder', 'placeholder', NaN)
+  }
+
+  private static drawArrow (fromX: number, fromY: number, toX: number, toY: number, context: CanvasRenderingContext2D): void {
+    const dx = toX - fromX
+    const dy = toY - fromY
+    const angle = Math.atan2(dy, dx)
+
+    context.beginPath()
+    context.lineWidth = ARROW_LINE_WIDTH
+    context.moveTo(fromX, fromY)
+    context.lineTo(toX, toY)
+    context.lineTo(toX - ARROW_HEAD_LENGTH * Math.cos(angle - ARROW_HEAD_ANGLE), toY - ARROW_HEAD_LENGTH * Math.sin(angle - ARROW_HEAD_ANGLE))
+    context.moveTo(toX, toY)
+    context.lineTo(toX - ARROW_HEAD_LENGTH * Math.cos(angle + ARROW_HEAD_ANGLE), toY - ARROW_HEAD_LENGTH * Math.sin(angle + ARROW_HEAD_ANGLE))
+    context.stroke()
+  }
+
+  private static drawArrowFromNodeToNode (fromNode: DisplayNode, toNode: DisplayNode, context: CanvasRenderingContext2D): void {
+    const dx = toNode.x - fromNode.x
+    const dy = toNode.y - fromNode.y
+    const dist = Math.sqrt(dx * dx + dy * dy)
+    const xOffsetFromCenter = dx * toNode.currentRadius / dist
+    const yOffsetFromCenter = dy * toNode.currentRadius / dist
+    TreeView.drawArrow(fromNode.x, fromNode.y, toNode.x - xOffsetFromCenter, toNode.y - yOffsetFromCenter, context)
   }
 }

@@ -12,6 +12,7 @@ import type BSTFindInformation from './operationInformation/BSTFindInformation'
 import type TreeShape from './TreeShape'
 import type BSTDeletionInformation from './operationInformation/deletionInformation/BSTDeletionInformation'
 import type BSTSecondaryDescription from './secondaryDescription/BSTSecondaryDescription'
+import TreeView from '../view/TreeView'
 
 export default class BSTController {
   private readonly dataNodeToDisplayNode = new Map<DataNode, DisplayNode>()
@@ -23,7 +24,7 @@ export default class BSTController {
   public insert (value: number): void {
     const { insertionInformation: modelInsertionInformation, insertedNode: insertedDataNode } = this.model.insert(value)
     // A placeholder DisplayNode for the node that's being inserted. The view will update this upon insertion.
-    const placeholderDisplayNode = this.view.makePlaceholderNode()
+    const placeholderDisplayNode = TreeView.makePlaceholderNode()
     this.dataNodeToDisplayNode.set(insertedDataNode, placeholderDisplayNode)
     const viewInsertionInformation = this.translateInsertionInformation(modelInsertionInformation)
     this.view.insert(viewInsertionInformation)

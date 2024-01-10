@@ -1,9 +1,14 @@
 import BSTModel from './model/BSTModel'
 import ArrowDirection from './controller/ArrowDirection'
-import { resizeCanvas } from './view/Utils'
 import BSTView from './view/BSTView'
 import BSTController from './controller/BSTController'
 import { assert } from './Utils'
+
+// Helpers
+function resizeCanvas (canvas: HTMLCanvasElement): void {
+  canvas.width = window.innerWidth
+  canvas.height = window.innerHeight
+}
 
 // Make canvas fill the screen
 const canvas = document.getElementById('canvas') as HTMLCanvasElement

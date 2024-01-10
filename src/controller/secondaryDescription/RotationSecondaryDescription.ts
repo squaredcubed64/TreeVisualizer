@@ -1,5 +1,8 @@
-export default interface AVLSecondaryDescription {
-  type: 'avl'
+/**
+ * Explains why an AVL tree rotation is necessary.
+ */
+export default interface RotationSecondaryDescription {
+  type: 'rotation'
   leftHeight: number
   rightHeight: number
   /**

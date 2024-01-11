@@ -14,8 +14,10 @@ function resizeCanvas (canvas: HTMLCanvasElement): void {
 const canvas = document.getElementById('canvas') as HTMLCanvasElement
 window.addEventListener('resize', () => {
   resizeCanvas(canvas)
+  BSTController.centerTree(canvas.width)
 })
 resizeCanvas(canvas)
+BSTController.centerTree(canvas.width)
 
 // Initialize controller
 function makeBSTController (): BSTController {

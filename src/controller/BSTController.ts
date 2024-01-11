@@ -24,6 +24,10 @@ export default class BSTController {
     this.view = view
   }
 
+  public static centerTree (canvasWidth: number): void {
+    TreeView.centerTree(canvasWidth)
+  }
+
   public setArrowDirection (arrowDirection: ArrowDirection): void {
     this.model.arrowDirection = arrowDirection
     this.view.setArrows(this.translateArrows(this.model.calculateArrows()))

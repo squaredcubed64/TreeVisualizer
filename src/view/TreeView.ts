@@ -4,9 +4,7 @@ import type TreeShape from '../controller/TreeShape'
 import { assert } from '../Utils'
 
 export default abstract class TreeView {
-  // const canvas = document.getElementById('canvas') as HTMLCanvasElement
-  // TODO: have this change when the canvas is resized (so it shouldn't be a const)
-  protected static readonly ROOT_TARGET_X = 700 // canvas.width / 2
+  protected static ROOT_TARGET_X = 700
   protected static readonly ROOT_TARGET_Y = 50
   protected static readonly TARGET_X_GAP = 75
   protected static readonly TARGET_Y_GAP = 75
@@ -31,6 +29,10 @@ export default abstract class TreeView {
 
   public static makePlaceholderNode (): DisplayNode {
     return new DisplayNode(NaN, NaN, 'placeholder', 'placeholder', NaN)
+  }
+
+  public static centerTree (canvasWidth: number): void {
+    TreeView.ROOT_TARGET_X = canvasWidth / 2
   }
 
   protected static preparePlaceholderColorsAndValue (placeholderNode: DisplayNode, value: number): void {

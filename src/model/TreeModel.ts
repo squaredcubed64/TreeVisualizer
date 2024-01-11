@@ -10,8 +10,8 @@ export default abstract class TreeModel {
   public arrowDirection: ArrowDirection = ArrowDirection.PARENT_TO_CHILD
   protected root: DataNode | null = null
 
-  abstract insert (value: number): any
-  // abstract delete (value: number): any
+  public abstract insert (value: number): any
+  // public abstract delete (value: number): any
 
   public find (value: number): BSTFindInformation<DataNode> {
     // Find the path the tree takes to find the node to delete

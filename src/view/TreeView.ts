@@ -25,7 +25,7 @@ export default abstract class TreeView {
   private animationSpeed: number = 1
   private animationSpeedSetting: number = 10
 
-  constructor () {
+  public constructor () {
     this.shape = { inorderTraversal: [], layers: [], arrows: new Set() }
   }
 

@@ -1,15 +1,15 @@
 import ArrowDirection from '../controller/ArrowDirection'
 
 export default class DataNode {
-  value: number
-  left: DataNode | null = null
-  right: DataNode | null = null
+  public value: number
+  public left: DataNode | null = null
+  public right: DataNode | null = null
   /**
    * The number of vertices from this node to its deepest leaf. The Tree is responsible for updating this value.
    */
-  height: number = 1
+  public height: number = 1
 
-  constructor (value: number) {
+  public constructor (value: number) {
     this.value = value
   }
 

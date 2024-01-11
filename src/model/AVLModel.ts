@@ -4,8 +4,6 @@ import DataNode from './DataNode'
 import TreeModel from './TreeModel'
 
 export default class AVLModel extends TreeModel {
-  root: DataNode | null = null
-
   private static getHeight (node: DataNode | null): number {
     if (node === null) {
       return 0

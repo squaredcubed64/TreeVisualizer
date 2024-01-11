@@ -30,7 +30,7 @@ export default class DisplayNode {
   private framesUntilGrown: number = DisplayNode.GROW_DURATION_FRAMES
   private framesUntilShrunk: number = -1
 
-  constructor (
+  public constructor (
     x: number,
     y: number,
     fillColor: string,

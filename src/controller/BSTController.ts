@@ -19,7 +19,7 @@ export default class BSTController {
   private readonly model: BSTModel
   private readonly view: BSTView
 
-  constructor (model: BSTModel, view: BSTView) {
+  public constructor (model: BSTModel, view: BSTView) {
     this.model = model
     this.view = view
   }

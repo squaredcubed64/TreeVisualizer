@@ -53,11 +53,22 @@ export default class BSTController extends TreeController {
     this.view.find(viewFindInformation)
   }
 
-  private translateInsertionInformation (modelInsertionInformation: BSTInsertionInformation<DataNode>): BSTInsertionInformation<DisplayNode> {
+  protected translateInsertionInformation (modelInsertionInformation: BSTInsertionInformation<DataNode>): BSTInsertionInformation<DisplayNode> {
     const { shape, path, value } = modelInsertionInformation
     const translatedShape = this.translateShape(shape)
     const translatedPath = this.translatePath(path)
     return { shape: translatedShape, path: translatedPath, value }
+  }
+
+  protected translateNode (dataNode: DataNode): DisplayNode {
+    const displayNode = this.dataNodeToDisplayNode.get(dataNode)
+    assert(displayNode !== undefined, 'dataNode not found in map')
+    return displayNode
+  }
+
+  protected translateShape (shape: TreeShape<DataNode>): TreeShape<DisplayNode> {
+    const { inorderTraversal, layers, arrows } = shape
+    return { inorderTraversal: this.translateArray(inorderTraversal), layers: this.translateLayers(layers), arrows: this.translateArrows(arrows) }
   }
 
   private translateDeletionInformation (modelDeletionInformation: BSTDeletionInformation<DataNode>): BSTDeletionInformation<DisplayNode> {
@@ -84,12 +95,6 @@ export default class BSTController extends TreeController {
     return { path: this.translatePath(path), nodeFound: nodeFound !== null ? this.translateNode(nodeFound) : null }
   }
 
-  private translateNode (dataNode: DataNode): DisplayNode {
-    const displayNode = this.dataNodeToDisplayNode.get(dataNode)
-    assert(displayNode !== undefined, 'dataNode not found in map')
-    return displayNode
-  }
-
   private translateArray (dataNodeArray: DataNode[]): DisplayNode[] {
     return dataNodeArray.map((dataNode: DataNode) => this.translateNode(dataNode))
   }
@@ -107,10 +112,5 @@ export default class BSTController extends TreeController {
       const { node, secondaryDescription } = pathInstruction
       return { node: this.translateNode(node), secondaryDescription }
     })
-  }
-
-  private translateShape (shape: TreeShape<DataNode>): TreeShape<DisplayNode> {
-    const { inorderTraversal, layers, arrows } = shape
-    return { inorderTraversal: this.translateArray(inorderTraversal), layers: this.translateLayers(layers), arrows: this.translateArrows(arrows) }
   }
 }

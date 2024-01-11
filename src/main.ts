@@ -3,6 +3,9 @@ import ArrowDirection from './controller/ArrowDirection'
 import BSTView from './view/BSTView'
 import BSTController from './controller/BSTController'
 import { assert } from './Utils'
+import AVLController from './controller/AVLController'
+import AVLModel from './model/AVLModel'
+import AVLView from './view/AVLView'
 
 // Helpers
 function resizeCanvas (canvas: HTMLCanvasElement): void {
@@ -20,10 +23,10 @@ resizeCanvas(canvas)
 BSTController.centerTree(canvas.width)
 
 // Initialize controller
-function makeBSTController (): BSTController {
-  return new BSTController(new BSTModel(), new BSTView())
+function makeController (): AVLController {
+  return new AVLController(new AVLModel(), new AVLView())
 }
-let controller = makeBSTController()
+let controller = makeController()
 
 // Attach tree operations to HTML elements insertButton, deleteButton, findButton, clearButton, arrowButton, and animationSpeedBar
 const insertButton = document.getElementById('insertButton') as HTMLButtonElement
@@ -66,7 +69,7 @@ clearButton.addEventListener('click', () => {
   context.clearRect(0, 0, canvas.width, canvas.height)
 
   // Reset controller but keep old animation speed setting and arrow direction
-  controller = makeBSTController()
+  controller = makeController()
   controller.setAnimationSpeedSetting(animationSpeedSetting)
   controller.setArrowDirection(arrowDirection)
   controller.animate()

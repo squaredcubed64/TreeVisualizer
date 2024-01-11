@@ -9,17 +9,18 @@ export default class AVLView extends BSTView {
   private static readonly ROTATION_PATH_DESCRIPTION = 'Go back up the tree, rotating nodes as necessary to maintain the AVL property.'
   private static readonly ROTATION_PATH_HIGHLIGHT_COLOR = 'red'
   private static readonly FRAMES_AFTER_ROTATION = 60
+  private static readonly ROTATION_PATH_HIGHLIGHT_DURATION = 60
 
   private static convertRotationSecondaryDescriptionToString (secondaryDescription: RotationSecondaryDescription): string {
     const { leftHeight, rightHeight, newHeight, newBalanceFactor } = secondaryDescription
     let out = ''
     out += `The node's height is Max(${leftHeight}, ${rightHeight}) + 1 = ${newHeight}. The node's balance factor is ${leftHeight} - ${rightHeight} = ${newBalanceFactor}. `
     if (newBalanceFactor < -1) {
-      out += 'Rotate because balance factor < -1'
+      out += 'Rotate because balance factor < -1.'
     } else if (newBalanceFactor > 1) {
-      out += 'Rotate because balance factor > 1'
+      out += 'Rotate because balance factor > 1.'
     } else {
-      out += 'Do not rotate because balance factor is between -1 and 1'
+      out += 'Do not rotate because balance factor is between -1 and 1.'
     }
     return out
   }
@@ -48,8 +49,8 @@ export default class AVLView extends BSTView {
       this.functionQueue.push({
         framesToWait: BSTView.FRAMES_BETWEEN_HIGHLIGHTS,
         function: () => {
-          node.highlight(AVLView.ROTATION_PATH_HIGHLIGHT_COLOR, Infinity)
-          return { framesAfterCall: 0, description: AVLView.ROTATION_PATH_DESCRIPTION, secondaryDescription: AVLView.convertRotationSecondaryDescriptionToString(secondaryDescription) }
+          node.highlight(AVLView.ROTATION_PATH_HIGHLIGHT_COLOR, AVLView.ROTATION_PATH_HIGHLIGHT_DURATION)
+          return { framesAfterCall: AVLView.ROTATION_PATH_HIGHLIGHT_DURATION, description: AVLView.ROTATION_PATH_DESCRIPTION, secondaryDescription: AVLView.convertRotationSecondaryDescriptionToString(secondaryDescription) }
         }
       })
 

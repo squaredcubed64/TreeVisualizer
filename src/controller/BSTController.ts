@@ -13,19 +13,14 @@ import type TreeShape from './TreeShape'
 import type BSTDeletionInformation from './operationInformation/deletionInformation/BSTDeletionInformation'
 import type BSTSecondaryDescription from './secondaryDescription/BSTSecondaryDescription'
 import TreeView from '../view/TreeView'
+import TreeController from './TreeController'
 
-export default class BSTController {
-  private readonly dataNodeToDisplayNode = new Map<DataNode, DisplayNode>()
-  private readonly model: BSTModel
-  private readonly view: BSTView
+export default class BSTController extends TreeController {
+  protected readonly model: BSTModel
+  protected readonly view: BSTView
 
   public constructor (model: BSTModel, view: BSTView) {
-    this.model = model
-    this.view = view
-  }
-
-  public static centerTree (canvasWidth: number): void {
-    TreeView.centerTree(canvasWidth)
+    super(model, view)
   }
 
   public setArrowDirection (arrowDirection: ArrowDirection): void {
@@ -35,28 +30,6 @@ export default class BSTController {
 
   public getArrowDirection (): ArrowDirection {
     return this.model.arrowDirection
-  }
-
-  public setAnimationSpeedSetting (animationSpeedSetting: number): void {
-    this.view.setAnimationSpeedSetting(animationSpeedSetting)
-  }
-
-  public getAnimationSpeedSetting (): number {
-    return this.view.getAnimationSpeedSetting()
-  }
-
-  /**
-   * Call BSTView.animate(), a recursive function that uses requestAnimationFrame()
-   */
-  public animate (): void {
-    const canvas = document.getElementById('canvas') as HTMLCanvasElement
-    const context = canvas.getContext('2d')
-    assert(context !== null, 'context is null')
-    this.view.animate(canvas, context)
-  }
-
-  public stopAnimation (): void {
-    this.view.stopAnimation()
   }
 
   public insert (value: number): void {

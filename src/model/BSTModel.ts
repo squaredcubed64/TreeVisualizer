@@ -9,6 +9,7 @@ import type BSTFindSecondaryDescription from '../controller/secondaryDescription
 import type BSTSuccessorSecondaryDescription from '../controller/secondaryDescription/BSTSuccessorSecondaryDescription'
 import type BSTInsertionSecondaryDescription from '../controller/secondaryDescription/BSTInsertionSecondaryDescription'
 import TreeModel from './TreeModel'
+import type BSTFindInformation from '../controller/operationInformation/BSTFindInformation'
 
 export default class BSTModel extends TreeModel {
   protected static findSuccessorAndParentAndPath (node: DataNode): { successor: DataNode, successorParent: DataNode, pathToSuccessor: Array<BSTPathInstruction<DataNode, BSTSuccessorSecondaryDescription>> } {
@@ -124,5 +125,27 @@ export default class BSTModel extends TreeModel {
       const deletionInformation: BSTDeletionInformation2Children<DataNode> = { type: '2Children', shape: this.calculateShape(), path, victimNode: currNode, pathToSuccessor, successorNode: successor }
       return deletionInformation
     }
+  }
+
+  public find (value: number): BSTFindInformation<DataNode> {
+    // Find the path the tree takes to find the node to delete
+    const path: Array<BSTPathInstruction<DataNode, BSTFindSecondaryDescription>> = []
+    let currNode: DataNode | null = this.root
+    while (currNode != null && currNode.value !== value) {
+      if (value < currNode.value) {
+        path.push({ node: currNode, secondaryDescription: { type: 'find', direction: 'left', targetValue: value, nodeValue: currNode.value } })
+        currNode = currNode.left
+      } else {
+        path.push({ node: currNode, secondaryDescription: { type: 'find', direction: 'right', targetValue: value, nodeValue: currNode.value } })
+        currNode = currNode.right
+      }
+    }
+
+    // If found
+    if (currNode != null) {
+      path.push({ node: currNode, secondaryDescription: { type: 'find', direction: 'stop', targetValue: value, nodeValue: currNode.value } })
+    }
+
+    return { path, nodeFound: currNode }
   }
 }

@@ -1,9 +1,6 @@
 import { assert } from '../Utils'
 import ArrowDirection from '../controller/ArrowDirection'
 import type TreeShape from '../controller/TreeShape'
-import type BSTFindInformation from '../controller/operationInformation/BSTFindInformation'
-import type BSTPathInstruction from '../controller/pathInstruction/BSTPathInstruction'
-import type BSTFindSecondaryDescription from '../controller/secondaryDescription/BSTFindSecondaryDescription'
 import type DataNode from './DataNode'
 
 export default abstract class TreeModel {
@@ -12,28 +9,7 @@ export default abstract class TreeModel {
 
   public abstract insert (value: number): any
   // public abstract delete (value: number): any
-
-  public find (value: number): BSTFindInformation<DataNode> {
-    // Find the path the tree takes to find the node to delete
-    const path: Array<BSTPathInstruction<DataNode, BSTFindSecondaryDescription>> = []
-    let currNode: DataNode | null = this.root
-    while (currNode != null && currNode.value !== value) {
-      if (value < currNode.value) {
-        path.push({ node: currNode, secondaryDescription: { type: 'find', direction: 'left', targetValue: value, nodeValue: currNode.value } })
-        currNode = currNode.left
-      } else {
-        path.push({ node: currNode, secondaryDescription: { type: 'find', direction: 'right', targetValue: value, nodeValue: currNode.value } })
-        currNode = currNode.right
-      }
-    }
-
-    // If found
-    if (currNode != null) {
-      path.push({ node: currNode, secondaryDescription: { type: 'find', direction: 'stop', targetValue: value, nodeValue: currNode.value } })
-    }
-
-    return { path, nodeFound: currNode }
-  }
+  // public abstract find (value: number): any
 
   // Returns an array of pairs of nodes to draw arrows between
   public calculateArrows (): Set<[DataNode, DataNode]> {

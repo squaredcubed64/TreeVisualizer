@@ -41,8 +41,8 @@ export default class BSTView extends TreeView {
   }
 
   // Animation: highlight path, grow inserted node, then move nodes to new target positions
-  public insert (viewInsertionInformation: BSTInsertionInformation<DisplayNode>): void {
-    const { shape: shapeWithPlaceholder, path, value } = viewInsertionInformation
+  public insert (insertionInformation: BSTInsertionInformation<DisplayNode>): void {
+    const { shape: shapeWithPlaceholder, path, value } = insertionInformation
     const placeholderNode = shapeWithPlaceholder.inorderTraversal.find(node => node.fillColor === 'placeholder')
     assert(placeholderNode != null, 'Placeholder node not found')
 
@@ -156,11 +156,8 @@ export default class BSTView extends TreeView {
 
   // Pushes methods onto functionQueue to highlight nodes along path
   private pushNodeHighlightingOntoFunctionQueue<S extends BSTSecondaryDescription> (path: Array<BSTPathInstruction<DisplayNode, S>>, description: string, highlightColor?: string): void {
-    // TODO see if this can be removed, and refactor to use enhanced for loop
-    assert(path.length > 0, 'Path is empty')
-    for (let i = 0; i < path.length; i++) {
-      const node = path[i].node
-      this.functionQueue.push({ framesToWait: BSTView.FRAMES_BETWEEN_HIGHLIGHTS, function: () => { node.highlight(highlightColor); return { framesAfterCall: DisplayNode.DEFAULT_HIGHLIGHT_DURATION_FRAMES, description, secondaryDescription: this.convertSecondaryDescriptionToString(path[i].secondaryDescription) } } })
+    for (const { node, secondaryDescription } of path) {
+      this.functionQueue.push({ framesToWait: BSTView.FRAMES_BETWEEN_HIGHLIGHTS, function: () => { node.highlight(highlightColor); return { framesAfterCall: DisplayNode.DEFAULT_HIGHLIGHT_DURATION_FRAMES, description, secondaryDescription: this.convertSecondaryDescriptionToString(secondaryDescription) } } })
     }
   }
 }

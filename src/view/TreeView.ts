@@ -6,7 +6,7 @@ import { assert } from '../Utils'
 export default abstract class TreeView {
   // const canvas = document.getElementById('canvas') as HTMLCanvasElement
   // TODO: have this change when the canvas is resized (so it shouldn't be a const)
-  protected static readonly ROOT_TARGET_X = 300 // canvas.width / 2
+  protected static readonly ROOT_TARGET_X = 700 // canvas.width / 2
   protected static readonly ROOT_TARGET_Y = 50
   protected static readonly TARGET_X_GAP = 75
   protected static readonly TARGET_Y_GAP = 75

@@ -5,5 +5,9 @@ import type BSTFindSecondaryDescription from '../secondaryDescription/BSTFindSec
 import type BSTInsertionSecondaryDescription from '../secondaryDescription/BSTInsertionSecondaryDescription'
 
 export default interface BSTOperationInformation<T extends DataNode | DisplayNode> {
-  path: Array<BSTPathInstruction<T, BSTInsertionSecondaryDescription | BSTFindSecondaryDescription>>
+  // TODO have insert() include the node that was inserted
+  /**
+   * The nodes that were visited during the operation. Starts with the root node and ends with the target node.
+   */
+  pathFromRootToTarget: Array<BSTPathInstruction<T, BSTInsertionSecondaryDescription | BSTFindSecondaryDescription>>
 }

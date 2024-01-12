@@ -42,7 +42,7 @@ export default class BSTView extends TreeView {
 
   // Animation: highlight path, grow inserted node, then move nodes to new target positions
   public insert (insertionInformation: BSTInsertionInformation<DisplayNode>): void {
-    const { shape: shapeWithPlaceholder, path, value } = insertionInformation
+    const { shape: shapeWithPlaceholder, pathFromRootToTarget: path, value } = insertionInformation
     const placeholderNode = shapeWithPlaceholder.inorderTraversal.find(node => node.fillColor === 'placeholder')
     assert(placeholderNode != null, 'Placeholder node not found')
 
@@ -66,7 +66,7 @@ export default class BSTView extends TreeView {
     switch (viewDeletionInformation.type) {
       // Animation: highlight path, shrink victim node, then move nodes to new target positions
       case 'LEQ1Child': {
-        const { shape, path, victimNode } = viewDeletionInformation
+        const { shape, pathFromRootToTarget: path, victimNode } = viewDeletionInformation
         this.pushNodeHighlightingOntoFunctionQueue(path, BSTView.DELETION_DESCRIPTIONS.FIND_NODE_TO_DELETE)
         this.functionQueue.push({ framesToWait: 0, function: () => { victimNode.startShrinkingIntoNothing(); return { framesAfterCall: DisplayNode.SHRINK_DURATION_FRAMES, description: BSTView.DELETION_DESCRIPTIONS.DELETE_NODE } } })
         this.functionQueue.push({ framesToWait: 0, function: () => { this.animateShapeChange(shape); return { framesAfterCall: DisplayNode.MOVE_DURATION_FRAMES, description: BSTView.DELETION_DESCRIPTIONS.DELETE_NODE } } })
@@ -74,7 +74,7 @@ export default class BSTView extends TreeView {
       }
       // Animation: highlight path to victim, keep victim highlighted, highlight path to successor, highlight successor, set the victim's value to the successor's value, unhighlight victim and successor, shrink successor, then move nodes to new target positions
       case '2Children': {
-        const { shape, path, victimNode, pathToSuccessor, successorNode } = viewDeletionInformation
+        const { shape, pathFromRootToTarget: path, victimNode, pathToSuccessor, successorNode } = viewDeletionInformation
         this.pushNodeHighlightingOntoFunctionQueue(path, BSTView.DELETION_DESCRIPTIONS.FIND_NODE_TO_DELETE)
         this.functionQueue.push({ framesToWait: 0, function: () => { victimNode.highlight(BSTView.FIND_SUCCESSOR_HIGHLIGHT_COLOR, Infinity); return { framesAfterCall: 0, description: BSTView.DELETION_DESCRIPTIONS.FIND_SUCCESSOR } } })
         this.pushNodeHighlightingOntoFunctionQueue(pathToSuccessor, BSTView.FIND_SUCCESSOR_HIGHLIGHT_COLOR, BSTView.DELETION_DESCRIPTIONS.FIND_SUCCESSOR)
@@ -87,7 +87,7 @@ export default class BSTView extends TreeView {
       }
       // Animation: highlight path, then do nothing
       case 'VictimNotFound': {
-        const { path } = viewDeletionInformation
+        const { pathFromRootToTarget: path } = viewDeletionInformation
         if (path.length !== 0) {
           this.pushNodeHighlightingOntoFunctionQueue(path, BSTView.DELETION_DESCRIPTIONS.FIND_NODE_TO_DELETE)
         }
@@ -99,7 +99,7 @@ export default class BSTView extends TreeView {
 
   // Animation: highlight path, then highlight node if found
   public find (viewFindInformation: BSTFindInformation<DisplayNode>): void {
-    const { path, nodeFound } = viewFindInformation
+    const { pathFromRootToTarget: path, nodeFound } = viewFindInformation
     if (path.length !== 0) {
       this.pushNodeHighlightingOntoFunctionQueue(path, BSTView.FIND_DESCRIPTIONS.FIND_NODE)
     }

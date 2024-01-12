@@ -262,7 +262,7 @@ describe('BSTModel', () => {
 
     const findInfo = bstModel.find(value)
 
-    expect(pathsHaveSameValues(findInfo.path, expectedPath)).toBe(true)
+    expect(pathsHaveSameValues(findInfo.pathFromRootToTarget, expectedPath)).toBe(true)
     expect(findInfo.nodeFound).toEqual(expectedNodeFound)
   })
 })

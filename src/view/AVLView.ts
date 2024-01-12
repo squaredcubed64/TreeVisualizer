@@ -1,5 +1,6 @@
 import type TreeShape from '../controller/TreeShape'
 import type AVLInsertionInformation from '../controller/operationInformation/AVLInsertionInformation'
+import type AVLDeletionInformation from '../controller/operationInformation/deletionInformation/AVLDeletionInformation'
 import type RotationPathInstruction from '../controller/pathInstruction/RotationPathInstruction'
 import type RotationSecondaryDescription from '../controller/secondaryDescription/RotationSecondaryDescription'
 import BSTView from './BSTView'
@@ -26,9 +27,13 @@ export default class AVLView extends BSTView {
   }
 
   public insert (viewInsertionInformation: AVLInsertionInformation<DisplayNode>): void {
-    const { path, shape, value, rotationPath } = viewInsertionInformation
-    super.insert({ path, shape, value })
-    this.pushRotationPathOntoFunctionQueue(rotationPath)
+    super.insert(viewInsertionInformation)
+    this.pushRotationPathOntoFunctionQueue(viewInsertionInformation.rotationPath)
+  }
+
+  public delete (viewDeletionInformation: AVLDeletionInformation<DisplayNode>): void {
+    super.delete(viewDeletionInformation)
+    this.pushRotationPathOntoFunctionQueue(viewDeletionInformation.rotationPath)
   }
 
   private pushRotationPathOntoFunctionQueue (rotationPath: Array<RotationPathInstruction<DisplayNode>>): void {
@@ -55,10 +60,10 @@ export default class AVLView extends BSTView {
       })
 
       // Animate the rotation(s)
-      if (shapesAfterRotation.length !== 0) {
+      if (shapesAfterRotation.length === 1) {
+        pushRotationOntoFunctionQueue(shapesAfterRotation[0], 'Rotation')
+      } else if (shapesAfterRotation.length === 2) {
         pushRotationOntoFunctionQueue(shapesAfterRotation[0], 'First rotation')
-      }
-      if (shapesAfterRotation.length === 2) {
         pushRotationOntoFunctionQueue(shapesAfterRotation[1], 'Second rotation')
       }
     }

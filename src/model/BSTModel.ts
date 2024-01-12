@@ -4,14 +4,19 @@ import type BSTPathInstruction from '../controller/pathInstruction/BSTPathInstru
 import type BSTDeletionInformationLEQ1Child from '../controller/operationInformation/deletionInformation/BSTDeletionInformationLEQ1Child'
 import type BSTDeletionInformation2Children from '../controller/operationInformation/deletionInformation/BSTDeletionInformation2Children'
 import { assert } from '../Utils'
-import type BSTDeletionInformation from '../controller/operationInformation/deletionInformation/BSTDeletionInformation'
 import type BSTFindSecondaryDescription from '../controller/secondaryDescription/BSTFindSecondaryDescription'
 import type BSTSuccessorSecondaryDescription from '../controller/secondaryDescription/BSTSuccessorSecondaryDescription'
 import type BSTInsertionSecondaryDescription from '../controller/secondaryDescription/BSTInsertionSecondaryDescription'
 import TreeModel from './TreeModel'
 import type BSTFindInformation from '../controller/operationInformation/BSTFindInformation'
+import type BSTDeletionInformation from '../controller/operationInformation/deletionInformation/BSTDeletionInformation'
 
 export default class BSTModel extends TreeModel {
+  /**
+   * Finds the inorder successor of a node, the successor's parent, and the path to the successor
+   * @param node The node to find the successor of
+   * @returns The successor node, the parent of the successor node, and the path to the successor node (starts with node.right and ends with the successor node)
+   */
   protected static findSuccessorAndParentAndPath (node: DataNode): { successor: DataNode, successorParent: DataNode, pathToSuccessor: Array<BSTPathInstruction<DataNode, BSTSuccessorSecondaryDescription>> } {
     assert(node.left !== null && node.right !== null, 'Node does not have 2 children')
     let successor = node.right
@@ -37,7 +42,7 @@ export default class BSTModel extends TreeModel {
     // If the tree is empty, insert without any animation
     if (this.root == null) {
       this.root = new DataNode(value)
-      return { insertionInformation: { shape: this.calculateShape(), path: [], value: this.root.value }, insertedNode: this.root }
+      return { insertionInformation: { shape: this.calculateShape(), pathFromRootToTarget: [], value: this.root.value }, insertedNode: this.root }
     }
 
     // Find the path to where the new node will be inserted
@@ -62,14 +67,14 @@ export default class BSTModel extends TreeModel {
       parentNode.right = insertedNode
     }
 
-    return { insertionInformation: { shape: this.calculateShape(), path, value: insertedNode.value }, insertedNode }
+    return { insertionInformation: { shape: this.calculateShape(), pathFromRootToTarget: path, value: insertedNode.value }, insertedNode }
   }
 
   // If the victim node has 2 children, send different information to facilitate a different animation
   // If the tree is empty, return null
   public delete (value: number): BSTDeletionInformation<DataNode> {
     if (this.root == null) {
-      return { type: 'VictimNotFound', path: [] }
+      return { type: 'VictimNotFound', pathFromRootToTarget: [] }
     }
 
     // Find the path the tree takes to find the node to delete
@@ -87,8 +92,9 @@ export default class BSTModel extends TreeModel {
       }
     }
 
+    // Push the victim node into the path if it is found
     if (currNode == null) {
-      return { type: 'VictimNotFound', path }
+      return { type: 'VictimNotFound', pathFromRootToTarget: path }
     } else {
       path.push({ node: currNode, secondaryDescription: { type: 'find', direction: 'stop', targetValue: value, nodeValue: currNode.value } })
     }
@@ -107,7 +113,7 @@ export default class BSTModel extends TreeModel {
           currParent.right = childNode
         }
       }
-      const deletionInformation: BSTDeletionInformationLEQ1Child<DataNode> = { type: 'LEQ1Child', shape: this.calculateShape(), path, victimNode: currNode }
+      const deletionInformation: BSTDeletionInformationLEQ1Child<DataNode> = { type: 'LEQ1Child', shape: this.calculateShape(), pathFromRootToTarget: path, victimNode: currNode }
       return deletionInformation
     // Node with two children
     } else {
@@ -122,7 +128,7 @@ export default class BSTModel extends TreeModel {
         successorParent.right = successor.right
       }
 
-      const deletionInformation: BSTDeletionInformation2Children<DataNode> = { type: '2Children', shape: this.calculateShape(), path, victimNode: currNode, pathToSuccessor, successorNode: successor }
+      const deletionInformation: BSTDeletionInformation2Children<DataNode> = { type: '2Children', shape: this.calculateShape(), pathFromRootToTarget: path, victimNode: currNode, pathToSuccessor, successorNode: successor }
       return deletionInformation
     }
   }
@@ -146,6 +152,6 @@ export default class BSTModel extends TreeModel {
       path.push({ node: currNode, secondaryDescription: { type: 'find', direction: 'stop', targetValue: value, nodeValue: currNode.value } })
     }
 
-    return { path, nodeFound: currNode }
+    return { pathFromRootToTarget: path, nodeFound: currNode }
   }
 }

@@ -10,6 +10,10 @@ export default interface BSTDeletionInformation2Children<T extends DataNode | Di
   type: '2Children'
   shape: TreeShape<T>
   victimNode: T
+  // TODO update
+  /**
+   * The path to the successor node. Starts with the the target node's right child and ends with the successor node.
+   */
   pathToSuccessor: Array<BSTPathInstruction<T, BSTSuccessorSecondaryDescription>>
   successorNode: T
 }

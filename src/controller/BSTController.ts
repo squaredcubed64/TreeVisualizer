@@ -10,10 +10,10 @@ import type BSTDeletionInformationLEQ1Child from './operationInformation/deletio
 import type BSTDeletionInformation2Children from './operationInformation/deletionInformation/BSTDeletionInformation2Children'
 import type BSTFindInformation from './operationInformation/BSTFindInformation'
 import type TreeShape from './TreeShape'
-import type BSTDeletionInformation from './operationInformation/deletionInformation/BSTDeletionInformation'
 import type BSTSecondaryDescription from './secondaryDescription/BSTSecondaryDescription'
 import TreeView from '../view/TreeView'
 import TreeController from './TreeController'
+import type BSTDeletionInformation from './operationInformation/deletionInformation/BSTDeletionInformation'
 
 export default class BSTController extends TreeController {
   protected readonly model: BSTModel
@@ -54,10 +54,10 @@ export default class BSTController extends TreeController {
   }
 
   protected translateInsertionInformation (modelInsertionInformation: BSTInsertionInformation<DataNode>): BSTInsertionInformation<DisplayNode> {
-    const { shape, path, value } = modelInsertionInformation
+    const { shape, pathFromRootToTarget: path, value } = modelInsertionInformation
     const translatedShape = this.translateShape(shape)
     const translatedPath = this.translatePath(path)
-    return { shape: translatedShape, path: translatedPath, value }
+    return { shape: translatedShape, pathFromRootToTarget: translatedPath, value }
   }
 
   protected translateNode (dataNode: DataNode): DisplayNode {
@@ -71,28 +71,28 @@ export default class BSTController extends TreeController {
     return { inorderTraversal: this.translateArray(inorderTraversal), layers: this.translateLayers(layers), arrows: this.translateArrows(arrows) }
   }
 
-  private translateDeletionInformation (modelDeletionInformation: BSTDeletionInformation<DataNode>): BSTDeletionInformation<DisplayNode> {
+  protected translateDeletionInformation (modelDeletionInformation: BSTDeletionInformation<DataNode>): BSTDeletionInformation<DisplayNode> {
     switch (modelDeletionInformation.type) {
       case 'LEQ1Child': {
-        const { shape, path, victimNode } = modelDeletionInformation
-        const viewDeletionInformation: BSTDeletionInformationLEQ1Child<DisplayNode> = { type: 'LEQ1Child', shape: this.translateShape(shape), path: this.translatePath(path), victimNode: this.translateNode(victimNode) }
+        const { shape, pathFromRootToTarget: path, victimNode } = modelDeletionInformation
+        const viewDeletionInformation: BSTDeletionInformationLEQ1Child<DisplayNode> = { type: 'LEQ1Child', shape: this.translateShape(shape), pathFromRootToTarget: this.translatePath(path), victimNode: this.translateNode(victimNode) }
         return viewDeletionInformation
       }
       case '2Children': {
-        const { shape, path, victimNode, pathToSuccessor, successorNode } = modelDeletionInformation
-        const viewDeletionInformation: BSTDeletionInformation2Children<DisplayNode> = { type: '2Children', shape: this.translateShape(shape), path: this.translatePath(path), victimNode: this.translateNode(victimNode), pathToSuccessor: this.translatePath(pathToSuccessor), successorNode: this.translateNode(successorNode) }
+        const { shape, pathFromRootToTarget: path, victimNode, pathToSuccessor, successorNode } = modelDeletionInformation
+        const viewDeletionInformation: BSTDeletionInformation2Children<DisplayNode> = { type: '2Children', shape: this.translateShape(shape), pathFromRootToTarget: this.translatePath(path), victimNode: this.translateNode(victimNode), pathToSuccessor: this.translatePath(pathToSuccessor), successorNode: this.translateNode(successorNode) }
         return viewDeletionInformation
       }
       case 'VictimNotFound': {
-        const path = modelDeletionInformation.path
-        return { type: 'VictimNotFound', path: this.translatePath(path) }
+        const path = modelDeletionInformation.pathFromRootToTarget
+        return { type: 'VictimNotFound', pathFromRootToTarget: this.translatePath(path) }
       }
     }
   }
 
   private translateFindInformation (modelFindInformation: BSTFindInformation<DataNode>): BSTFindInformation<DisplayNode> {
-    const { path, nodeFound } = modelFindInformation
-    return { path: this.translatePath(path), nodeFound: nodeFound !== null ? this.translateNode(nodeFound) : null }
+    const { pathFromRootToTarget: path, nodeFound } = modelFindInformation
+    return { pathFromRootToTarget: this.translatePath(path), nodeFound: nodeFound !== null ? this.translateNode(nodeFound) : null }
   }
 
   private translateArray (dataNodeArray: DataNode[]): DisplayNode[] {

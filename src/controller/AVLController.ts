@@ -6,6 +6,7 @@ import TreeView from '../view/TreeView'
 import BSTController from './BSTController'
 import type TreeShape from './TreeShape'
 import type AVLInsertionInformation from './operationInformation/AVLInsertionInformation'
+import type AVLDeletionInformation from './operationInformation/deletionInformation/AVLDeletionInformation'
 import type RotationPathInstruction from './pathInstruction/RotationPathInstruction'
 
 export default class AVLController extends BSTController {
@@ -25,11 +26,22 @@ export default class AVLController extends BSTController {
     this.view.insert(viewInsertionInformation)
   }
 
+  public delete (value: number): void {
+    const modelDeletionInformation = this.model.delete(value)
+    const viewDeletionInformation = this.translateDeletionInformation(modelDeletionInformation)
+    this.view.delete(viewDeletionInformation)
+  }
+
   protected translateInsertionInformation (modelInsertionInformation: AVLInsertionInformation<DataNode>): AVLInsertionInformation<DisplayNode> {
-    const { shape, path, value, rotationPath } = modelInsertionInformation
-    const { shape: translatedShape, path: translatedPath } = super.translateInsertionInformation({ shape, path, value })
-    const translatedRotationPath = this.translateRotationPath(rotationPath)
-    return { shape: translatedShape, path: translatedPath, value, rotationPath: translatedRotationPath }
+    const translatedModelInsertionInformation = super.translateInsertionInformation(modelInsertionInformation)
+    const translatedRotationPath = this.translateRotationPath(modelInsertionInformation.rotationPath)
+    return { ...translatedModelInsertionInformation, rotationPath: translatedRotationPath }
+  }
+
+  protected translateDeletionInformation (modelDeletionInformation: AVLDeletionInformation<DataNode>): AVLDeletionInformation<DisplayNode> {
+    const translatedModelDeletionInformation = super.translateDeletionInformation(modelDeletionInformation)
+    const translatedRotationPath = this.translateRotationPath(modelDeletionInformation.rotationPath)
+    return { ...translatedModelDeletionInformation, rotationPath: translatedRotationPath }
   }
 
   private translateRotationPath (rotationPath: Array<RotationPathInstruction<DataNode>>): Array<RotationPathInstruction<DisplayNode>> {

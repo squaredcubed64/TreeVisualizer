@@ -1,10 +1,23 @@
 import { assert } from '../Utils'
 import type TreeShape from '../controller/TreeShape'
 import type AVLInsertionInformation from '../controller/operationInformation/AVLInsertionInformation'
+import type AVLDeletionInformation from '../controller/operationInformation/deletionInformation/AVLDeletionInformation'
 import type RotationPathInstruction from '../controller/pathInstruction/RotationPathInstruction'
 import type RotationSecondaryDescription from '../controller/secondaryDescription/RotationSecondaryDescription'
 import BSTModel from './BSTModel'
 import type DataNode from './DataNode'
+
+// For debugging
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function toString (node: DataNode | null, depth: number = 0, extra: string = 'root'): string {
+  if (node == null) {
+    return ''
+  }
+  let out = '\t'.repeat(depth) + extra + ' ' + node.value.toString() + '\n'
+  out += toString(node.left, depth + 1, 'left')
+  out += toString(node.right, depth + 1, 'right')
+  return out
+}
 
 export default class AVLModel extends BSTModel {
   private static getHeight (node: DataNode | null): number {
@@ -49,19 +62,42 @@ export default class AVLModel extends BSTModel {
 
   public insert (value: number): { insertionInformation: AVLInsertionInformation<DataNode>, insertedNode: DataNode } {
     const { insertionInformation: bstInsertionInformation, insertedNode } = super.insert(value)
-    const { path, shape } = bstInsertionInformation
+    const { pathFromRootToTarget: path } = bstInsertionInformation
 
-    // Rebalance the tree
-    const rotationPath: Array<RotationPathInstruction<DataNode>> = []
-    const ancestors = path.map((pathInstruction) => pathInstruction.node)
-    while (ancestors.length > 0) {
-      const ancestor = ancestors.pop()
-      assert(ancestor !== undefined, 'ancestor is undefined')
-      rotationPath.push(this.rebalance(ancestor, ancestors.length === 0 ? null : ancestors[ancestors.length - 1]))
-      AVLModel.updateHeight(ancestor)
+    const rotationPath = this.rebalanceAlongPath(path.map((pathInstruction) => pathInstruction.node))
+    return { insertionInformation: { ...bstInsertionInformation, rotationPath }, insertedNode }
+  }
+
+  public delete (value: number): AVLDeletionInformation<DataNode> {
+    const bstDeletionInformation = super.delete(value)
+    const { pathFromRootToTarget: pathToTarget } = bstDeletionInformation
+
+    let rotationPath: Array<RotationPathInstruction<DataNode>>
+    if (bstDeletionInformation.type === '2Children') {
+      const { pathToSuccessor } = bstDeletionInformation
+      const pathFromRootToSuccessor = pathToTarget.map((pathInstruction) => pathInstruction.node).concat(pathToSuccessor.map((pathInstruction) => pathInstruction.node))
+      rotationPath = this.rebalanceAlongPath(pathFromRootToSuccessor)
+    } else {
+      rotationPath = this.rebalanceAlongPath(pathToTarget.map((pathInstruction) => pathInstruction.node))
     }
 
-    return { insertionInformation: { path, shape, value, rotationPath }, insertedNode }
+    return { ...bstDeletionInformation, rotationPath }
+  }
+
+  /**
+   * Applies rotations to rebalance the tree along the given path according to AVL rules
+   * @param path The path to rebalance along
+   * @returns Information about the rotations that occurred
+   */
+  private rebalanceAlongPath (path: DataNode[]): Array<RotationPathInstruction<DataNode>> {
+    const rotationPath: Array<RotationPathInstruction<DataNode>> = []
+    while (path.length > 0) {
+      const node = path.pop()
+      assert(node !== undefined, 'ancestor is undefined')
+      rotationPath.push(this.rebalance(node, path.length === 0 ? null : path[path.length - 1]))
+      AVLModel.updateHeight(node)
+    }
+    return rotationPath
   }
 
   private rebalance (node: DataNode, parent: DataNode | null): RotationPathInstruction<DataNode> {
@@ -103,22 +139,30 @@ export default class AVLModel extends BSTModel {
    * @param rotationDirection Which direction to rotate in
    */
   private handleRotation (shapesAfterRotation: Array<TreeShape<DataNode>>, pivot: DataNode, pivotParent: DataNode | null, rotationDirection: 'left' | 'right'): void {
+    // Whether the pivot is a root, left child, or right child
+    const directionFromParent = pivotParent === null ? 'root' : pivotParent.left === pivot ? 'left' : 'right'
     if (rotationDirection === 'left') {
       pivot = AVLModel.rotateLeft(pivot)
     } else {
       pivot = AVLModel.rotateRight(pivot)
     }
-    this.attach(pivot, pivotParent)
+    this.attach(pivot, pivotParent, directionFromParent)
     shapesAfterRotation.push(this.calculateShape())
   }
 
-  private attach (node: DataNode, parent: DataNode | null): void {
-    if (parent === null) {
-      this.root = node
-    } else if (node.value < parent.value) {
-      parent.left = node
-    } else {
-      parent.right = node
+  private attach (node: DataNode, parent: DataNode | null, directionFromParent: 'left' | 'right' | 'root'): void {
+    switch (directionFromParent) {
+      case 'left':
+        assert(parent !== null, 'parent is null')
+        parent.left = node
+        break
+      case 'right':
+        assert(parent !== null, 'parent is null')
+        parent.right = node
+        break
+      case 'root':
+        this.root = node
+        break
     }
   }
 }

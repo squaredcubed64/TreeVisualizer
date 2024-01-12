@@ -38,8 +38,12 @@ body {
   color: white;
   border-radius: 5px;
   font-family: 'Roboto', sans-serif;
-  width: 100%;
   font-size: 1em;
+}
+
+.header > button,
+.header > select {
+  width: 100%;
 }
 
 .header button:hover,

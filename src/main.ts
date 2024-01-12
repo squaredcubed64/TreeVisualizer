@@ -25,8 +25,9 @@ function setControllerToNew<T extends BSTController> (ControllerType: new (...ar
   controller = new ControllerType()
 }
 setControllerToNew(treeType)
+controller.animate()
 
-// Attach tree operations to HTML elements insertButton, deleteButton, findButton, clearButton, arrowButton, and animationSpeedBar
+// Attach controller's insert() to insertButton
 const insertButton = document.getElementById('insertButton') as HTMLButtonElement
 const insertInput = document.getElementById('insertInput') as HTMLInputElement
 assert(insertButton !== null, 'insertButton not found')
@@ -36,6 +37,7 @@ insertButton.addEventListener('click', () => {
   controller.insert(value)
 })
 
+// Attach controller's delete() to deleteButton
 const deleteButton = document.getElementById('deleteButton') as HTMLButtonElement
 const deleteInput = document.getElementById('deleteInput') as HTMLInputElement
 assert(deleteButton !== null, 'deleteButton not found')
@@ -45,6 +47,7 @@ deleteButton.addEventListener('click', () => {
   controller.delete(value)
 })
 
+// Attach controller's find() to findButton
 const findButton = document.getElementById('findButton') as HTMLButtonElement
 const findInput = document.getElementById('findInput') as HTMLInputElement
 assert(findButton !== null, 'findButton not found')
@@ -54,6 +57,7 @@ findButton.addEventListener('click', () => {
   controller.find(value)
 })
 
+// Reset the controller upon clicking clearButton
 const clearButton = document.getElementById('clearButton') as HTMLButtonElement
 assert(clearButton !== null, 'clearButton not found')
 clearButton.addEventListener('click', () => {
@@ -80,6 +84,7 @@ function resetController<T extends BSTController> (newControllerType: new () => 
   controller.animate()
 }
 
+// Change the arrows being drawn upon clicking arrowButton
 const arrowButton = document.getElementById('arrowButton') as HTMLButtonElement
 const arrowDirections: ArrowDirection[] = [ArrowDirection.PARENT_TO_CHILD, ArrowDirection.PREORDER, ArrowDirection.INORDER, ArrowDirection.POSTORDER]
 const arrowTexts = ['Parent to Child', 'Preorder', 'Inorder', 'Postorder']
@@ -93,6 +98,7 @@ arrowButton.addEventListener('click', () => {
   controller.setArrowDirection(currentDirection)
 })
 
+// Change the animation speed upon changing animationSpeedBar
 const animationSpeedBar = document.getElementById('animationSpeedBar') as HTMLInputElement
 assert(animationSpeedBar !== null, 'animationSpeedBar not found')
 animationSpeedBar.addEventListener('input', () => {
@@ -101,6 +107,7 @@ animationSpeedBar.addEventListener('input', () => {
   controller.setAnimationSpeedSetting(animationSpeedSetting)
 })
 
+// Pause the animation upon clicking pauseButton
 const pauseButton = document.getElementById('pauseButton') as HTMLButtonElement
 let paused = false
 assert(pauseButton !== null, 'pauseButton not found')
@@ -115,9 +122,9 @@ pauseButton.addEventListener('click', () => {
   }
 })
 
+// Change the tree type upon changing treeTypeDropdown
 const treeTypeDropdown = document.getElementById('treeTypeDropdown') as HTMLSelectElement
 assert(treeTypeDropdown !== null, 'treeTypeDropdown not found')
-
 treeTypeDropdown.addEventListener('change', () => {
   const selectedTreeType = treeTypeDropdown.value
   if (selectedTreeType === 'bst') {
@@ -127,5 +134,3 @@ treeTypeDropdown.addEventListener('change', () => {
   }
   resetController(treeType)
 })
-
-controller.animate()

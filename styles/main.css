@@ -8,9 +8,9 @@
 body {
   display: flex;
   flex-direction: column;
-  font-family: 'Roboto', sans-serif;
+  font-family: Roboto, sans-serif;
   margin: 0;
-  background-color: rgb(121, 142, 167);
+  background-color: rgb(121 142 167);
   overflow: hidden;
   text-align: center;
   color: white;
@@ -20,11 +20,11 @@ body {
   display: flex;
   justify-content: flex-start;
   flex-direction: row;
-  background-color: rgb(0, 85, 85);
+  background-color: rgb(0 85 85);
 }
 
 .header h1 {
-  font-family: 'Roboto', sans-serif;
+  font-family: Roboto, sans-serif;
   font-size: 1.6em;
   width: 100%;
 }
@@ -36,7 +36,7 @@ body {
   border-color: transparent;
   color: white;
   border-radius: 5px;
-  font-family: 'Roboto', sans-serif;
+  font-family: Roboto, sans-serif;
   font-size: 1em;
 }
 
@@ -48,7 +48,7 @@ body {
 
 .header button:hover,
 .header select:hover {
-  background-color: rgb(0, 162, 162);
+  background-color: rgb(0 162 162);
 }
 
 .header input {
@@ -57,37 +57,37 @@ body {
   background-color: transparent;
   color: white;
   text-align: center;
-  font-family: 'Roboto', sans-serif;
+  font-family: Roboto, sans-serif;
 }
 
 .header input::placeholder {
-  color: rgb(187, 187, 187);
+  color: rgb(187 187 187);
 }
 
-.operationContainer,
-.animationSpeedBarContainer {
+.operation-container,
+.animation-speed-bar-container {
   display: flex;
   flex-direction: column;
   justify-content: center;
   width: 100%;
 }
 
-.dropdownContent {
-  background-color: rgb(0, 85, 85);
+.dropdown-content {
+  background-color: rgb(0 85 85);
 }
 
-.dropdown:hover .dropdownContent {
+.dropdown:hover .dropdown-content {
   display: block;
 }
 
-.animationDescription {
+.animation-description {
   min-height: 1em;
-  color: rgb(72, 0, 72);
+  color: rgb(72 0 72);
 }
 
-.secondaryAnimationDescription {
+.secondary-animation-description {
   min-height: 0.9em;
-  color: rgb(72, 0, 72);
+  color: rgb(72 0 72);
   font-size: 0.9em;
 }
 

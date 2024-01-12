@@ -9,6 +9,10 @@
 <body>
   <div class="header">
     <h1>Tree Visualizer</h1>
+    <select id="treeTypeDropdown">
+      <option class="dropdownContent" value="bst">Binary Search Tree</option>
+      <option class="dropdownContent" value="avl">AVL Tree</option>
+    </select>
     <div class="operationContainer" id="insert">
       <input type="text" id="insertInput" placeholder="Enter a value to insert" />
       <button id="insertButton">Insert</button>
@@ -28,10 +32,6 @@
       <input type="range" id="animationSpeedBar" min="1" max="19" value="10" />
     </div>
     <button id="pauseButton">Pause</button>
-    <select id="treeTypeDropdown">
-      <option class="dropdownContent" value="bst">Binary Search Tree</option>
-      <option class="dropdownContent" value="avl">AVL Tree</option>
-    </select>
   </div>
   <p class="animationDescription" id="animationDescription"></p>
   <p class="secondaryAnimationDescription" id="secondaryAnimationDescription"></p>

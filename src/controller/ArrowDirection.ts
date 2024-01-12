@@ -3,7 +3,7 @@ enum ArrowDirection {
   PARENT_TO_CHILD,
   PREORDER,
   INORDER,
-  POSTORDER
+  POSTORDER,
 }
 
-export default ArrowDirection
+export default ArrowDirection;

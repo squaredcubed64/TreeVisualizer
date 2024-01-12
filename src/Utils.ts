@@ -1,5 +1,5 @@
-export function assert (condition: any, message: string): asserts condition {
+export function assert(condition: any, message: string): asserts condition {
   if (!(condition as boolean)) {
-    throw new Error(message)
+    throw new Error(message);
   }
 }

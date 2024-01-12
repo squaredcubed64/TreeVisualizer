@@ -1,42 +1,56 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-
-<head>
-  <title>Tree Visualizer</title>
-  <link rel="stylesheet" type="text/css" href="styles/main.css" />
-</head>
-
-<body>
-  <div class="header">
-    <h1>Tree Visualizer</h1>
-    <select id="treeTypeDropdown">
-      <option class="dropdown-content" value="bst">Binary Search Tree</option>
-      <option class="dropdown-content" value="avl">AVL Tree</option>
-    </select>
-    <div class="operation-container" id="insert">
-      <input type="text" id="insertInput" placeholder="Enter a value to insert" />
-      <button id="insertButton">Insert</button>
+  <head>
+    <title>Tree Visualizer</title>
+    <link rel="stylesheet" type="text/css" href="styles/main.css" />
+  </head>
+  <body>
+    <div class="header">
+      <h1>Tree Visualizer</h1>
+      <select id="treeTypeDropdown">
+        <option class="dropdown-content" value="bst">Binary Search Tree</option>
+        <option class="dropdown-content" value="avl">AVL Tree</option>
+      </select>
+      <div class="operation-container" id="insert">
+        <input
+          type="text"
+          id="insertInput"
+          placeholder="Enter a value to insert"
+        />
+        <button id="insertButton">Insert</button>
+      </div>
+      <div class="operation-container" id="delete">
+        <input
+          type="text"
+          id="deleteInput"
+          placeholder="Enter a value to delete"
+        />
+        <button id="deleteButton">Delete</button>
+      </div>
+      <div class="operation-container" id="find">
+        <input type="text" id="findInput" placeholder="Enter a value to find" />
+        <button id="findButton">Find</button>
+      </div>
+      <button id="clearButton">Clear</button>
+      <button id="arrowButton">Arrows: Parent to Child</button>
+      <div class="animation-speed-bar-container">
+        <label for="animationSpeedBar">Animation Speed</label>
+        <input
+          type="range"
+          id="animationSpeedBar"
+          min="1"
+          max="19"
+          value="10"
+        />
+      </div>
+      <button id="pauseButton">Pause</button>
     </div>
-    <div class="operation-container" id="delete">
-      <input type="text" id="deleteInput" placeholder="Enter a value to delete" />
-      <button id="deleteButton">Delete</button>
-    </div>
-    <div class="operation-container" id="find">
-      <input type="text" id="findInput" placeholder="Enter a value to find" />
-      <button id="findButton">Find</button>
-    </div>
-    <button id="clearButton">Clear</button>
-    <button id="arrowButton">Arrows: Parent to Child</button>
-    <div class="animation-speed-bar-container">
-      <label for="animationSpeedBar">Animation Speed</label>
-      <input type="range" id="animationSpeedBar" min="1" max="19" value="10" />
-    </div>
-    <button id="pauseButton">Pause</button>
-  </div>
-  <p class="animation-description" id="animationDescription"></p>
-  <p class="secondary-animation-description" id="secondaryAnimationDescription"></p>
-  <canvas id="canvas"></canvas>
-  <script type="module" src="/src/Main.ts"></script>
-</body>
-
+    <p class="animation-description" id="animationDescription"></p>
+    <p
+      class="secondary-animation-description"
+      id="secondaryAnimationDescription"
+    ></p>
+    <canvas id="canvas"></canvas>
+    <script type="module" src="/src/Main.ts"></script>
+  </body>
 </html>

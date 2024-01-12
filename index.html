@@ -1,49 +1,42 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Tree Visualizer</title>
-    <link rel="stylesheet" type="text/css" href="styles/main.css" />
-  </head>
-  <body>
-    <div class="header">
-      <h1>Tree Visualizer</h1>
-      <div class="operationContainer" id="insert">
-        <input
-          type="text"
-          id="insertInput"
-          placeholder="Enter a value to insert"
-        />
-        <button id="insertButton">Insert</button>
-      </div>
-      <div class="operationContainer" id="delete">
-        <input
-          type="text"
-          id="deleteInput"
-          placeholder="Enter a value to delete"
-        />
-        <button id="deleteButton">Delete</button>
-      </div>
-      <div class="operationContainer" id="find">
-        <input type="text" id="findInput" placeholder="Enter a value to find" />
-        <button id="findButton">Find</button>
-      </div>
-      <button class="miscButton" id="clearButton">Clear</button>
-      <button class="miscButton" id="arrowButton">Arrows: Parent to Child</button>
-      <div class="animationSpeedBarContainer">
-        <label for="animationSpeedBar">Animation Speed</label>
-        <input
-          type="range"
-          id="animationSpeedBar"
-          min="1"
-          max="19"
-          value="10"
-        />
-      </div>
-      <button class="miscButton" id="pauseButton">Pause</button>
+
+<head>
+  <title>Tree Visualizer</title>
+  <link rel="stylesheet" type="text/css" href="styles/main.css" />
+</head>
+
+<body>
+  <div class="header">
+    <h1>Tree Visualizer</h1>
+    <div class="operationContainer" id="insert">
+      <input type="text" id="insertInput" placeholder="Enter a value to insert" />
+      <button id="insertButton">Insert</button>
     </div>
-    <p class="animationDescription" id="animationDescription"></p>
-    <p class="secondaryAnimationDescription" id="secondaryAnimationDescription"></p>
-    <canvas id="canvas"></canvas>
-    <script type="module" src="/src/Main.ts"></script>
-  </body>
+    <div class="operationContainer" id="delete">
+      <input type="text" id="deleteInput" placeholder="Enter a value to delete" />
+      <button id="deleteButton">Delete</button>
+    </div>
+    <div class="operationContainer" id="find">
+      <input type="text" id="findInput" placeholder="Enter a value to find" />
+      <button id="findButton">Find</button>
+    </div>
+    <button id="clearButton">Clear</button>
+    <button id="arrowButton">Arrows: Parent to Child</button>
+    <div class="animationSpeedBarContainer">
+      <label for="animationSpeedBar">Animation Speed</label>
+      <input type="range" id="animationSpeedBar" min="1" max="19" value="10" />
+    </div>
+    <button id="pauseButton">Pause</button>
+    <select id="treeTypeDropdown">
+      <option class="dropdownContent" value="bst">Binary Search Tree</option>
+      <option class="dropdownContent" value="avl">AVL Tree</option>
+    </select>
+  </div>
+  <p class="animationDescription" id="animationDescription"></p>
+  <p class="secondaryAnimationDescription" id="secondaryAnimationDescription"></p>
+  <canvas id="canvas"></canvas>
+  <script type="module" src="/src/Main.ts"></script>
+</body>
+
 </html>

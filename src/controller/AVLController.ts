@@ -1,6 +1,6 @@
-import type AVLModel from '../model/AVLModel'
+import AVLModel from '../model/AVLModel'
 import type DataNode from '../model/DataNode'
-import type AVLView from '../view/AVLView'
+import AVLView from '../view/AVLView'
 import type DisplayNode from '../view/DisplayNode'
 import TreeView from '../view/TreeView'
 import BSTController from './BSTController'
@@ -10,12 +10,8 @@ import type AVLDeletionInformation from './operationInformation/deletionInformat
 import type RotationPathInstruction from './pathInstruction/RotationPathInstruction'
 
 export default class AVLController extends BSTController {
-  protected readonly model: AVLModel
-  protected readonly view: AVLView
-
-  public constructor (model: AVLModel, view: AVLView) {
-    super(model, view)
-  }
+  protected readonly model: AVLModel = new AVLModel()
+  protected readonly view: AVLView = new AVLView()
 
   public insert (value: number): void {
     const { insertionInformation: modelInsertionInformation, insertedNode: insertedDataNode } = this.model.insert(value)

@@ -1,17 +1,7 @@
-import BSTModel from './model/BSTModel'
 import ArrowDirection from './controller/ArrowDirection'
-import BSTView from './view/BSTView'
 import BSTController from './controller/BSTController'
 import { assert } from './Utils'
 import AVLController from './controller/AVLController'
-import AVLModel from './model/AVLModel'
-import AVLView from './view/AVLView'
-
-// Helpers
-function resizeCanvas (canvas: HTMLCanvasElement): void {
-  canvas.width = window.innerWidth
-  canvas.height = window.innerHeight
-}
 
 // Make canvas fill the screen
 const canvas = document.getElementById('canvas') as HTMLCanvasElement
@@ -22,11 +12,19 @@ window.addEventListener('resize', () => {
 resizeCanvas(canvas)
 BSTController.centerTree(canvas.width)
 
-// Initialize controller
-function makeController (): AVLController {
-  return new AVLController(new AVLModel(), new AVLView())
+// Helpers
+function resizeCanvas (canvas: HTMLCanvasElement): void {
+  canvas.width = window.innerWidth
+  canvas.height = window.innerHeight
 }
-let controller = makeController()
+
+// Initialize controller
+let controller: BSTController = new BSTController()
+let treeType = BSTController
+function setControllerToNew<T extends BSTController> (ControllerType: new (...args: any[]) => T): void {
+  controller = new ControllerType()
+}
+setControllerToNew(treeType)
 
 // Attach tree operations to HTML elements insertButton, deleteButton, findButton, clearButton, arrowButton, and animationSpeedBar
 const insertButton = document.getElementById('insertButton') as HTMLButtonElement
@@ -59,6 +57,13 @@ findButton.addEventListener('click', () => {
 const clearButton = document.getElementById('clearButton') as HTMLButtonElement
 assert(clearButton !== null, 'clearButton not found')
 clearButton.addEventListener('click', () => {
+  resetController(treeType)
+})
+/**
+ * Delete the current controller, clear the canvas, and create a new controller of type newControllerType with the same animation speed setting and arrow direction
+ * @param newControllerType The type of controller to use after clearing
+ */
+function resetController<T extends BSTController> (newControllerType: new () => T): void {
   const animationSpeedSetting = controller.getAnimationSpeedSetting()
   const arrowDirection = controller.getArrowDirection()
   controller.stopAnimation()
@@ -69,11 +74,11 @@ clearButton.addEventListener('click', () => {
   context.clearRect(0, 0, canvas.width, canvas.height)
 
   // Reset controller but keep old animation speed setting and arrow direction
-  controller = makeController()
+  setControllerToNew(newControllerType)
   controller.setAnimationSpeedSetting(animationSpeedSetting)
   controller.setArrowDirection(arrowDirection)
   controller.animate()
-})
+}
 
 const arrowButton = document.getElementById('arrowButton') as HTMLButtonElement
 const arrowDirections: ArrowDirection[] = [ArrowDirection.PARENT_TO_CHILD, ArrowDirection.PREORDER, ArrowDirection.INORDER, ArrowDirection.POSTORDER]
@@ -108,6 +113,19 @@ pauseButton.addEventListener('click', () => {
     controller.animate()
     pauseButton.textContent = 'Pause'
   }
+})
+
+const treeTypeDropdown = document.getElementById('treeTypeDropdown') as HTMLSelectElement
+assert(treeTypeDropdown !== null, 'treeTypeDropdown not found')
+
+treeTypeDropdown.addEventListener('change', () => {
+  const selectedTreeType = treeTypeDropdown.value
+  if (selectedTreeType === 'bst') {
+    treeType = BSTController
+  } else if (selectedTreeType === 'avl') {
+    treeType = AVLController
+  }
+  resetController(treeType)
 })
 
 controller.animate()

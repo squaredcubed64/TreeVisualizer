@@ -9,11 +9,6 @@ export default abstract class TreeController {
   protected readonly model: TreeModel
   protected readonly view: TreeView
 
-  public constructor (model: TreeModel, view: TreeView) {
-    this.model = model
-    this.view = view
-  }
-
   public static centerTree (canvasWidth: number): void {
     TreeView.centerTree(canvasWidth)
   }

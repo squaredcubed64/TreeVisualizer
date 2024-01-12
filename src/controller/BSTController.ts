@@ -1,7 +1,7 @@
 import type DataNode from '../model/DataNode'
 import type DisplayNode from '../view/DisplayNode'
-import type BSTModel from '../model/BSTModel'
-import type BSTView from '../view/BSTView'
+import BSTModel from '../model/BSTModel'
+import BSTView from '../view/BSTView'
 import { assert } from '../Utils'
 import type ArrowDirection from './ArrowDirection'
 import type BSTInsertionInformation from './operationInformation/BSTInsertionInformation'
@@ -16,12 +16,8 @@ import TreeController from './TreeController'
 import type BSTDeletionInformation from './operationInformation/deletionInformation/BSTDeletionInformation'
 
 export default class BSTController extends TreeController {
-  protected readonly model: BSTModel
-  protected readonly view: BSTView
-
-  public constructor (model: BSTModel, view: BSTView) {
-    super(model, view)
-  }
+  protected readonly model: BSTModel = new BSTModel()
+  protected readonly view: BSTView = new BSTView()
 
   public setArrowDirection (arrowDirection: ArrowDirection): void {
     this.model.arrowDirection = arrowDirection

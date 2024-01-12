@@ -43,6 +43,7 @@ body {
 .header > button,
 .header > select {
   width: 100%;
+  text-align: center;
 }
 
 .header button:hover,

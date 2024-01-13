@@ -140,9 +140,16 @@ export default abstract class TreeView {
     }
   }
 
+  /**
+   * @param animationSpeedSetting The animation speed setting, from 0 to 199
+   */
   public setAnimationSpeedSetting(animationSpeedSetting: number): void {
     this.animationSpeedSetting = animationSpeedSetting;
-    this.animationSpeed = 1.2 ** (animationSpeedSetting - 10);
+    if (animationSpeedSetting === 199) {
+      this.animationSpeed = Infinity;
+    } else {
+      this.animationSpeed = 1.03 ** (animationSpeedSetting - 100);
+    }
   }
 
   public getAnimationSpeedSetting(): number {

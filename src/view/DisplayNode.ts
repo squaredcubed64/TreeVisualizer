@@ -1,15 +1,18 @@
 import { assert } from "../Utils";
+import { DURATION_MULTIPLIER } from "./Constants";
 
 /**
  * A node that is drawn on the canvas.
  */
 export default class DisplayNode {
-  public static readonly MOVE_DURATION_FRAMES = 150;
-  public static readonly SHRINK_DURATION_FRAMES = 60;
-  public static readonly DEFAULT_HIGHLIGHT_DURATION_FRAMES = 60;
+  public static readonly MOVE_DURATION_FRAMES = 150 * DURATION_MULTIPLIER;
+  public static readonly SHRINK_DURATION_FRAMES = 60 * DURATION_MULTIPLIER;
+  public static readonly DEFAULT_HIGHLIGHT_DURATION_FRAMES =
+    60 * DURATION_MULTIPLIER;
+
+  private static readonly GROW_DURATION_FRAMES = 30 * DURATION_MULTIPLIER;
   private static readonly BORDER_WIDTH = 1;
   private static readonly HIGHLIGHT_WIDTH = 5;
-  private static readonly GROW_DURATION_FRAMES = 30;
   private static readonly TEXT_COLOR = "red";
   private static readonly TEXT_FONT = "16px Arial";
   private static readonly TEXT_Y_OFFSET = 2;

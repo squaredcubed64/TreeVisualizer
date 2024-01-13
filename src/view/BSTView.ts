@@ -8,20 +8,33 @@ import type BSTFindInformation from "../controller/operationInformation/BSTFindI
 import type BSTDeletionInformation from "../controller/operationInformation/deletionInformation/BSTDeletionInformation";
 import type BSTSecondaryDescription from "../controller/secondaryDescription/BSTSecondaryDescription";
 import type BSTPathInstruction from "../controller/pathInstruction/BSTPathInstruction";
+import { DURATION_MULTIPLIER } from "./Constants";
 
 /**
  * Handles the animation of BST operations.
  */
 export default class BSTView extends TreeView {
-  protected static readonly FRAMES_BETWEEN_HIGHLIGHTS = 60;
-  private static readonly FRAMES_AFTER_HIGHLIGHTING_VICTIM_WITH_TWO_CHILDREN = 60;
-  private static readonly FRAMES_BEFORE_REPLACE_WITH_SUCCESSOR = 60;
-  private static readonly FRAMES_BEFORE_UNHIGHLIGHT_VICTIM = 60;
+  protected static readonly FRAMES_BETWEEN_HIGHLIGHTS =
+    DURATION_MULTIPLIER * 60;
+
+  private static readonly FRAMES_AFTER_HIGHLIGHTING_VICTIM_WITH_TWO_CHILDREN =
+    DURATION_MULTIPLIER * 60;
+
+  private static readonly FRAMES_BEFORE_REPLACE_WITH_SUCCESSOR =
+    DURATION_MULTIPLIER * 60;
+
+  private static readonly FRAMES_BEFORE_UNHIGHLIGHT_VICTIM =
+    DURATION_MULTIPLIER * 60;
+
+  private static readonly FRAMES_AFTER_UNSUCCESSFUL_DELETE =
+    DURATION_MULTIPLIER * 60;
+
+  private static readonly HIGHLIGHT_DURATION_AFTER_SUCCESSFUL_FIND_FRAMES =
+    DURATION_MULTIPLIER * 60;
+
+  private static readonly FRAMES_AFTER_FIND = DURATION_MULTIPLIER * 0;
   private static readonly FIND_SUCCESSOR_HIGHLIGHT_COLOR = "green";
-  private static readonly FRAMES_AFTER_UNSUCCESSFUL_DELETE = 60;
   private static readonly HIGHLIGHT_COLOR_AFTER_SUCCESSFUL_FIND = "green";
-  private static readonly HIGHLIGHT_DURATION_AFTER_SUCCESSFUL_FIND_FRAMES = 60;
-  private static readonly FRAMES_AFTER_FIND = 0;
   private static readonly INSERTION_DESCRIPTIONS = {
     FIND_WHERE_TO_INSERT: "Find where to insert the new node.",
     INSERT_NEW_NODE: "Insert the new node.",

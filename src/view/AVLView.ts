@@ -4,18 +4,20 @@ import type AVLDeletionInformation from "../controller/operationInformation/dele
 import type RotationPathInstruction from "../controller/pathInstruction/RotationPathInstruction";
 import type RotationSecondaryDescription from "../controller/secondaryDescription/RotationSecondaryDescription";
 import BSTView from "./BSTView";
+import { DURATION_MULTIPLIER } from "./Constants";
 import DisplayNode from "./DisplayNode";
 
 /**
  * Handles the animation of AVL operations.
  */
 export default class AVLView extends BSTView {
-  private static readonly ROTATION_PATH_DESCRIPTION =
-    "Go back up the tree, rotating nodes as necessary to maintain the AVL property.";
+  private static readonly FRAMES_AFTER_ROTATION = DURATION_MULTIPLIER * 60;
+  private static readonly ROTATION_PATH_HIGHLIGHT_DURATION =
+    DURATION_MULTIPLIER * 60;
 
   private static readonly ROTATION_PATH_HIGHLIGHT_COLOR = "red";
-  private static readonly FRAMES_AFTER_ROTATION = 60;
-  private static readonly ROTATION_PATH_HIGHLIGHT_DURATION = 60;
+  private static readonly ROTATION_PATH_DESCRIPTION =
+    "Go back up the tree, rotating nodes as necessary to maintain the AVL property.";
 
   /**
    * @param secondaryDescription Additional information about the rotation.

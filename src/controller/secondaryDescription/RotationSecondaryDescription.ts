@@ -1,5 +1,5 @@
 /**
- * Explains why an AVL tree rotation is necessary.
+ * The info needed to explain why an AVL tree rotation is or is not necessary at a node.
  */
 export default interface RotationSecondaryDescription {
   type: "rotation";

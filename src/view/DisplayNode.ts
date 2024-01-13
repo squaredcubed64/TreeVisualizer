@@ -1,5 +1,8 @@
 import { assert } from "../Utils";
 
+/**
+ * A node that is drawn on the canvas.
+ */
 export default class DisplayNode {
   public static readonly MOVE_DURATION_FRAMES = 150;
   public static readonly SHRINK_DURATION_FRAMES = 60;
@@ -48,10 +51,20 @@ export default class DisplayNode {
     this.value = value;
   }
 
+  /**
+   * Curve that starts at (0, 0) and ends at (1, 1), with movement being slow at the start and end.
+   * @param x A number between 0 and 1
+   * @returns The y value of the curve at x
+   */
   private static easeInOutCurve(x: number): number {
     return x * x * (3 - 2 * x);
   }
 
+  /**
+   * Curve that starts at (0, 0) and ends at (1, 1), with movement being slow at the start and springy at the end.
+   * @param x A number between 0 and 1
+   * @returns The y value of the curve at x
+   */
   private static bounceCurve(x: number): number {
     if (x < 0.6) {
       return DisplayNode.easeInOutCurve(x) / 0.648;
@@ -60,18 +73,37 @@ export default class DisplayNode {
     }
   }
 
-  // Curves that start at 0, 0 and go to 1, 1
+  /**
+   * Curve that represents the motion of the node as it moves from its previous position to its target position.
+   *
+   * It starts at (0, 0) and ends at (1, 1), with movement being slow at the start and end.
+   * @param progress The proportion of the animation's time that has passed, between 0 and 1
+   * @returns The proportion of the animation's distance that should be covered, between 0 and 1
+   */
   private static motionCurve(progress: number): number {
     assert(progress >= 0 && progress <= 1, "progress must be between 0 and 1");
     return DisplayNode.easeInOutCurve(progress);
   }
 
+  /**
+   * Curve that represents the growth of the node's radius as it is inserted.
+   *
+   * It starts at (0, 0) and ends at (1, 1), with growth being slow at the start and end.
+   * @param progress The proportion of the animation's time that has passed, between 0 and 1
+   * @returns The proportion of the max radius that the radius should be, between 0 and 1
+   */
   private static radiusGrowthCurve(progress: number): number {
     assert(progress >= 0 && progress <= 1, "progress must be between 0 and 1");
     return DisplayNode.easeInOutCurve(progress);
   }
 
-  // Curve that starts at 1, 1 and goes to 0, 0
+  /**
+   * Curve that represents the shrinking of the node's radius as it is deleted.
+   *
+   * It starts at (0, 1) and ends at (1, 0), with shrinking being slow at the start and end.
+   * @param progress The proportion of the animation's time that has passed, between 0 and 1
+   * @returns The proportion of the max radius that the radius should be, between 0 and 1
+   */
   private static radiusShrinkingCurve(progress: number): number {
     assert(progress >= 0 && progress <= 1, "progress must be between 0 and 1");
     return 1 - DisplayNode.easeInOutCurve(progress);
@@ -85,6 +117,11 @@ export default class DisplayNode {
     this.update(animationSpeed);
   }
 
+  /**
+   * Move the node to the given coordinates over MOVE_DURATION_FRAMES frames.
+   * @param targetX The x coordinate to move to
+   * @param targetY The y coordinate to move to
+   */
   public moveTo(targetX: number, targetY: number): void {
     this.framesUntilStop = DisplayNode.MOVE_DURATION_FRAMES;
     this.previousX = this.x;
@@ -93,6 +130,11 @@ export default class DisplayNode {
     this.targetY = targetY;
   }
 
+  /**
+   * Highlight the node with the given color for the given number of frames.
+   * @param color The color to highlight the node with.
+   * @param durationFrames The number of frames to highlight the node for. Can be set to Infinity to keep the node highlighted.
+   */
   public highlight(
     color: string = DisplayNode.DEFAULT_HIGHLIGHT_COLOR,
     durationFrames: number = DisplayNode.DEFAULT_HIGHLIGHT_DURATION_FRAMES,
@@ -101,15 +143,24 @@ export default class DisplayNode {
     this.framesUntilUnhighlighted = durationFrames;
   }
 
+  /**
+   * Stop highlighting the node.
+   */
   public unhighlight(): void {
     this.framesUntilUnhighlighted = 0;
   }
 
+  /**
+   * Start decreasing the node's radius. It should be deleted when the radius reaches 0.
+   */
   public startShrinkingIntoNothing(): void {
     this.framesUntilShrunk = DisplayNode.SHRINK_DURATION_FRAMES;
   }
 
-  // animationSpeed is a multiplier for the speed of all changes
+  /**
+   * Update the node's position, radius, and time left highlighted based on the given animation speed.
+   * @param animationSpeed The number of frames to advance by. Can be a fraction.
+   */
   private update(animationSpeed: number): void {
     this.framesUntilStop = Math.max(this.framesUntilStop - animationSpeed, 0);
     this.framesUntilGrown = Math.max(this.framesUntilGrown - animationSpeed, 0);
@@ -152,6 +203,10 @@ export default class DisplayNode {
     }
   }
 
+  /**
+   * Draw the node on the canvas.
+   * @param context The canvas context to draw on
+   */
   private draw(context: CanvasRenderingContext2D): void {
     // Highlight
     if (this.framesUntilUnhighlighted > 0) {

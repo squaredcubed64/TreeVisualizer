@@ -3,7 +3,9 @@ import type DataNode from "../../model/DataNode";
 import type RotationPathInstruction from "../pathInstruction/RotationPathInstruction";
 import type BSTInsertionInformation from "./BSTInsertionInformation";
 
-// The info the model sends to the controller when a node is inserted
+/**
+ * The info the view needs to animate AVL insertion.
+ */
 export default interface AVLInsertionInformation<
   T extends DataNode | DisplayNode,
 > extends BSTInsertionInformation<T> {

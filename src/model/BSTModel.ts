@@ -11,11 +11,14 @@ import TreeModel from "./TreeModel";
 import type BSTFindInformation from "../controller/operationInformation/BSTFindInformation";
 import type BSTDeletionInformation from "../controller/operationInformation/deletionInformation/BSTDeletionInformation";
 
+/**
+ * A Binary Search Tree data structure, which also calculates information the view needs for animations.
+ */
 export default class BSTModel extends TreeModel {
   /**
-   * Finds the inorder successor of a node, the successor's parent, and the path to the successor
-   * @param node The node to find the successor of
-   * @returns The successor node, the parent of the successor node, and the path to the successor node (starts with node.right and ends with the successor node)
+   * Finds the inorder successor of a node, the successor's parent, and the path to the successor.
+   * @param node The node to find the successor of.
+   * @returns The successor node, the parent of the successor node, and the path to the successor node (starts with node.right and ends with the successor node).
    */
   protected static findSuccessorAndParentAndPath(node: DataNode): {
     successor: DataNode;
@@ -122,8 +125,11 @@ export default class BSTModel extends TreeModel {
     };
   }
 
-  // If the victim node has 2 children, send different information to facilitate a different animation
-  // If the tree is empty, return null
+  /**
+   * Deletes a node from the model
+   * @param value The value to delete
+   * @returns The information needed to animate the deletion
+   */
   public delete(value: number): BSTDeletionInformation<DataNode> {
     if (this.root == null) {
       return { type: "VictimNotFound", pathFromRootToTarget: [] };
@@ -224,6 +230,11 @@ export default class BSTModel extends TreeModel {
     }
   }
 
+  /**
+   * Finds a node in the model
+   * @param value The value to find
+   * @returns The information needed to animate the find
+   */
   public find(value: number): BSTFindInformation<DataNode> {
     // Find the path the tree takes to find the node to delete
     const path: Array<

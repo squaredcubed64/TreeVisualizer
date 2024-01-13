@@ -5,7 +5,9 @@ import type TreeShape from "../../TreeShape";
 import type DataNode from "../../../model/DataNode";
 import type DisplayNode from "../../../view/DisplayNode";
 
-// The info the model sends to the controller when a node with 2 children is deleted
+/**
+ * The info the view needs to animate BST deletion when the victim has 2 children.
+ */
 export default interface BSTDeletionInformation2Children<
   T extends DataNode | DisplayNode,
 > extends BSTDeletionInformationBase<T> {

@@ -3,6 +3,10 @@ import type DelayedFunctionCall from "./delayedFunctionCall/DelayedFunctionCall"
 import type TreeShape from "../controller/TreeShape";
 import { assert } from "../Utils";
 
+/**
+ * Provides tree animation functionality, such as calculating where nodes should be, drawing nodes and arrows,
+ * and handling asynchronous actions, as represented by functions in the functionQueue.
+ */
 export default abstract class TreeView {
   protected static ROOT_TARGET_X = 700;
   protected static readonly ROOT_TARGET_Y = 50;
@@ -27,23 +31,36 @@ export default abstract class TreeView {
     this.shape = { inorderTraversal: [], layers: [], arrows: new Set() };
   }
 
+  /**
+   * Note: The controller needs this to maintain its map from data nodes to display nodes
+   * @returns A placeholder node that is used to represent a node that is being inserted
+   */
   public static makePlaceholderNode(): DisplayNode {
-    return new DisplayNode(NaN, NaN, "placeholder", "placeholder", NaN);
+    return new DisplayNode(
+      NaN,
+      NaN,
+      TreeView.FILL_COLOR,
+      TreeView.STROKE_COLOR,
+      NaN,
+    );
   }
 
+  /**
+   * Centers the tree the next time the tree's shape changes
+   * @param canvasWidth The width of the id="canvas" element
+   */
   public static centerTree(canvasWidth: number): void {
     TreeView.ROOT_TARGET_X = canvasWidth / 2;
   }
 
-  protected static preparePlaceholderColorsAndValue(
-    placeholderNode: DisplayNode,
-    value: number,
-  ): void {
-    placeholderNode.fillColor = TreeView.FILL_COLOR;
-    placeholderNode.strokeColor = TreeView.STROKE_COLOR;
-    placeholderNode.value = value;
-  }
-
+  /**
+   * Draws an arrow from (fromX, fromY) to (toX, toY)
+   * @param fromX x coordinate of the start of the arrow
+   * @param fromY y coordinate of the start of the arrow
+   * @param toX x coordinate of the end of the arrow
+   * @param toY y coordinate of the end of the arrow
+   * @param context The canvas context to draw on
+   */
   private static drawArrow(
     fromX: number,
     fromY: number,
@@ -79,6 +96,12 @@ export default abstract class TreeView {
     context.stroke();
   }
 
+  /**
+   * Draws an arrow from fromNode to toNode
+   * @param fromNode The node to draw the arrow from
+   * @param toNode The node to draw the arrow to
+   * @param context The canvas context to draw on
+   */
   private static drawArrowFromNodeToNode(
     fromNode: DisplayNode,
     toNode: DisplayNode,
@@ -98,7 +121,9 @@ export default abstract class TreeView {
     );
   }
 
-  // Tell all nodes to start moving to new targets
+  /**
+   * Sets the target positions of all nodes in the tree, based on the tree's shape
+   */
   public setTargetPositions(): void {
     if (this.shape.inorderTraversal.length === 0) {
       return;
@@ -128,7 +153,12 @@ export default abstract class TreeView {
     this.shape.arrows = arrows;
   }
 
-  // Updates the functionQueue, draws on the canvas, then requests another animation frame for itself
+  /**
+   * Calls functions in functionQueue if they are ready, draws the tree,
+   * updates descriptions, disables buttons if an animation is happening, and requests another animation frame
+   * @param canvas The canvas to draw on
+   * @param context canvas's context
+   */
   public animate(
     canvas: HTMLCanvasElement,
     context: CanvasRenderingContext2D,
@@ -235,12 +265,19 @@ export default abstract class TreeView {
     cancelAnimationFrame(this.currentAnimationId);
   }
 
+  /**
+   * Sets the tree's shape to the given shape, and sets the target positions of all nodes in the tree
+   * @param newShape The shape the tree gradually changes to
+   */
   protected animateShapeChange(newShape: TreeShape<DisplayNode>): void {
     this.shape = newShape;
     this.setTargetPositions();
   }
 
-  // Nodes are equally spaced horizontally based on their inorder traversal
+  /**
+   * @returns The target x coordinates of all nodes in the tree.
+   * The root node is centered horizontally, and nodes are evenly spaced horizontally in inorder traversal order.
+   */
   private calculateTargetXs(): Map<DisplayNode, number> {
     const nodeToTargetX = new Map<DisplayNode, number>();
     const root = this.shape.layers[0][0];
@@ -255,7 +292,9 @@ export default abstract class TreeView {
     return nodeToTargetX;
   }
 
-  // Layers are equally spaced vertically based on their depth
+  /**
+   * @returns The target y coordinates of all nodes in the tree. Layers are evenly spaced vertically.
+   */
   private calculateTargetYs(): Map<DisplayNode, number> {
     const nodeToTargetY = new Map<DisplayNode, number>();
     for (let i = 0; i < this.shape.layers.length; i++) {

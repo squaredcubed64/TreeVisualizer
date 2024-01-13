@@ -1,11 +1,16 @@
 import ArrowDirection from "../controller/ArrowDirection";
 
+/**
+ * A node in the data structure. It contains a value and pointers to its left and right children.
+ *
+ * Also contains a height value, which its tree is responsible for updating.
+ */
 export default class DataNode {
   public value: number;
   public left: DataNode | null = null;
   public right: DataNode | null = null;
   /**
-   * The number of vertices from this node to its deepest leaf. The Tree is responsible for updating this value.
+   * The number of vertices from this node to its deepest leaf. The node's tree is responsible for updating this value.
    */
   public height: number = 1;
 
@@ -13,6 +18,10 @@ export default class DataNode {
     this.value = value;
   }
 
+  /**
+   * @param arrowDirection The direction of the traversal. Must not be PARENT_TO_CHILD.
+   * @returns The nodes in the traversal, in the order they are visited.
+   */
   public getTraversal(arrowDirection: ArrowDirection): DataNode[] {
     switch (arrowDirection) {
       case ArrowDirection.PREORDER:

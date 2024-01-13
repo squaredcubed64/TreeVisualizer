@@ -8,4 +8,5 @@ type BSTDeletionInformation<T extends DataNode | DisplayNode> =
   | BSTDeletionInformationLEQ1Child<T>
   | BSTDeletionInformation2Children<T>
   | BSTDeletionInformationVictimNotFound<T>;
+
 export default BSTDeletionInformation;

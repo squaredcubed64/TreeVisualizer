@@ -5,7 +5,7 @@ import type DataNode from "../../../model/DataNode";
 import type DisplayNode from "../../../view/DisplayNode";
 
 /**
- * This is a base interface that is not used directly. Rather, it is extended by interfaces that represent each deletion case.
+ * This interface is not used directly. Rather, it is extended by interfaces that represent each deletion case.
  */
 export default interface BSTDeletionInformationBase<
   T extends DataNode | DisplayNode,

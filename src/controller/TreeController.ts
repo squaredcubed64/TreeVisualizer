@@ -21,9 +21,6 @@ export default abstract class TreeController {
     return this.view.getAnimationSpeedSetting();
   }
 
-  /**
-   * Call TreeView.animate(), a recursive function that uses requestAnimationFrame()
-   */
   public animate(): void {
     const canvas = document.getElementById("canvas") as HTMLCanvasElement;
     const context = canvas.getContext("2d");

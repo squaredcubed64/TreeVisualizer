@@ -5,7 +5,9 @@ import type TreeShape from "../TreeShape";
 import type DisplayNode from "../../view/DisplayNode";
 import type DataNode from "../../model/DataNode";
 
-// The info the model sends to the controller when a node is inserted
+/**
+ * The info the view needs to animate the insertion of a node.
+ */
 export default interface BSTInsertionInformation<
   T extends DataNode | DisplayNode,
 > extends BSTOperationInformation<T> {

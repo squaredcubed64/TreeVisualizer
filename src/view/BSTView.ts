@@ -9,6 +9,9 @@ import type BSTDeletionInformation from "../controller/operationInformation/dele
 import type BSTSecondaryDescription from "../controller/secondaryDescription/BSTSecondaryDescription";
 import type BSTPathInstruction from "../controller/pathInstruction/BSTPathInstruction";
 
+/**
+ * Handles the animation of BST operations.
+ */
 export default class BSTView extends TreeView {
   protected static readonly FRAMES_BETWEEN_HIGHLIGHTS = 60;
   private static readonly FRAMES_AFTER_HIGHLIGHTING_VICTIM_WITH_TWO_CHILDREN = 60;
@@ -41,7 +44,10 @@ export default class BSTView extends TreeView {
     DID_NOT_FIND_NODE: "Did not find the node.",
   };
 
-  // Animation: highlight path, grow inserted node, then move nodes to new target positions
+  /**
+   * Highlights the path of insertion, grows the inserted node, then move nodes to new target positions.
+   * @param insertionInformation The information the view needs to animate the insertion.
+   */
   public insert(
     insertionInformation: BSTInsertionInformation<DisplayNode>,
   ): void {
@@ -50,14 +56,14 @@ export default class BSTView extends TreeView {
       pathFromRootToTarget: path,
       value,
     } = insertionInformation;
-    const placeholderNode = shapeWithPlaceholder.inorderTraversal.find(
-      (node) => node.fillColor === "placeholder",
+    const placeholderNode = shapeWithPlaceholder.inorderTraversal.find((node) =>
+      isNaN(node.x),
     );
     assert(placeholderNode != null, "Placeholder node not found");
 
     // If the tree is empty, set the root without animating
     if (this.shape.inorderTraversal.length === 0) {
-      TreeView.preparePlaceholderColorsAndValue(placeholderNode, value);
+      placeholderNode.value = value;
       placeholderNode.x = TreeView.ROOT_TARGET_X;
       placeholderNode.y = TreeView.ROOT_TARGET_Y;
       this.animateShapeChange(shapeWithPlaceholder);
@@ -83,11 +89,19 @@ export default class BSTView extends TreeView {
     });
   }
 
+  /**
+   * Animates the deletion of a node, which always includes highlighting the path to the victim node.
+   *
+   * If the victim node is found, also shrinks the victim node and moves nodes to new target positions.
+   *
+   * If the victim node has two children, also highlights the path to the successor node and animates the deletion of the successor node.
+   * @param viewDeletionInformation The information the view needs to animate the deletion.
+   */
   public delete(
     viewDeletionInformation: BSTDeletionInformation<DisplayNode>,
   ): void {
     switch (viewDeletionInformation.type) {
-      // Animation: highlight path, shrink victim node, then move nodes to new target positions
+      // Animation: highlight path to victim, shrink victim node, then move nodes to new target positions
       case "LEQ1Child": {
         const {
           shape,
@@ -234,7 +248,12 @@ export default class BSTView extends TreeView {
     }
   }
 
-  // Animation: highlight path, then highlight node if found
+  /**
+   * Animates the finding of a node
+   *
+   * Highlights the path to the node, then highlights the node if it is found.
+   * @param viewFindInformation The information the view needs to animate the find.
+   */
   public find(viewFindInformation: BSTFindInformation<DisplayNode>): void {
     const { pathFromRootToTarget: path, nodeFound } = viewFindInformation;
     if (path.length !== 0) {
@@ -304,14 +323,21 @@ export default class BSTView extends TreeView {
     }
   }
 
-  // Prepares the placeholder node and tells nodes to start moving to new target positions
+  /**
+   * Prepares the placeholder node and tells nodes to start moving to new target positions
+   * @param valueToInsert The value to insert into the tree
+   * @param shapeWithPlaceholder The shape of the tree with a placeholder node, which is the node that's being inserted
+   * @param placeholderNode The node that's being inserted
+   * @param parent The parent of the node that's being inserted
+   * @returns The animation's time taken and description
+   */
   private setupInsertionAnimation(
     valueToInsert: number,
     shapeWithPlaceholder: TreeShape<DisplayNode>,
     placeholderNode: DisplayNode,
     parent: DisplayNode,
   ): DelayedFunctionCallFunctionResult {
-    TreeView.preparePlaceholderColorsAndValue(placeholderNode, valueToInsert);
+    placeholderNode.value = valueToInsert;
     if (placeholderNode.value < parent.value) {
       placeholderNode.x = parent.x - TreeView.TARGET_X_GAP;
     } else {
@@ -326,7 +352,12 @@ export default class BSTView extends TreeView {
     };
   }
 
-  // Pushes methods onto functionQueue to highlight nodes along path
+  /**
+   * Pushes methods onto functionQueue to highlight nodes along path
+   * @param path The path to highlight nodes in
+   * @param description The description to display when highlighting the nodes
+   * @param highlightColor The color to highlight the nodes with
+   */
   private pushNodeHighlightingOntoFunctionQueue<
     S extends BSTSecondaryDescription,
   >(

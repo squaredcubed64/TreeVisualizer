@@ -4,6 +4,9 @@ import type BSTPathInstruction from "../pathInstruction/BSTPathInstruction";
 import type BSTFindSecondaryDescription from "../secondaryDescription/BSTFindSecondaryDescription";
 import type BSTInsertionSecondaryDescription from "../secondaryDescription/BSTInsertionSecondaryDescription";
 
+/**
+ * This interface is not used directly. Rather, it is extended by interfaces that represent each operation case.
+ */
 export default interface BSTOperationInformation<
   T extends DataNode | DisplayNode,
 > {

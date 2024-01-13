@@ -15,6 +15,9 @@ import TreeView from "../view/TreeView";
 import TreeController from "./TreeController";
 import type BSTDeletionInformation from "./operationInformation/deletionInformation/BSTDeletionInformation";
 
+/**
+ * The controller for the BST. It is responsible for translating what the model gives into what the view needs.
+ */
 export default class BSTController extends TreeController {
   protected readonly model: BSTModel = new BSTModel();
   protected readonly view: BSTView = new BSTView();
@@ -28,12 +31,16 @@ export default class BSTController extends TreeController {
     return this.model.arrowDirection;
   }
 
+  /**
+   * Inserts a value into the model and updates the view accordingly.
+   * @param value The value to insert
+   */
   public insert(value: number): void {
     const {
       insertionInformation: modelInsertionInformation,
       insertedNode: insertedDataNode,
     } = this.model.insert(value);
-    // A placeholder DisplayNode for the node that's being inserted. The view will update this upon insertion.
+    // A placeholder for the node that's being inserted. The view will update this upon insertion.
     const placeholderDisplayNode = TreeView.makePlaceholderNode();
     this.dataNodeToDisplayNode.set(insertedDataNode, placeholderDisplayNode);
     const viewInsertionInformation = this.translateInsertionInformation(
@@ -42,6 +49,10 @@ export default class BSTController extends TreeController {
     this.view.insert(viewInsertionInformation);
   }
 
+  /**
+   * Deletes a value from the model and updates the view accordingly.
+   * @param value The value to delete
+   */
   public delete(value: number): void {
     const modelDeletionInformation = this.model.delete(value);
     const viewDeletionInformation = this.translateDeletionInformation(
@@ -50,6 +61,10 @@ export default class BSTController extends TreeController {
     this.view.delete(viewDeletionInformation);
   }
 
+  /**
+   * Finds a value in the model and updates the view accordingly.
+   * @param value The value to find
+   */
   public find(value: number): void {
     const modelFindInformation = this.model.find(value);
     const viewFindInformation =

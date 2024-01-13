@@ -1,4 +1,3 @@
-// How arrows are rendered
 enum ArrowDirection {
   PARENT_TO_CHILD,
   PREORDER,

@@ -2,38 +2,18 @@ import AVLModel from "../model/AVLModel";
 import type DataNode from "../model/DataNode";
 import AVLView from "../view/AVLView";
 import type DisplayNode from "../view/DisplayNode";
-import TreeView from "../view/TreeView";
 import BSTController from "./BSTController";
 import type TreeShape from "./TreeShape";
 import type AVLInsertionInformation from "./operationInformation/AVLInsertionInformation";
 import type AVLDeletionInformation from "./operationInformation/deletionInformation/AVLDeletionInformation";
 import type RotationPathInstruction from "./pathInstruction/RotationPathInstruction";
 
+/**
+ * The Controller for the AVL tree. It is responsible for translating what the model gives into what the view needs.
+ */
 export default class AVLController extends BSTController {
   protected readonly model: AVLModel = new AVLModel();
   protected readonly view: AVLView = new AVLView();
-
-  public insert(value: number): void {
-    const {
-      insertionInformation: modelInsertionInformation,
-      insertedNode: insertedDataNode,
-    } = this.model.insert(value);
-    // A placeholder DisplayNode for the node that's being inserted. The view will update this upon insertion.
-    const placeholderDisplayNode = TreeView.makePlaceholderNode();
-    this.dataNodeToDisplayNode.set(insertedDataNode, placeholderDisplayNode);
-    const viewInsertionInformation = this.translateInsertionInformation(
-      modelInsertionInformation,
-    );
-    this.view.insert(viewInsertionInformation);
-  }
-
-  public delete(value: number): void {
-    const modelDeletionInformation = this.model.delete(value);
-    const viewDeletionInformation = this.translateDeletionInformation(
-      modelDeletionInformation,
-    );
-    this.view.delete(viewDeletionInformation);
-  }
 
   protected translateInsertionInformation(
     modelInsertionInformation: AVLInsertionInformation<DataNode>,

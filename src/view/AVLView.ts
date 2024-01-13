@@ -6,6 +6,9 @@ import type RotationSecondaryDescription from "../controller/secondaryDescriptio
 import BSTView from "./BSTView";
 import DisplayNode from "./DisplayNode";
 
+/**
+ * Handles the animation of AVL operations.
+ */
 export default class AVLView extends BSTView {
   private static readonly ROTATION_PATH_DESCRIPTION =
     "Go back up the tree, rotating nodes as necessary to maintain the AVL property.";
@@ -14,6 +17,10 @@ export default class AVLView extends BSTView {
   private static readonly FRAMES_AFTER_ROTATION = 60;
   private static readonly ROTATION_PATH_HIGHLIGHT_DURATION = 60;
 
+  /**
+   * @param secondaryDescription Additional information about the rotation.
+   * @returns A string describing why the rotation is or is not performed.
+   */
   private static convertRotationSecondaryDescriptionToString(
     secondaryDescription: RotationSecondaryDescription,
   ): string {
@@ -31,6 +38,10 @@ export default class AVLView extends BSTView {
     return out;
   }
 
+  /**
+   * Animates the BST insertion, then animates checking the AVL property and rotating if necessary.
+   * @param viewInsertionInformation The information the view needs to insert a node.
+   */
   public insert(
     viewInsertionInformation: AVLInsertionInformation<DisplayNode>,
   ): void {
@@ -40,6 +51,10 @@ export default class AVLView extends BSTView {
     );
   }
 
+  /**
+   * Animates the BST deletion, then animates checking the AVL property and rotating if necessary.
+   * @param viewDeletionInformation The information the view needs to delete a node.
+   */
   public delete(
     viewDeletionInformation: AVLDeletionInformation<DisplayNode>,
   ): void {
@@ -49,6 +64,10 @@ export default class AVLView extends BSTView {
     );
   }
 
+  /**
+   * Pushes methods onto functionQueue to highlight nodes along rotationPath and explain why rotations are or aren't performed.
+   * @param rotationPath The path along which the AVL tree updates heights and rotates. It starts at the inserted node's parent and ends at the root.
+   */
   private pushRotationPathOntoFunctionQueue(
     rotationPath: Array<RotationPathInstruction<DisplayNode>>,
   ): void {
@@ -70,6 +89,7 @@ export default class AVLView extends BSTView {
         },
       });
     };
+
     for (const rotationPathInstruction of rotationPath) {
       const { node, shapesAfterRotation, secondaryDescription } =
         rotationPathInstruction;

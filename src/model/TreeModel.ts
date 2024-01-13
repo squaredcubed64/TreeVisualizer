@@ -3,15 +3,20 @@ import ArrowDirection from "../controller/ArrowDirection";
 import type TreeShape from "../controller/TreeShape";
 import type DataNode from "./DataNode";
 
+/**
+ * Provides logic for calculating a tree's arrows, shape, and layers
+ */
 export default abstract class TreeModel {
   public arrowDirection: ArrowDirection = ArrowDirection.PARENT_TO_CHILD;
   protected root: DataNode | null = null;
 
   public abstract insert(value: number): any;
-  // public abstract delete (value: number): any
-  // public abstract find (value: number): any
+  public abstract delete(value: number): any;
+  public abstract find(value: number): any;
 
-  // Returns an array of pairs of nodes to draw arrows between
+  /**
+   * @returns An array of pairs of nodes to draw arrows between
+   */
   public calculateArrows(): Set<[DataNode, DataNode]> {
     if (this.root == null) {
       return new Set();
@@ -40,6 +45,9 @@ export default abstract class TreeModel {
     return arrows;
   }
 
+  /**
+   * @returns An object containing the inorder traversal, layers, and arrows of the tree
+   */
   protected calculateShape(): TreeShape<DataNode> {
     if (this.root == null) {
       return { inorderTraversal: [], layers: [], arrows: new Set() };
@@ -51,7 +59,9 @@ export default abstract class TreeModel {
     return { inorderTraversal, layers, arrows };
   }
 
-  // Returns an array of arrays of nodes, where each array is a layer of the tree
+  /**
+   * @returns An array of arrays of nodes, where each array is a layer of the tree
+   */
   protected calculateLayers(): DataNode[][] {
     if (this.root == null) {
       return [];

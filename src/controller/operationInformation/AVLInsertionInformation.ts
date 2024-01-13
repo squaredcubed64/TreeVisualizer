@@ -9,7 +9,6 @@ import type BSTInsertionInformation from "./BSTInsertionInformation";
 export default interface AVLInsertionInformation<
   T extends DataNode | DisplayNode,
 > extends BSTInsertionInformation<T> {
-  // TODO check if this jsdoc is accurate
   /**
    * The path along which the AVL tree updates heights and rotates. It starts at the inserted node's parent and ends at the root.
    */

@@ -10,9 +10,9 @@ import type BSTInsertionSecondaryDescription from "../secondaryDescription/BSTIn
 export default interface BSTOperationInformation<
   T extends DataNode | DisplayNode,
 > {
-  // TODO have insert() include the node that was inserted
   /**
-   * The nodes that were visited during the operation. Starts with the root node and ends with the target node.
+   * The nodes that were visited during the operation. Starts with the root node and ends with the target node,
+   * unless the target node was not found or the operation is insert (which has no target node)
    */
   pathFromRootToTarget: Array<
     BSTPathInstruction<

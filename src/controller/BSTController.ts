@@ -16,7 +16,7 @@ import TreeController from "./TreeController";
 import type BSTDeletionInformation from "./operationInformation/deletionInformation/BSTDeletionInformation";
 
 /**
- * The controller for the BST. It is responsible for translating what the model gives into what the view needs.
+ * The controller for the BST. It is responsible for translating the model's return types into the view's parameter types
  */
 export default class BSTController extends TreeController {
   protected readonly model: BSTModel = new BSTModel();

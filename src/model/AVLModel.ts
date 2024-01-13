@@ -23,6 +23,9 @@ function toString(
   return out;
 }
 
+/**
+ * A Binary Search Tree data structure that calculates information the view needs for animations.
+ */
 export default class AVLModel extends BSTModel {
   private static getHeight(node: DataNode | null): number {
     if (node === null) {
@@ -66,6 +69,11 @@ export default class AVLModel extends BSTModel {
     return y;
   }
 
+  /**
+   * Inserts a new node into the model
+   * @param value The value to insert
+   * @returns The information needed to animate the insertion and the inserted node
+   */
   public insert(value: number): {
     insertionInformation: AVLInsertionInformation<DataNode>;
     insertedNode: DataNode;
@@ -83,6 +91,11 @@ export default class AVLModel extends BSTModel {
     };
   }
 
+  /**
+   * Deletes a node from the model
+   * @param value The value to delete
+   * @returns The information needed to animate the deletion
+   */
   public delete(value: number): AVLDeletionInformation<DataNode> {
     const bstDeletionInformation = super.delete(value);
     const { pathFromRootToTarget: pathToTarget } = bstDeletionInformation;
@@ -123,6 +136,12 @@ export default class AVLModel extends BSTModel {
     return rotationPath;
   }
 
+  /**
+   * Rebalances the tree at node according to AVL rules
+   * @param node The node to rebalance
+   * @param parent The parent of the node, or null if the node is the root
+   * @returns The information the View needs to animate the step of the rotation path at node.
+   */
   private rebalance(
     node: DataNode,
     parent: DataNode | null,
@@ -199,6 +218,12 @@ export default class AVLModel extends BSTModel {
     shapesAfterRotation.push(this.calculateShape());
   }
 
+  /**
+   * Attaches node to parent after a rotation
+   * @param node The node to attach
+   * @param parent The parent of the node, or null if the node is the root
+   * @param directionFromParent Whether the node is a root or left child or right child of parent
+   */
   private attach(
     node: DataNode,
     parent: DataNode | null,

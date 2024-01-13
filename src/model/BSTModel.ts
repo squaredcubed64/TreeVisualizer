@@ -12,7 +12,7 @@ import type BSTFindInformation from "../controller/operationInformation/BSTFindI
 import type BSTDeletionInformation from "../controller/operationInformation/deletionInformation/BSTDeletionInformation";
 
 /**
- * A Binary Search Tree data structure, which also calculates information the view needs for animations.
+ * A Binary Search Tree data structure that calculates information the view needs for animations.
  */
 export default class BSTModel extends TreeModel {
   /**

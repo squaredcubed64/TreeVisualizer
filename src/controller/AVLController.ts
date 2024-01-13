@@ -9,7 +9,7 @@ import type AVLDeletionInformation from "./operationInformation/deletionInformat
 import type RotationPathInstruction from "./pathInstruction/RotationPathInstruction";
 
 /**
- * The Controller for the AVL tree. It is responsible for translating what the model gives into what the view needs.
+ * The controller for the AVL tree. It is responsible for translating the model's return types into the view's parameter types
  */
 export default class AVLController extends BSTController {
   protected readonly model: AVLModel = new AVLModel();

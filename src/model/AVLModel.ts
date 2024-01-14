@@ -215,7 +215,7 @@ export default class AVLModel extends BSTModel {
       pivot = AVLModel.rotateRight(pivot);
     }
     this.attach(pivot, pivotParent, directionFromParent);
-    shapesAfterRotation.push(this.calculateShape());
+    shapesAfterRotation.push(this.getShape());
   }
 
   /**

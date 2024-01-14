@@ -67,7 +67,7 @@ export default class BSTModel extends TreeModel {
       this.root = new DataNode(value);
       return {
         insertionInformation: {
-          shape: this.calculateShape(),
+          shape: this.getShape(),
           pathFromRootToTarget: [],
           value: this.root.value,
         },
@@ -117,7 +117,7 @@ export default class BSTModel extends TreeModel {
 
     return {
       insertionInformation: {
-        shape: this.calculateShape(),
+        shape: this.getShape(),
         pathFromRootToTarget: path,
         value: insertedNode.value,
       },
@@ -199,7 +199,7 @@ export default class BSTModel extends TreeModel {
       }
       const deletionInformation: BSTDeletionInformationLEQ1Child<DataNode> = {
         type: "LEQ1Child",
-        shape: this.calculateShape(),
+        shape: this.getShape(),
         pathFromRootToTarget: path,
         victimNode: currNode,
       };
@@ -220,7 +220,7 @@ export default class BSTModel extends TreeModel {
 
       const deletionInformation: BSTDeletionInformation2Children<DataNode> = {
         type: "2Children",
-        shape: this.calculateShape(),
+        shape: this.getShape(),
         pathFromRootToTarget: path,
         victimNode: currNode,
         pathToSuccessor,

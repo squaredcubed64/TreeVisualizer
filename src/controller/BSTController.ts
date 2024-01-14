@@ -2,14 +2,12 @@ import type DataNode from "../model/DataNode";
 import type DisplayNode from "../view/DisplayNode";
 import BSTModel from "../model/BSTModel";
 import BSTView from "../view/BSTView";
-import { assert } from "../Utils";
 import type ArrowDirection from "./ArrowDirection";
 import type BSTInsertionInformation from "./operationInformation/BSTInsertionInformation";
 import type BSTPathInstruction from "./pathInstruction/BSTPathInstruction";
 import type BSTDeletionInformationLEQ1Child from "./operationInformation/deletionInformation/BSTDeletionInformationLEQ1Child";
 import type BSTDeletionInformation2Children from "./operationInformation/deletionInformation/BSTDeletionInformation2Children";
 import type BSTFindInformation from "./operationInformation/BSTFindInformation";
-import type TreeShape from "./TreeShape";
 import type BSTSecondaryDescription from "./secondaryDescription/BSTSecondaryDescription";
 import TreeView from "../view/TreeView";
 import TreeController from "./TreeController";
@@ -24,7 +22,7 @@ export default class BSTController extends TreeController {
 
   public setArrowDirection(arrowDirection: ArrowDirection): void {
     this.model.arrowDirection = arrowDirection;
-    this.view.setArrows(this.translateArrows(this.model.calculateArrows()));
+    this.view.setArrows(this.translateArrows(this.model.getArrows()));
   }
 
   public getArrowDirection(): ArrowDirection {
@@ -89,21 +87,6 @@ export default class BSTController extends TreeController {
     };
   }
 
-  protected translateNode(dataNode: DataNode): DisplayNode {
-    const displayNode = this.dataNodeToDisplayNode.get(dataNode);
-    assert(displayNode !== undefined, "dataNode not found in map");
-    return displayNode;
-  }
-
-  protected translateShape(shape: TreeShape<DataNode>): TreeShape<DisplayNode> {
-    const { inorderTraversal, layers, arrows } = shape;
-    return {
-      inorderTraversal: this.translateArray(inorderTraversal),
-      layers: this.translateLayers(layers),
-      arrows: this.translateArrows(arrows),
-    };
-  }
-
   protected translateDeletionInformation(
     modelDeletionInformation: BSTDeletionInformation<DataNode>,
   ): BSTDeletionInformation<DisplayNode> {
@@ -160,26 +143,6 @@ export default class BSTController extends TreeController {
       pathFromRootToTarget: this.translatePath(path),
       nodeFound: nodeFound !== null ? this.translateNode(nodeFound) : null,
     };
-  }
-
-  private translateArray(dataNodeArray: DataNode[]): DisplayNode[] {
-    return dataNodeArray.map((dataNode: DataNode) =>
-      this.translateNode(dataNode),
-    );
-  }
-
-  private translateLayers(layers: DataNode[][]): DisplayNode[][] {
-    return layers.map((layer: DataNode[]) => this.translateArray(layer));
-  }
-
-  private translateArrows(
-    arrows: Set<[DataNode, DataNode]>,
-  ): Set<[DisplayNode, DisplayNode]> {
-    return new Set(
-      Array.from(arrows).map(
-        (arrow) => this.translateArray(arrow) as [DisplayNode, DisplayNode],
-      ),
-    );
   }
 
   private translatePath<S extends BSTSecondaryDescription>(

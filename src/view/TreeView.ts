@@ -109,7 +109,7 @@ export default abstract class TreeView {
   ): void {
     const dx = toNode.x - fromNode.x;
     const dy = toNode.y - fromNode.y;
-    const dist = Math.sqrt(dx * dx + dy * dy);
+    const dist = Math.hypot(dx, dy);
     const xOffsetFromCenter = (dx * toNode.currentRadius) / dist;
     const yOffsetFromCenter = (dy * toNode.currentRadius) / dist;
     TreeView.drawArrow(
@@ -128,8 +128,8 @@ export default abstract class TreeView {
     if (this.shape.inorderTraversal.length === 0) {
       return;
     }
-    const nodeToTargetX = this.calculateTargetXs();
-    const nodeToTargetY = this.calculateTargetYs();
+    const nodeToTargetX = this.getTargetXs();
+    const nodeToTargetY = this.getTargetYs();
     // Use of inorder traversal here is arbitrary
     for (const node of this.shape.inorderTraversal) {
       const targetX = nodeToTargetX.get(node);
@@ -273,6 +273,50 @@ export default abstract class TreeView {
   }
 
   /**
+   * Highlight the clicked node and display its properties in a popup
+   * @param x The x coordinate of the click (relative to the canvas)
+   * @param y The y coordinate of the click (relative to the canvas)
+   */
+  public handleClick(x: number, y: number): void {
+    const clickedNode = this.shape.inorderTraversal.find((node) => {
+      return node.containsPoint(x, y);
+    });
+
+    const nodePopup = document.getElementById("nodePopup");
+    assert(nodePopup !== null, "nodePopup not found");
+    this.shape.inorderTraversal.forEach((node) => {
+      node.unThickHighlight();
+    });
+
+    if (clickedNode !== undefined) {
+      clickedNode.thickHighlightIndefinitely();
+      nodePopup.innerHTML = `Value: ${clickedNode.value} <br>`;
+      nodePopup.style.display = "block";
+    } else {
+      nodePopup.style.display = "none";
+    }
+  }
+
+  /*
+    if (distance < nodeRadius) {
+      // Node was clicked
+      const nodePopup = document.getElementById('nodePopup');
+      assert(nodePopup !== null, "nodePopup not found");
+
+      // Update the popup with the node's properties
+      nodePopup.innerHTML = `
+        <p>Property 1: ${node.properties.property1}</p>
+        <p>Property 2: ${node.properties.property2}</p>
+        <!-- Add more properties as needed -->
+      `;
+
+      // Make the popup visible
+      nodePopup.style.display = 'block';
+    }
+  });
+*/
+
+  /**
    * Sets the tree's shape to the given shape, and sets the target positions of all nodes in the tree
    * @param newShape The shape the tree gradually changes to
    */
@@ -285,7 +329,7 @@ export default abstract class TreeView {
    * @returns The target x coordinates of all nodes in the tree.
    * The root node is centered horizontally, and nodes are evenly spaced horizontally in inorder traversal order.
    */
-  private calculateTargetXs(): Map<DisplayNode, number> {
+  private getTargetXs(): Map<DisplayNode, number> {
     const nodeToTargetX = new Map<DisplayNode, number>();
     const root = this.shape.layers[0][0];
     const rootIndex = this.shape.inorderTraversal.indexOf(root);
@@ -302,7 +346,7 @@ export default abstract class TreeView {
   /**
    * @returns The target y coordinates of all nodes in the tree. Layers are evenly spaced vertically.
    */
-  private calculateTargetYs(): Map<DisplayNode, number> {
+  private getTargetYs(): Map<DisplayNode, number> {
     const nodeToTargetY = new Map<DisplayNode, number>();
     for (let i = 0; i < this.shape.layers.length; i++) {
       const layer = this.shape.layers[i];

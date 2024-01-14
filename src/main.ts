@@ -151,3 +151,10 @@ treeTypeDropdown.addEventListener("change", () => {
   }
   resetController(treeType);
 });
+
+canvas.addEventListener("click", (event) => {
+  const rect = canvas.getBoundingClientRect();
+  const x = event.clientX - rect.left;
+  const y = event.clientY - rect.top;
+  controller.handleClick(x, y);
+});

@@ -10,7 +10,7 @@ export default class DisplayNode {
   public static readonly DEFAULT_HIGHLIGHT_DURATION_FRAMES =
     60 * DURATION_MULTIPLIER;
 
-  private static readonly GROW_DURATION_FRAMES = 30 * DURATION_MULTIPLIER;
+  private static readonly GROW_DURATION_FRAMES = 60 * DURATION_MULTIPLIER;
   private static readonly BORDER_WIDTH = 1;
   private static readonly HIGHLIGHT_WIDTH = 5;
   private static readonly TEXT_COLOR = "red";
@@ -18,6 +18,7 @@ export default class DisplayNode {
   private static readonly TEXT_Y_OFFSET = 2;
   private static readonly MIN_RADIUS_TO_DRAW_TEXT = 10;
   private static readonly DEFAULT_HIGHLIGHT_COLOR = "blue";
+  private static readonly DEFAULT_THICK_HIGHLIGHT_COLOR = "yellow";
   private static readonly MAX_RADIUS = 30;
 
   public x: number;
@@ -31,6 +32,7 @@ export default class DisplayNode {
   private targetX: number;
   private targetY: number;
   private highlightColor: string;
+  private thickHighlightColor: string | null = null;
   private framesUntilStop: number = 0;
   private framesUntilUnhighlighted: number;
   private framesUntilGrown: number = DisplayNode.GROW_DURATION_FRAMES;
@@ -146,6 +148,16 @@ export default class DisplayNode {
     this.framesUntilUnhighlighted = durationFrames;
   }
 
+  public thickHighlightIndefinitely(
+    color: string = DisplayNode.DEFAULT_THICK_HIGHLIGHT_COLOR,
+  ): void {
+    this.thickHighlightColor = color;
+  }
+
+  public unThickHighlight(): void {
+    this.thickHighlightColor = null;
+  }
+
   /**
    * Stop highlighting the node.
    */
@@ -158,6 +170,10 @@ export default class DisplayNode {
    */
   public startShrinkingIntoNothing(): void {
     this.framesUntilShrunk = DisplayNode.SHRINK_DURATION_FRAMES;
+  }
+
+  public containsPoint(x: number, y: number): boolean {
+    return Math.hypot(this.x - x, this.y - y) <= this.currentRadius;
   }
 
   /**
@@ -211,6 +227,20 @@ export default class DisplayNode {
    * @param context The canvas context to draw on
    */
   private draw(context: CanvasRenderingContext2D): void {
+    // Thick highlight
+    if (this.thickHighlightColor !== null) {
+      context.beginPath();
+      context.arc(
+        this.x,
+        this.y,
+        this.currentRadius + DisplayNode.HIGHLIGHT_WIDTH * 2,
+        0,
+        Math.PI * 2,
+      );
+      context.fillStyle = this.thickHighlightColor;
+      context.fill();
+    }
+
     // Highlight
     if (this.framesUntilUnhighlighted > 0) {
       context.beginPath();
@@ -220,7 +250,6 @@ export default class DisplayNode {
         this.currentRadius + DisplayNode.HIGHLIGHT_WIDTH,
         0,
         Math.PI * 2,
-        false,
       );
       context.fillStyle = this.highlightColor;
       context.fill();
@@ -228,7 +257,7 @@ export default class DisplayNode {
 
     // Draw circle
     context.beginPath();
-    context.arc(this.x, this.y, this.currentRadius, 0, Math.PI * 2, false);
+    context.arc(this.x, this.y, this.currentRadius, 0, Math.PI * 2);
     context.fillStyle = this.fillColor;
     context.fill();
     context.lineWidth = DisplayNode.BORDER_WIDTH;

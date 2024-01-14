@@ -17,7 +17,7 @@ export default abstract class TreeModel {
   /**
    * @returns An array of pairs of nodes to draw arrows between
    */
-  public calculateArrows(): Set<[DataNode, DataNode]> {
+  public getArrows(): Set<[DataNode, DataNode]> {
     if (this.root == null) {
       return new Set();
     }
@@ -45,24 +45,38 @@ export default abstract class TreeModel {
     return arrows;
   }
 
+  public getPropertiesOfNode(node: DataNode): {
+    height: number;
+    balance: number;
+    leftHeight: number;
+    rightHeight: number;
+  } {
+    return {
+      height: node.height,
+      balance: node.balance,
+      leftHeight: node.leftHeight,
+      rightHeight: node.rightHeight,
+    };
+  }
+
   /**
    * @returns An object containing the inorder traversal, layers, and arrows of the tree
    */
-  protected calculateShape(): TreeShape<DataNode> {
+  protected getShape(): TreeShape<DataNode> {
     if (this.root == null) {
       return { inorderTraversal: [], layers: [], arrows: new Set() };
     }
 
     const inorderTraversal = this.root.getTraversal(ArrowDirection.INORDER);
-    const layers = this.calculateLayers();
-    const arrows = this.calculateArrows();
+    const layers = this.getLayers();
+    const arrows = this.getArrows();
     return { inorderTraversal, layers, arrows };
   }
 
   /**
    * @returns An array of arrays of nodes, where each array is a layer of the tree
    */
-  protected calculateLayers(): DataNode[][] {
+  protected getLayers(): DataNode[][] {
     if (this.root == null) {
       return [];
     }

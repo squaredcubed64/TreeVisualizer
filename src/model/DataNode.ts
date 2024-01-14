@@ -9,10 +9,6 @@ export default class DataNode {
   public value: number;
   public left: DataNode | null = null;
   public right: DataNode | null = null;
-  /**
-   * The number of vertices from this node to its deepest leaf. The node's tree is responsible for updating this value.
-   */
-  public height: number = 1;
 
   public constructor(value: number) {
     this.value = value;
@@ -57,5 +53,14 @@ export default class DataNode {
     const rightNodes =
       this.right != null ? this.right.getPostorderTraversal() : [];
     return [...leftNodes, ...rightNodes, this];
+  }
+
+  /**
+   * @returns The number of vertices from this node to its deepest leaf.
+   *
+   * @description Does not update the height of this node. Used to display
+   */
+  private getHeight() {
+    const leftHeight = this.left != null ? this.left.getHeight() : 0;
   }
 }

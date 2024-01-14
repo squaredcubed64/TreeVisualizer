@@ -1,6 +1,10 @@
 import ArrowDirection from "./controller/ArrowDirection";
 import BSTController from "./controller/BSTController";
-import { assert, disableOperationClearAndArrowButtons, enableOperationClearAndArrowButtons } from "./Utils";
+import {
+  assert,
+  disableOperationClearAndArrowButtons,
+  enableOperationClearAndArrowButtons,
+} from "./Utils";
 import AVLController from "./controller/AVLController";
 
 // Make canvas fill the screen

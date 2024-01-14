@@ -5,7 +5,7 @@ import { DURATION_MULTIPLIER } from "./Constants";
  * A node that is drawn on the canvas.
  */
 export default class DisplayNode {
-  public static readonly MOVE_DURATION_FRAMES = 150 * DURATION_MULTIPLIER;
+  public static readonly MOVE_DURATION_FRAMES = 60 * DURATION_MULTIPLIER;
   public static readonly SHRINK_DURATION_FRAMES = 60 * DURATION_MULTIPLIER;
   public static readonly DEFAULT_HIGHLIGHT_DURATION_FRAMES =
     60 * DURATION_MULTIPLIER;
@@ -33,7 +33,7 @@ export default class DisplayNode {
   private targetY: number;
   private highlightColor: string;
   private thickHighlightColor: string | null = null;
-  private framesUntilStop: number = 0;
+  private framesSinceStartedMoving: number = 0;
   private framesUntilUnhighlighted: number;
   private framesUntilGrown: number = DisplayNode.GROW_DURATION_FRAMES;
   private framesUntilShrunk: number = -1;
@@ -79,23 +79,35 @@ export default class DisplayNode {
   }
 
   /**
+   * Curve that starts at ~(0, 0), hits ~(1, 1), and oscillates around y = 1.
+   * @param x A number greater than 0 but less than Infinity
+   * @returns The y value of the curve at x
+   */
+  private static dampingCurve(x: number): number {
+    const amplitude = 1.04;
+    const dampingFactor = 0.5;
+    const frequency = 1.9;
+    const phase = -0.3;
+    return (
+      1 -
+      amplitude * Math.exp(-dampingFactor * x) * Math.cos(frequency * x + phase)
+    );
+  }
+
+  /**
    * Curve that represents the motion of the node as it moves from its previous position to its target position.
-   *
-   * It starts at (0, 0) and ends at (1, 1), with movement being slow at the start and end.
-   * @param progress The proportion of the animation's time that has passed, between 0 and 1
-   * @returns The proportion of the animation's distance that should be covered, between 0 and 1
    */
   private static motionCurve(progress: number): number {
-    assert(progress >= 0 && progress <= 1, "progress must be between 0 and 1");
-    return DisplayNode.easeInOutCurve(progress);
+    assert(progress >= 0, "progress must be greater than 0");
+    if (progress === Infinity) {
+      return 1;
+    } else {
+      return DisplayNode.dampingCurve(progress);
+    }
   }
 
   /**
    * Curve that represents the growth of the node's radius as it is inserted.
-   *
-   * It starts at (0, 0) and ends at (1, 1), with growth being slow at the start and end.
-   * @param progress The proportion of the animation's time that has passed, between 0 and 1
-   * @returns The proportion of the max radius that the radius should be, between 0 and 1
    */
   private static radiusGrowthCurve(progress: number): number {
     assert(progress >= 0 && progress <= 1, "progress must be between 0 and 1");
@@ -128,7 +140,7 @@ export default class DisplayNode {
    * @param targetY The y coordinate to move to
    */
   public moveTo(targetX: number, targetY: number): void {
-    this.framesUntilStop = DisplayNode.MOVE_DURATION_FRAMES;
+    this.framesSinceStartedMoving = 0;
     this.previousX = this.x;
     this.previousY = this.y;
     this.targetX = targetX;
@@ -181,7 +193,7 @@ export default class DisplayNode {
    * @param animationSpeed The number of frames to advance by. Can be a fraction.
    */
   private update(animationSpeed: number): void {
-    this.framesUntilStop = Math.max(this.framesUntilStop - animationSpeed, 0);
+    this.framesSinceStartedMoving += animationSpeed;
     this.framesUntilGrown = Math.max(this.framesUntilGrown - animationSpeed, 0);
     this.framesUntilUnhighlighted = Math.max(
       this.framesUntilUnhighlighted - animationSpeed,
@@ -194,10 +206,9 @@ export default class DisplayNode {
       );
     }
 
-    // 0 < motionProgress < 1
+    // motionProgress > 0
     const motionProgress =
-      (DisplayNode.MOVE_DURATION_FRAMES - this.framesUntilStop) /
-      DisplayNode.MOVE_DURATION_FRAMES;
+      this.framesSinceStartedMoving / DisplayNode.MOVE_DURATION_FRAMES;
     this.x =
       this.previousX +
       (this.targetX - this.previousX) * DisplayNode.motionCurve(motionProgress);

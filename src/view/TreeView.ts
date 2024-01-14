@@ -1,7 +1,11 @@
 import DisplayNode from "./DisplayNode";
 import type DelayedFunctionCall from "./delayedFunctionCall/DelayedFunctionCall";
 import type TreeShape from "../controller/TreeShape";
-import { assert, disableOperationClearAndArrowButtons, enableOperationClearAndArrowButtons } from "../Utils";
+import {
+  assert,
+  disableOperationClearAndArrowButtons,
+  enableOperationClearAndArrowButtons,
+} from "../Utils";
 import type TreeController from "../controller/TreeController";
 
 /**
@@ -18,6 +22,7 @@ export default abstract class TreeView {
   private static readonly ARROW_HEAD_ANGLE = Math.PI / 6;
   private static readonly ARROW_HEAD_LENGTH = 10;
   private static readonly ARROW_LINE_WIDTH = 2;
+  private static readonly DEFAULT_ANIMATION_SPEED_SETTING = 100;
 
   public shape: TreeShape<DisplayNode> = {
     inorderTraversal: [],
@@ -31,7 +36,9 @@ export default abstract class TreeView {
   private secondaryDescription?: string = undefined;
   private currentAnimationId: number = -1;
   private animationSpeed: number = 1;
-  private animationSpeedSetting: number = 10;
+  private animationSpeedSetting: number =
+    TreeView.DEFAULT_ANIMATION_SPEED_SETTING;
+
   private readonly controller: TreeController;
 
   public constructor(controller: TreeController) {
@@ -155,7 +162,9 @@ export default abstract class TreeView {
     if (animationSpeedSetting === 199) {
       this.animationSpeed = Infinity;
     } else {
-      this.animationSpeed = 1.03 ** (animationSpeedSetting - 100);
+      this.animationSpeed =
+        1.03 **
+        (animationSpeedSetting - TreeView.DEFAULT_ANIMATION_SPEED_SETTING);
     }
   }
 

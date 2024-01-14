@@ -1,6 +1,6 @@
 import ArrowDirection from "./controller/ArrowDirection";
 import BSTController from "./controller/BSTController";
-import { assert } from "./Utils";
+import { assert, disableOperationClearAndArrowButtons, enableOperationClearAndArrowButtons } from "./Utils";
 import AVLController from "./controller/AVLController";
 
 // Make canvas fill the screen
@@ -162,9 +162,11 @@ pauseButton.addEventListener("click", () => {
   paused = !paused;
   if (paused) {
     controller.stopAnimation();
+    disableOperationClearAndArrowButtons();
     pauseButton.textContent = "Play";
   } else {
     controller.animate();
+    enableOperationClearAndArrowButtons();
     pauseButton.textContent = "Pause";
   }
 });

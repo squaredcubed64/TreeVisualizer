@@ -1,7 +1,7 @@
 import DisplayNode from "./DisplayNode";
 import type DelayedFunctionCall from "./delayedFunctionCall/DelayedFunctionCall";
 import type TreeShape from "../controller/TreeShape";
-import { assert } from "../Utils";
+import { assert, disableOperationClearAndArrowButtons, enableOperationClearAndArrowButtons } from "../Utils";
 import type TreeController from "../controller/TreeController";
 
 /**
@@ -239,35 +239,10 @@ export default abstract class TreeView {
       secondaryAnimationDescription.textContent = this.secondaryDescription;
     }
 
-    // Disable buttons if animation is happening
-    const insertDiv = document.getElementById("insert");
-    const deleteDiv = document.getElementById("delete");
-    const findDiv = document.getElementById("find");
-    const clearButton = document.getElementById("clearButton");
-    const arrowButton = document.getElementById("arrowButton");
-    assert(
-      insertDiv !== null &&
-        deleteDiv !== null &&
-        findDiv !== null &&
-        clearButton !== null &&
-        arrowButton !== null,
-      "insert, delete, find, clearButton, or arrowButton not found",
-    );
-    const operations = [
-      insertDiv,
-      deleteDiv,
-      findDiv,
-      clearButton,
-      arrowButton,
-    ];
     if (this.functionQueue.length === 0) {
-      operations.forEach((operation) => {
-        operation.classList.remove("disabled");
-      });
+      enableOperationClearAndArrowButtons();
     } else {
-      operations.forEach((operation) => {
-        operation.classList.add("disabled");
-      });
+      disableOperationClearAndArrowButtons();
     }
 
     this.currentAnimationId = requestAnimationFrame(() => {

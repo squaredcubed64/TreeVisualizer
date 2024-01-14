@@ -37,7 +37,12 @@ export default abstract class TreeController {
     this.view.handleClick(x, y);
   }
 
-  public getPropertiesOfNode(node: DisplayNode): string {
+  public getPropertiesOfNode(node: DisplayNode): {
+    height: number;
+    balance: number;
+    leftHeight: number;
+    rightHeight: number;
+  } {
     return this.model.getPropertiesOfNode(this.reverseTranslateNode(node));
   }
 

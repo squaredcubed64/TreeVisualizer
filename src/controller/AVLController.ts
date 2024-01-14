@@ -12,8 +12,8 @@ import type RotationPathInstruction from "./pathInstruction/RotationPathInstruct
  * The controller for the AVL tree. It is responsible for translating the model's return types into the view's parameter types
  */
 export default class AVLController extends BSTController {
-  protected readonly model: AVLModel = new AVLModel();
-  protected readonly view: AVLView = new AVLView();
+  protected readonly model: AVLModel = new AVLModel(this);
+  protected readonly view: AVLView = new AVLView(this);
 
   protected translateInsertionInformation(
     modelInsertionInformation: AVLInsertionInformation<DataNode>,

@@ -2,6 +2,7 @@ import DisplayNode from "./DisplayNode";
 import type DelayedFunctionCall from "./delayedFunctionCall/DelayedFunctionCall";
 import type TreeShape from "../controller/TreeShape";
 import { assert } from "../Utils";
+import type TreeController from "../controller/TreeController";
 
 /**
  * Provides tree animation functionality, such as calculating where nodes should be, drawing nodes and arrows,
@@ -18,7 +19,12 @@ export default abstract class TreeView {
   private static readonly ARROW_HEAD_LENGTH = 10;
   private static readonly ARROW_LINE_WIDTH = 2;
 
-  public shape: TreeShape<DisplayNode>;
+  public shape: TreeShape<DisplayNode> = {
+    inorderTraversal: [],
+    layers: [],
+    arrows: new Set(),
+  };
+
   public functionQueue: DelayedFunctionCall[] = [];
   private functionAtFrontOfQueueWasCalled: boolean = false;
   private description: string = "";
@@ -26,9 +32,10 @@ export default abstract class TreeView {
   private currentAnimationId: number = -1;
   private animationSpeed: number = 1;
   private animationSpeedSetting: number = 10;
+  private readonly controller: TreeController;
 
-  public constructor() {
-    this.shape = { inorderTraversal: [], layers: [], arrows: new Set() };
+  public constructor(controller: TreeController) {
+    this.controller = controller;
   }
 
   /**
@@ -290,10 +297,16 @@ export default abstract class TreeView {
 
     if (clickedNode !== undefined) {
       clickedNode.thickHighlightIndefinitely();
-      nodePopup.innerHTML = `Value: ${clickedNode.value} <br>`;
-      nodePopup.style.display = "block";
+      const { height, balance, leftHeight, rightHeight } =
+        this.controller.getPropertiesOfNode(clickedNode);
+      nodePopup.innerHTML =
+        `Value: ${clickedNode.value} <br>` +
+        `Height: ${height} <br>` +
+        `Balance factor: ${balance} <br>` +
+        `Height of left subtree: ${leftHeight} <br>` +
+        `Height of right subtree: ${rightHeight} <br>`;
     } else {
-      nodePopup.style.display = "none";
+      nodePopup.innerHTML = "Click a node to see its properties.";
     }
   }
 

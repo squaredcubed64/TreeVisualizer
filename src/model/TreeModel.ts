@@ -1,5 +1,6 @@
 import { assert } from "../Utils";
 import ArrowDirection from "../controller/ArrowDirection";
+import type TreeController from "../controller/TreeController";
 import type TreeShape from "../controller/TreeShape";
 import type DataNode from "./DataNode";
 
@@ -7,12 +8,17 @@ import type DataNode from "./DataNode";
  * Provides logic for calculating a tree's arrows, shape, and layers
  */
 export default abstract class TreeModel {
+  public controller: TreeController;
   public arrowDirection: ArrowDirection = ArrowDirection.PARENT_TO_CHILD;
   protected root: DataNode | null = null;
 
   public abstract insert(value: number): any;
   public abstract delete(value: number): any;
   public abstract find(value: number): any;
+
+  public constructor(controller: TreeController) {
+    this.controller = controller;
+  }
 
   /**
    * @returns An array of pairs of nodes to draw arrows between
@@ -52,10 +58,10 @@ export default abstract class TreeModel {
     rightHeight: number;
   } {
     return {
-      height: node.height,
-      balance: node.balance,
-      leftHeight: node.leftHeight,
-      rightHeight: node.rightHeight,
+      height: node.getCalculatedHeight(),
+      balance: node.getCalculatedBalance(),
+      leftHeight: node.left != null ? node.left.getCalculatedHeight() : 0,
+      rightHeight: node.right != null ? node.right.getCalculatedHeight() : 0,
     };
   }
 

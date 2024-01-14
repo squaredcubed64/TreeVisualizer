@@ -17,8 +17,8 @@ import type BSTDeletionInformation from "./operationInformation/deletionInformat
  * The controller for the BST. It is responsible for translating the model's return types into the view's parameter types
  */
 export default class BSTController extends TreeController {
-  protected readonly model: BSTModel = new BSTModel();
-  protected readonly view: BSTView = new BSTView();
+  protected readonly model: BSTModel = new BSTModel(this);
+  protected readonly view: BSTView = new BSTView(this);
 
   public setArrowDirection(arrowDirection: ArrowDirection): void {
     this.model.arrowDirection = arrowDirection;

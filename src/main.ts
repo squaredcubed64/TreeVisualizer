@@ -36,9 +36,41 @@ const insertButton = document.getElementById(
 const insertInput = document.getElementById("insertInput") as HTMLInputElement;
 assert(insertButton !== null, "insertButton not found");
 insertButton.addEventListener("click", () => {
-  const value = parseInt(insertInput.value);
-  assert(!isNaN(value), "value must be a number");
-  controller.insert(value);
+  validateAndExecuteOperation(insertInput, (value) => {
+    controller.insert(value);
+  });
+});
+
+/**
+ * Validate the input, executing the operation if the input is valid and displaying a popup otherwise
+ * @param operationInput The input element containing the value to operate on
+ * @param operation The operation to execute if the input is valid
+ */
+function validateAndExecuteOperation(
+  operationInput: HTMLInputElement,
+  operation: (value: number) => void,
+): void {
+  const value = parseFloat(operationInput.value);
+  const popup = document.getElementById("popup") as HTMLDivElement;
+  if (isNaN(value)) {
+    popup.style.display = "flex";
+  } else {
+    popup.style.display = "none";
+    operation(value);
+  }
+}
+
+// Hide the popup upon clicking anywhere except the popup or any button
+document.addEventListener("click", (event) => {
+  const popup = document.getElementById("popup") as HTMLDivElement;
+  if (
+    event.target !== popup &&
+    event.target !== insertButton &&
+    event.target !== deleteButton &&
+    event.target !== findButton
+  ) {
+    popup.style.display = "none";
+  }
 });
 
 // Attach controller's delete() to deleteButton
@@ -48,9 +80,9 @@ const deleteButton = document.getElementById(
 const deleteInput = document.getElementById("deleteInput") as HTMLInputElement;
 assert(deleteButton !== null, "deleteButton not found");
 deleteButton.addEventListener("click", () => {
-  const value = parseInt(deleteInput.value);
-  assert(!isNaN(value), "value must be a number");
-  controller.delete(value);
+  validateAndExecuteOperation(deleteInput, (value) => {
+    controller.delete(value);
+  });
 });
 
 // Attach controller's find() to findButton
@@ -58,9 +90,9 @@ const findButton = document.getElementById("findButton") as HTMLButtonElement;
 const findInput = document.getElementById("findInput") as HTMLInputElement;
 assert(findButton !== null, "findButton not found");
 findButton.addEventListener("click", () => {
-  const value = parseInt(findInput.value);
-  assert(!isNaN(value), "value must be a number");
-  controller.find(value);
+  validateAndExecuteOperation(findInput, (value) => {
+    controller.find(value);
+  });
 });
 
 // Reset the controller upon clicking clearButton

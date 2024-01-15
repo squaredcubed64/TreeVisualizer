@@ -3,7 +3,7 @@ import type BSTInsertionInformation from "../controller/operationInformation/BST
 import type BSTPathInstruction from "../controller/pathInstruction/BSTPathInstruction";
 import type BSTDeletionInformationLEQ1Child from "../controller/operationInformation/deletionInformation/BSTDeletionInformationLEQ1Child";
 import type BSTDeletionInformation2Children from "../controller/operationInformation/deletionInformation/BSTDeletionInformation2Children";
-import { assert } from "../Utils";
+import { assert } from "../../Utils";
 import type BSTFindSecondaryDescription from "../controller/secondaryDescription/BSTFindSecondaryDescription";
 import type BSTSuccessorSecondaryDescription from "../controller/secondaryDescription/BSTSuccessorSecondaryDescription";
 import type BSTInsertionSecondaryDescription from "../controller/secondaryDescription/BSTInsertionSecondaryDescription";

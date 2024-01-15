@@ -1,4 +1,4 @@
-import { assert } from "../Utils";
+import { assert } from "../../Utils";
 import type DataNode from "../model/DataNode";
 import type TreeModel from "../model/TreeModel";
 import type DisplayNode from "../view/DisplayNode";

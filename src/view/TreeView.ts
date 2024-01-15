@@ -1,11 +1,11 @@
 import DisplayNode from "./DisplayNode";
 import type DelayedFunctionCall from "./delayedFunctionCall/DelayedFunctionCall";
 import type TreeShape from "../controller/TreeShape";
+import { assert } from "../../Utils";
 import {
-  assert,
   disableOperationClearAndArrowButtons,
   enableOperationClearAndArrowButtons,
-} from "../Utils";
+} from "../srcUtils";
 import type TreeController from "../controller/TreeController";
 
 /**

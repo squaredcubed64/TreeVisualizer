@@ -40,10 +40,10 @@ body {
   font-size: 1em;
 }
 
-.header > button,
-.header > select {
+.header > * {
   width: 100%;
   text-align: center;
+  min-width: 6em;
 }
 
 .header button:hover,
@@ -60,24 +60,15 @@ body {
   font-family: Roboto, sans-serif;
 }
 
-.header input::placeholder {
-  color: rgb(187 187 187);
-}
-
 .operation-container,
 .animation-speed-bar-container {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  width: 100%;
 }
 
 .dropdown-content {
   background-color: rgb(0 85 85);
-}
-
-.dropdown:hover .dropdown-content {
-  display: block;
 }
 
 .animation-description {

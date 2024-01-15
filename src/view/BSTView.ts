@@ -2,7 +2,7 @@ import DisplayNode from "./DisplayNode";
 import type DelayedFunctionCallFunctionResult from "./delayedFunctionCall/DelayedFunctionCallFunctionResult";
 import TreeView from "./TreeView";
 import type BSTInsertionInformation from "../controller/operationInformation/BSTInsertionInformation";
-import { assert } from "../Utils";
+import { assert } from "../../Utils";
 import type TreeShape from "../controller/TreeShape";
 import type BSTFindInformation from "../controller/operationInformation/BSTFindInformation";
 import type BSTDeletionInformation from "../controller/operationInformation/deletionInformation/BSTDeletionInformation";

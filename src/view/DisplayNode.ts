@@ -1,4 +1,4 @@
-import { assert } from "../Utils";
+import { assert } from "../../Utils";
 import { DURATION_MULTIPLIER } from "./Constants";
 
 /**
@@ -18,7 +18,7 @@ export default class DisplayNode {
   private static readonly TEXT_Y_OFFSET = 2;
   private static readonly MIN_RADIUS_TO_DRAW_TEXT = 10;
   private static readonly DEFAULT_HIGHLIGHT_COLOR = "blue";
-  private static readonly DEFAULT_THICK_HIGHLIGHT_COLOR = "yellow";
+  private static readonly DEFAULT_THICK_HIGHLIGHT_COLOR = "gold";
   private static readonly MAX_RADIUS = 30;
 
   public x: number;
@@ -35,7 +35,7 @@ export default class DisplayNode {
   private thickHighlightColor: string | null = null;
   private framesSinceStartedMoving: number = 0;
   private framesUntilUnhighlighted: number;
-  private framesUntilGrown: number = DisplayNode.GROW_DURATION_FRAMES;
+  private framesSinceStartedGrowing: number = 0;
   private framesUntilShrunk: number = -1;
 
   public constructor(
@@ -78,20 +78,33 @@ export default class DisplayNode {
     }
   }
 
+  private static getDampingCurve(
+    amplitude: number,
+    dampingFactor: number,
+    frequency: number,
+    phase: number,
+  ): (x: number) => number {
+    return (x) =>
+      1 -
+      amplitude *
+        Math.exp(-dampingFactor * x) *
+        Math.cos(frequency * x + phase);
+  }
+
   /**
-   * Curve that starts at ~(0, 0), hits ~(1, 1), and oscillates around y = 1.
+   * Curve that starts at ~(0, 0), hits ~(1, 1), and strongly oscillates around y = 1.
    * @param x A number greater than 0 but less than Infinity
    * @returns The y value of the curve at x
    */
-  private static dampingCurve(x: number): number {
-    const amplitude = 1.04;
-    const dampingFactor = 0.5;
-    const frequency = 1.9;
-    const phase = -0.3;
-    return (
-      1 -
-      amplitude * Math.exp(-dampingFactor * x) * Math.cos(frequency * x + phase)
-    );
+  private static strongDampingCurve(x: number): number {
+    return DisplayNode.getDampingCurve(1.04, 0.5, 1.9, -0.3)(x);
+  }
+
+  /**
+   * Curve that starts at ~(0, 0), hits ~(1, 1), and weakly oscillates around y = 1.
+   */
+  private static weakDampingCurve(x: number): number {
+    return DisplayNode.getDampingCurve(1.13, 1, 2.07, -0.5)(x);
   }
 
   /**
@@ -102,7 +115,7 @@ export default class DisplayNode {
     if (progress === Infinity) {
       return 1;
     } else {
-      return DisplayNode.dampingCurve(progress);
+      return DisplayNode.strongDampingCurve(progress);
     }
   }
 
@@ -110,8 +123,7 @@ export default class DisplayNode {
    * Curve that represents the growth of the node's radius as it is inserted.
    */
   private static radiusGrowthCurve(progress: number): number {
-    assert(progress >= 0 && progress <= 1, "progress must be between 0 and 1");
-    return DisplayNode.easeInOutCurve(progress);
+    return DisplayNode.weakDampingCurve(progress);
   }
 
   /**
@@ -194,7 +206,7 @@ export default class DisplayNode {
    */
   private update(animationSpeed: number): void {
     this.framesSinceStartedMoving += animationSpeed;
-    this.framesUntilGrown = Math.max(this.framesUntilGrown - animationSpeed, 0);
+    this.framesSinceStartedGrowing += animationSpeed;
     this.framesUntilUnhighlighted = Math.max(
       this.framesUntilUnhighlighted - animationSpeed,
       0,
@@ -226,8 +238,7 @@ export default class DisplayNode {
         DisplayNode.radiusShrinkingCurve(shrinkingProgress);
     } else {
       const growthProgress =
-        (DisplayNode.GROW_DURATION_FRAMES - this.framesUntilGrown) /
-        DisplayNode.GROW_DURATION_FRAMES;
+        this.framesSinceStartedGrowing / DisplayNode.GROW_DURATION_FRAMES;
       this.currentRadius =
         DisplayNode.MAX_RADIUS * DisplayNode.radiusGrowthCurve(growthProgress);
     }

@@ -1,4 +1,4 @@
-import { assert } from "../Utils";
+import { assert } from "../../Utils";
 import type TreeShape from "../controller/TreeShape";
 import type AVLInsertionInformation from "../controller/operationInformation/AVLInsertionInformation";
 import type AVLDeletionInformation from "../controller/operationInformation/deletionInformation/AVLDeletionInformation";

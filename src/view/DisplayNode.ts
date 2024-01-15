@@ -78,22 +78,38 @@ export default class DisplayNode {
     }
   }
 
+  /**
+   * Returns a damping curve function based on the given parameters.
+   * The damping curve oscillates indefinitely, but the oscillations' amplitude decreases exponentially.
+   *
+   * @param amplitude - The amplitude of the damping curve.
+   * @param dampingFactor - The damping factor of the damping curve.
+   * @param frequency - The frequency of the damping curve.
+   * @param phase - The phase of the damping curve.
+   * @returns A damping curve function.
+   */
   private static getDampingCurve(
     amplitude: number,
     dampingFactor: number,
     frequency: number,
     phase: number,
   ): (x: number) => number {
-    return (x) =>
-      1 -
-      amplitude *
-        Math.exp(-dampingFactor * x) *
-        Math.cos(frequency * x + phase);
+    return (x) => {
+      if (x === Infinity) {
+        return 1;
+      }
+      return (
+        1 -
+        amplitude *
+          Math.exp(-dampingFactor * x) *
+          Math.cos(frequency * x + phase)
+      );
+    };
   }
 
   /**
    * Curve that starts at ~(0, 0), hits ~(1, 1), and strongly oscillates around y = 1.
-   * @param x A number greater than 0 but less than Infinity
+   * @param x A number greater than 0
    * @returns The y value of the curve at x
    */
   private static strongDampingCurve(x: number): number {
@@ -102,6 +118,8 @@ export default class DisplayNode {
 
   /**
    * Curve that starts at ~(0, 0), hits ~(1, 1), and weakly oscillates around y = 1.
+   * @param x A number greater than 0
+   * @returns The y value of the curve at x
    */
   private static weakDampingCurve(x: number): number {
     return DisplayNode.getDampingCurve(1.13, 1, 2.07, -0.5)(x);
@@ -111,18 +129,15 @@ export default class DisplayNode {
    * Curve that represents the motion of the node as it moves from its previous position to its target position.
    */
   private static motionCurve(progress: number): number {
-    assert(progress >= 0, "progress must be greater than 0");
-    if (progress === Infinity) {
-      return 1;
-    } else {
-      return DisplayNode.strongDampingCurve(progress);
-    }
+    assert(progress >= 0, "progress must be nonnegative");
+    return DisplayNode.strongDampingCurve(progress);
   }
 
   /**
    * Curve that represents the growth of the node's radius as it is inserted.
    */
   private static radiusGrowthCurve(progress: number): number {
+    assert(progress >= 0, "progress must be nonnegative");
     return DisplayNode.weakDampingCurve(progress);
   }
 

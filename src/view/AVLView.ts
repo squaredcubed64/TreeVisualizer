@@ -80,15 +80,13 @@ export default class AVLView extends BSTView {
     ): void => {
       this.functionQueue.push({
         framesToWait: 0,
-        function: () => {
+        func: () => {
           this.animateShapeChange(shapeAfterRotation);
-          return {
-            framesAfterCall:
-              DisplayNode.MOVE_DURATION_FRAMES + AVLView.FRAMES_AFTER_ROTATION,
-            description: AVLView.ROTATION_PATH_DESCRIPTION,
-            secondaryDescription,
-          };
         },
+        framesAfterCall:
+          DisplayNode.MOVE_DURATION_FRAMES + AVLView.FRAMES_AFTER_ROTATION,
+        description: AVLView.ROTATION_PATH_DESCRIPTION,
+        secondaryDescription,
       });
     };
 
@@ -99,20 +97,18 @@ export default class AVLView extends BSTView {
       // Highlight the node and explain if a rotation must be performed and why
       this.functionQueue.push({
         framesToWait: BSTView.FRAMES_BETWEEN_HIGHLIGHTS,
-        function: () => {
+        func: () => {
           node.highlight(
             AVLView.ROTATION_PATH_HIGHLIGHT_COLOR,
             AVLView.ROTATION_PATH_HIGHLIGHT_DURATION,
           );
-          return {
-            framesAfterCall: AVLView.ROTATION_PATH_HIGHLIGHT_DURATION,
-            description: AVLView.ROTATION_PATH_DESCRIPTION,
-            secondaryDescription:
-              AVLView.convertRotationSecondaryDescriptionToString(
-                secondaryDescription,
-              ),
-          };
         },
+        framesAfterCall: AVLView.ROTATION_PATH_HIGHLIGHT_DURATION,
+        description: AVLView.ROTATION_PATH_DESCRIPTION,
+        secondaryDescription:
+          AVLView.convertRotationSecondaryDescriptionToString(
+            secondaryDescription,
+          ),
       });
 
       // Animate the rotation(s)

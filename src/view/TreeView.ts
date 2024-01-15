@@ -1,5 +1,5 @@
 import DisplayNode from "./DisplayNode";
-import type DelayedFunctionCall from "./delayedFunctionCall/DelayedFunctionCall";
+import type DelayedFunction from "./delayedFunctionCall/DelayedFunction";
 import type TreeShape from "../controller/TreeShape";
 import { assert } from "../../Utils";
 import {
@@ -30,7 +30,7 @@ export default abstract class TreeView {
     arrows: new Set(),
   };
 
-  public functionQueue: DelayedFunctionCall[] = [];
+  public functionQueue: DelayedFunction[] = [];
   private functionAtFrontOfQueueWasCalled: boolean = false;
   private description: string = "";
   private secondaryDescription?: string = undefined;
@@ -194,16 +194,16 @@ export default abstract class TreeView {
       this.functionQueue[0].framesToWait <= 0
     ) {
       if (!this.functionAtFrontOfQueueWasCalled) {
-        const functionCall = this.functionQueue[0];
-        assert(functionCall !== undefined, "Function call is undefined");
-        const result = functionCall.function();
-        this.description = result.description;
-        this.secondaryDescription = result.secondaryDescription;
+        const { func, framesAfterCall, description, secondaryDescription } =
+          this.functionQueue[0];
+        func();
+        this.description = description;
+        this.secondaryDescription = secondaryDescription;
 
         // Keep function at front of queue for framesAfterCall frames, to give the animation time to complete and show the description
-        if (result.framesAfterCall > 0) {
+        if (framesAfterCall > 0) {
           this.functionAtFrontOfQueueWasCalled = true;
-          this.functionQueue[0].framesToWait = result.framesAfterCall;
+          this.functionQueue[0].framesToWait = framesAfterCall;
         } else {
           this.functionQueue.shift();
         }

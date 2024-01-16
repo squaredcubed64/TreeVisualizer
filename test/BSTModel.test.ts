@@ -5,7 +5,7 @@ import { describe, it, expect, beforeEach } from "vitest";
 import assert from "../Assert";
 import type TreeShape from "../src/controller/TreeShape";
 import type BSTPathInstruction from "../src/controller/pathInstruction/BSTPathInstruction";
-import type BSTSecondaryDescription from "../src/controller/secondaryDescription/BSTSecondaryDescription";
+import type BSTSecondaryDescriptionVariant from "../src/controller/secondaryDescription/BSTSecondaryDescriptionVariant";
 import BSTController from "../src/controller/BSTController";
 
 class MockBSTController extends BSTController {}
@@ -298,7 +298,7 @@ describe("BSTModel", () => {
   });
 
   function pathsHaveSameValues(
-    path1: Array<BSTPathInstruction<DataNode, BSTSecondaryDescription>>,
+    path1: Array<BSTPathInstruction<DataNode, BSTSecondaryDescriptionVariant>>,
     path2: DataNode[],
   ): boolean {
     if (path1.length !== path2.length) {

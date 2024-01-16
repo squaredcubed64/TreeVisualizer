@@ -5,7 +5,7 @@ import assert from "../../Assert";
 import type TreeShape from "../controller/TreeShape";
 import type BSTFindInformation from "../controller/operationInformation/BSTFindInformation";
 import type BSTDeletionInformationVariant from "../controller/operationInformation/deletionInformation/BSTDeletionInformationVariant";
-import type BSTSecondaryDescription from "../controller/secondaryDescription/BSTSecondaryDescription";
+import type BSTSecondaryDescriptionVariant from "../controller/secondaryDescription/BSTSecondaryDescriptionVariant";
 import type BSTPathInstruction from "../controller/pathInstruction/BSTPathInstruction";
 import { DURATION_MULTIPLIER } from "./Constants";
 
@@ -280,7 +280,7 @@ export default class BSTView extends TreeView {
   }
 
   protected convertSecondaryDescriptionToString(
-    secondaryDescription: BSTSecondaryDescription,
+    secondaryDescription: BSTSecondaryDescriptionVariant,
   ): string {
     switch (secondaryDescription.type) {
       case "insert":
@@ -343,7 +343,7 @@ export default class BSTView extends TreeView {
    * @param highlightColor The color to highlight the nodes with
    */
   private pushNodeHighlightingOntoFunctionQueue<
-    S extends BSTSecondaryDescription,
+    S extends BSTSecondaryDescriptionVariant,
   >(
     path: Array<BSTPathInstruction<DisplayNode, S>>,
     description: string,

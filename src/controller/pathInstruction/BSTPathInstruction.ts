@@ -1,13 +1,13 @@
 import type DataNode from "../../model/DataNode";
 import type DisplayNode from "../../view/DisplayNode";
-import type BSTSecondaryDescription from "../secondaryDescription/BSTSecondaryDescription";
+import type BSTSecondaryDescriptionVariant from "../secondaryDescription/BSTSecondaryDescriptionVariant";
 
 /**
  * The information the View needs to animate one step of traversing a path down the tree.
  */
 export default interface BSTPathInstruction<
   T extends DataNode | DisplayNode,
-  S extends BSTSecondaryDescription,
+  S extends BSTSecondaryDescriptionVariant,
 > {
   node: T;
   /**

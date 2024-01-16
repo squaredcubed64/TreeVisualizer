@@ -80,10 +80,10 @@ export default class AVLModel extends BSTModel {
   } {
     const { insertionInformation: bstInsertionInformation, insertedNode } =
       super.insert(value);
-    const { pathFromRootToTarget: path } = bstInsertionInformation;
+    const { pathFromRootToTarget } = bstInsertionInformation;
 
     const rotationPath = this.rebalanceAlongPath(
-      path.map((pathInstruction) => pathInstruction.node),
+      pathFromRootToTarget.map((pathInstruction) => pathInstruction.node),
     );
     return {
       insertionInformation: { ...bstInsertionInformation, rotationPath },
@@ -98,19 +98,22 @@ export default class AVLModel extends BSTModel {
    */
   public delete(value: number): AVLDeletionInformation<DataNode> {
     const bstDeletionInformation = super.delete(value);
-    const { pathFromRootToTarget: pathToTarget } = bstDeletionInformation;
+    const { pathFromRootToTarget } = bstDeletionInformation;
 
     let rotationPath: Array<RotationPathInstruction<DataNode>>;
     if (bstDeletionInformation.type === "2Children") {
-      const { pathFromTargetsRightChildToSuccessor: pathToSuccessor } =
-        bstDeletionInformation;
-      const pathFromRootToSuccessor = pathToTarget
+      const { pathFromTargetsRightChildToSuccessor } = bstDeletionInformation;
+      const pathFromRootToSuccessor = pathFromRootToTarget
         .map((pathInstruction) => pathInstruction.node)
-        .concat(pathToSuccessor.map((pathInstruction) => pathInstruction.node));
+        .concat(
+          pathFromTargetsRightChildToSuccessor.map(
+            (pathInstruction) => pathInstruction.node,
+          ),
+        );
       rotationPath = this.rebalanceAlongPath(pathFromRootToSuccessor);
     } else {
       rotationPath = this.rebalanceAlongPath(
-        pathToTarget.map((pathInstruction) => pathInstruction.node),
+        pathFromRootToTarget.map((pathInstruction) => pathInstruction.node),
       );
     }
 

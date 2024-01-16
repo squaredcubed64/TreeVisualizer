@@ -5,10 +5,8 @@ import BSTView from "../view/BSTView";
 import type ArrowDirection from "./ArrowDirection";
 import type BSTInsertionInformation from "./operationInformation/BSTInsertionInformation";
 import type BSTPathInstruction from "./pathInstruction/BSTPathInstruction";
-import type BSTDeletionInformationLEQ1Child from "./operationInformation/deletionInformation/BSTDeletionInformationLEQ1Child";
-import type BSTDeletionInformation2Children from "./operationInformation/deletionInformation/BSTDeletionInformation2Children";
 import type BSTFindInformation from "./operationInformation/BSTFindInformation";
-import type BSTSecondaryDescription from "./secondaryDescription/BSTSecondaryDescription";
+import type BSTSecondaryDescriptionVariant from "./secondaryDescription/BSTSecondaryDescriptionVariant";
 import TreeView from "../view/TreeView";
 import TreeController from "./TreeController";
 import type BSTDeletionInformationVariant from "./operationInformation/deletionInformation/BSTDeletionInformationVariant";
@@ -34,17 +32,13 @@ export default class BSTController extends TreeController {
    * @param value The value to insert
    */
   public insert(value: number): void {
-    const {
-      insertionInformation: modelInsertionInformation,
-      insertedNode: insertedDataNode,
-    } = this.model.insert(value);
+    const { insertionInformation, insertedNode } = this.model.insert(value);
+
     // A placeholder for the node that's being inserted. The view will update this upon insertion.
-    const placeholderDisplayNode = TreeView.makePlaceholderNode();
-    this.dataNodeToDisplayNode.set(insertedDataNode, placeholderDisplayNode);
-    const viewInsertionInformation = this.translateInsertionInformation(
-      modelInsertionInformation,
-    );
-    this.view.insert(viewInsertionInformation);
+    const placeholderNode = TreeView.makePlaceholderNode();
+    this.dataNodeToDisplayNode.set(insertedNode, placeholderNode);
+
+    this.view.insert(this.translateInsertionInformation(insertionInformation));
   }
 
   /**
@@ -52,11 +46,8 @@ export default class BSTController extends TreeController {
    * @param value The value to delete
    */
   public delete(value: number): void {
-    const modelDeletionInformation = this.model.delete(value);
-    const viewDeletionInformation = this.translateDeletionInformation(
-      modelDeletionInformation,
-    );
-    this.view.delete(viewDeletionInformation);
+    const deletionInformation = this.model.delete(value);
+    this.view.delete(this.translateDeletionInformation(deletionInformation));
   }
 
   /**
@@ -64,89 +55,74 @@ export default class BSTController extends TreeController {
    * @param value The value to find
    */
   public find(value: number): void {
-    const modelFindInformation = this.model.find(value);
-    const viewFindInformation =
-      this.translateFindInformation(modelFindInformation);
-    this.view.find(viewFindInformation);
+    const findInformation = this.model.find(value);
+    this.view.find(this.translateFindInformation(findInformation));
   }
 
   protected translateInsertionInformation(
-    modelInsertionInformation: BSTInsertionInformation<DataNode>,
+    insertionInformation: BSTInsertionInformation<DataNode>,
   ): BSTInsertionInformation<DisplayNode> {
-    const {
-      shape,
-      pathFromRootToTarget: path,
-      value,
-    } = modelInsertionInformation;
-    const translatedShape = this.translateShape(shape);
-    const translatedPath = this.translatePath(path);
+    const { shape, pathFromRootToTarget, value } = insertionInformation;
     return {
-      shape: translatedShape,
-      pathFromRootToTarget: translatedPath,
+      shape: this.translateShape(shape),
+      pathFromRootToTarget: this.translatePath(pathFromRootToTarget),
       value,
     };
   }
 
   protected translateDeletionInformation(
-    modelDeletionInformation: BSTDeletionInformationVariant<DataNode>,
+    deletionInformation: BSTDeletionInformationVariant<DataNode>,
   ): BSTDeletionInformationVariant<DisplayNode> {
-    switch (modelDeletionInformation.type) {
+    switch (deletionInformation.type) {
       case "LEQ1Child": {
-        const {
-          shape,
-          pathFromRootToTarget: path,
-          victimNode,
-        } = modelDeletionInformation;
-        const viewDeletionInformation: BSTDeletionInformationLEQ1Child<DisplayNode> =
-          {
-            type: "LEQ1Child",
-            shape: this.translateShape(shape),
-            pathFromRootToTarget: this.translatePath(path),
-            victimNode: this.translateNode(victimNode),
-          };
-        return viewDeletionInformation;
+        const { shape, pathFromRootToTarget, victimNode } = deletionInformation;
+        return {
+          type: "LEQ1Child",
+          shape: this.translateShape(shape),
+          pathFromRootToTarget: this.translatePath(pathFromRootToTarget),
+          victimNode: this.translateNode(victimNode),
+        };
       }
       case "2Children": {
         const {
           shape,
-          pathFromRootToTarget: path,
+          pathFromRootToTarget,
           victimNode,
-          pathFromTargetsRightChildToSuccessor: pathToSuccessor,
+          pathFromTargetsRightChildToSuccessor,
           successorNode,
-        } = modelDeletionInformation;
-        const viewDeletionInformation: BSTDeletionInformation2Children<DisplayNode> =
-          {
-            type: "2Children",
-            shape: this.translateShape(shape),
-            pathFromRootToTarget: this.translatePath(path),
-            victimNode: this.translateNode(victimNode),
-            pathFromTargetsRightChildToSuccessor:
-              this.translatePath(pathToSuccessor),
-            successorNode: this.translateNode(successorNode),
-          };
-        return viewDeletionInformation;
+        } = deletionInformation;
+        return {
+          type: "2Children",
+          shape: this.translateShape(shape),
+          pathFromRootToTarget: this.translatePath(pathFromRootToTarget),
+          victimNode: this.translateNode(victimNode),
+          pathFromTargetsRightChildToSuccessor: this.translatePath(
+            pathFromTargetsRightChildToSuccessor,
+          ),
+          successorNode: this.translateNode(successorNode),
+        };
       }
       case "VictimNotFound": {
-        const path = modelDeletionInformation.pathFromRootToTarget;
+        const { pathFromRootToTarget } = deletionInformation;
         return {
           type: "VictimNotFound",
-          pathFromRootToTarget: this.translatePath(path),
+          pathFromRootToTarget: this.translatePath(pathFromRootToTarget),
         };
       }
     }
   }
 
   private translateFindInformation(
-    modelFindInformation: BSTFindInformation<DataNode>,
+    findInformation: BSTFindInformation<DataNode>,
   ): BSTFindInformation<DisplayNode> {
-    const { pathFromRootToTarget: path, nodeFound } = modelFindInformation;
+    const { pathFromRootToTarget, nodeFound } = findInformation;
     return {
-      pathFromRootToTarget: this.translatePath(path),
+      pathFromRootToTarget: this.translatePath(pathFromRootToTarget),
       nodeFound: nodeFound !== null ? this.translateNode(nodeFound) : null,
     };
   }
 
-  private translatePath<S extends BSTSecondaryDescription>(
+  private translatePath<S extends BSTSecondaryDescriptionVariant>(
     path: Array<BSTPathInstruction<DataNode, S>>,
   ): Array<BSTPathInstruction<DisplayNode, S>> {
     return path.map((pathInstruction) => {

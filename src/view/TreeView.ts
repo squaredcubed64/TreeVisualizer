@@ -10,7 +10,7 @@ import type TreeController from "../controller/TreeController";
  */
 export default abstract class TreeView {
   protected static ROOT_TARGET_X = 700;
-  protected static readonly ROOT_TARGET_Y = 50;
+  protected static readonly ROOT_TARGET_Y = 150;
   protected static readonly TARGET_X_GAP = 50;
   protected static readonly TARGET_Y_GAP = 75;
   private static readonly FILL_COLOR = "pink";

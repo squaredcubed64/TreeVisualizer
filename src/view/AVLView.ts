@@ -13,7 +13,7 @@ import DisplayNode from "./DisplayNode";
 export default class AVLView extends BSTView {
   private static readonly FRAMES_AFTER_ROTATION = DURATION_MULTIPLIER * 60;
   private static readonly ROTATION_PATH_HIGHLIGHT_DURATION =
-    DURATION_MULTIPLIER * 60;
+    DURATION_MULTIPLIER * 120;
 
   private static readonly ROTATION_PATH_HIGHLIGHT_COLOR = "red";
   private static readonly ROTATION_PATH_DESCRIPTION =

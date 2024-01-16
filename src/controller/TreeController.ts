@@ -33,8 +33,8 @@ export default abstract class TreeController {
     this.view.stopAnimation();
   }
 
-  public handleClick(x: number, y: number): void {
-    this.view.handleClick(x, y);
+  public handleHover(x: number, y: number): void {
+    this.view.handleHover(x, y);
   }
 
   public getPropertiesOfNode(node: DisplayNode): {

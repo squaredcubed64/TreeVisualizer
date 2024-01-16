@@ -293,8 +293,8 @@ export default abstract class TreeView {
    * @param x The x coordinate of the click (relative to the canvas)
    * @param y The y coordinate of the click (relative to the canvas)
    */
-  public handleClick(x: number, y: number): void {
-    const clickedNode = this.shape.inorderTraversal.find((node) => {
+  public handleHover(x: number, y: number): void {
+    const hoveredNode = this.shape.inorderTraversal.find((node) => {
       return node.containsPoint(x, y);
     });
 
@@ -304,18 +304,18 @@ export default abstract class TreeView {
       node.unThickHighlight();
     });
 
-    if (clickedNode !== undefined) {
-      clickedNode.thickHighlightIndefinitely();
+    if (hoveredNode !== undefined) {
+      hoveredNode.thickHighlightIndefinitely();
       const { height, balance, leftHeight, rightHeight } =
-        this.controller.getPropertiesOfNode(clickedNode);
+        this.controller.getPropertiesOfNode(hoveredNode);
       nodePopup.innerHTML =
-        `Value: ${clickedNode.value} <br>` +
+        `Value: ${hoveredNode.value} <br>` +
         `Height: ${height} <br>` +
         `Balance factor: ${balance} <br>` +
         `Height of left subtree: ${leftHeight} <br>` +
         `Height of right subtree: ${rightHeight} <br>`;
     } else {
-      nodePopup.innerHTML = "Click a node to see its properties.";
+      nodePopup.innerHTML = "Hover over a node to see its properties.";
     }
   }
 

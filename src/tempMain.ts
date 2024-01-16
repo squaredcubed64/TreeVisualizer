@@ -187,9 +187,11 @@ treeTypeDropdown.addEventListener("change", () => {
   resetController(treeType);
 });
 
-canvas.addEventListener("click", (event) => {
+// Show a node's properties upon hovering over it
+canvas.addEventListener("mousemove", (event) => {
   const rect = canvas.getBoundingClientRect();
   const x = event.clientX - rect.left;
   const y = event.clientY - rect.top;
-  controller.handleClick(x, y);
+  console.log(x, y + 1);
+  controller.handleHover(x, y);
 });

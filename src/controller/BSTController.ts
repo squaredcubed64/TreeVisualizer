@@ -11,7 +11,7 @@ import type BSTFindInformation from "./operationInformation/BSTFindInformation";
 import type BSTSecondaryDescription from "./secondaryDescription/BSTSecondaryDescription";
 import TreeView from "../view/TreeView";
 import TreeController from "./TreeController";
-import type BSTDeletionInformation from "./operationInformation/deletionInformation/BSTDeletionInformation";
+import type BSTDeletionInformationVariant from "./operationInformation/deletionInformation/BSTDeletionInformationVariant";
 
 /**
  * The controller for the BST. It is responsible for translating the model's return types into the view's parameter types
@@ -88,8 +88,8 @@ export default class BSTController extends TreeController {
   }
 
   protected translateDeletionInformation(
-    modelDeletionInformation: BSTDeletionInformation<DataNode>,
-  ): BSTDeletionInformation<DisplayNode> {
+    modelDeletionInformation: BSTDeletionInformationVariant<DataNode>,
+  ): BSTDeletionInformationVariant<DisplayNode> {
     switch (modelDeletionInformation.type) {
       case "LEQ1Child": {
         const {
@@ -111,7 +111,7 @@ export default class BSTController extends TreeController {
           shape,
           pathFromRootToTarget: path,
           victimNode,
-          pathToSuccessor,
+          pathFromTargetsRightChildToSuccessor: pathToSuccessor,
           successorNode,
         } = modelDeletionInformation;
         const viewDeletionInformation: BSTDeletionInformation2Children<DisplayNode> =
@@ -120,7 +120,8 @@ export default class BSTController extends TreeController {
             shape: this.translateShape(shape),
             pathFromRootToTarget: this.translatePath(path),
             victimNode: this.translateNode(victimNode),
-            pathToSuccessor: this.translatePath(pathToSuccessor),
+            pathFromTargetsRightChildToSuccessor:
+              this.translatePath(pathToSuccessor),
             successorNode: this.translateNode(successorNode),
           };
         return viewDeletionInformation;

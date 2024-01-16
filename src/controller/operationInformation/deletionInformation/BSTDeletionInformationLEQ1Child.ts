@@ -1,4 +1,4 @@
-import type BSTDeletionInformationBase from "./BSTDeletionInformationBase";
+import type BSTDeletionInformation from "./BSTDeletionInformation";
 import type TreeShape from "../../TreeShape";
 import type DataNode from "../../../model/DataNode";
 import type DisplayNode from "../../../view/DisplayNode";
@@ -8,7 +8,7 @@ import type DisplayNode from "../../../view/DisplayNode";
  */
 export default interface BSTDeletionInformationLEQ1Child<
   T extends DataNode | DisplayNode,
-> extends BSTDeletionInformationBase<T> {
+> extends BSTDeletionInformation<T> {
   type: "LEQ1Child";
   shape: TreeShape<T>;
   victimNode: T;

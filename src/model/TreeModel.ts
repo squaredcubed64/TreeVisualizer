@@ -1,4 +1,4 @@
-import { assert } from "../../Utils";
+import assert from "../../Assert";
 import ArrowDirection from "../controller/ArrowDirection";
 import type TreeController from "../controller/TreeController";
 import type TreeShape from "../controller/TreeShape";

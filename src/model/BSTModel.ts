@@ -3,13 +3,13 @@ import type BSTInsertionInformation from "../controller/operationInformation/BST
 import type BSTPathInstruction from "../controller/pathInstruction/BSTPathInstruction";
 import type BSTDeletionInformationLEQ1Child from "../controller/operationInformation/deletionInformation/BSTDeletionInformationLEQ1Child";
 import type BSTDeletionInformation2Children from "../controller/operationInformation/deletionInformation/BSTDeletionInformation2Children";
-import { assert } from "../../Utils";
+import assert from "../../Assert";
 import type BSTFindSecondaryDescription from "../controller/secondaryDescription/BSTFindSecondaryDescription";
 import type BSTSuccessorSecondaryDescription from "../controller/secondaryDescription/BSTSuccessorSecondaryDescription";
 import type BSTInsertionSecondaryDescription from "../controller/secondaryDescription/BSTInsertionSecondaryDescription";
 import TreeModel from "./TreeModel";
 import type BSTFindInformation from "../controller/operationInformation/BSTFindInformation";
-import type BSTDeletionInformation from "../controller/operationInformation/deletionInformation/BSTDeletionInformation";
+import type BSTDeletionInformationVariant from "../controller/operationInformation/deletionInformation/BSTDeletionInformationVariant";
 
 /**
  * A Binary Search Tree data structure that calculates information the view needs for animations.
@@ -130,7 +130,7 @@ export default class BSTModel extends TreeModel {
    * @param value The value to delete
    * @returns The information needed to animate the deletion
    */
-  public delete(value: number): BSTDeletionInformation<DataNode> {
+  public delete(value: number): BSTDeletionInformationVariant<DataNode> {
     if (this.root == null) {
       return { type: "VictimNotFound", pathFromRootToTarget: [] };
     }
@@ -223,7 +223,7 @@ export default class BSTModel extends TreeModel {
         shape: this.getShape(),
         pathFromRootToTarget: path,
         victimNode: currNode,
-        pathToSuccessor,
+        pathFromTargetsRightChildToSuccessor: pathToSuccessor,
         successorNode: successor,
       };
       return deletionInformation;

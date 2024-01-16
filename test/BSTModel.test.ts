@@ -2,7 +2,7 @@ import BSTModel from "../src/model/BSTModel";
 import DataNode from "../src/model/DataNode";
 import ArrowDirection from "../src/controller/ArrowDirection";
 import { describe, it, expect, beforeEach } from "vitest";
-import { assert } from "../Utils";
+import assert from "../Assert";
 import type TreeShape from "../src/controller/TreeShape";
 import type BSTPathInstruction from "../src/controller/pathInstruction/BSTPathInstruction";
 import type BSTSecondaryDescription from "../src/controller/secondaryDescription/BSTSecondaryDescription";

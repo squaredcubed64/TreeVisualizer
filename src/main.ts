@@ -1,11 +1,8 @@
 import ArrowDirection from "./controller/ArrowDirection";
 import BSTController from "./controller/BSTController";
-import { assert } from "../Utils";
-import {
-  disableOperationClearAndArrowButtons,
-  enableOperationClearAndArrowButtons,
-} from "./srcUtils";
+import assert from "../Assert";
 import AVLController from "./controller/AVLController";
+import TreeView from "./view/TreeView";
 
 // Make canvas fill the screen
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
@@ -166,11 +163,11 @@ pauseButton.addEventListener("click", () => {
   paused = !paused;
   if (paused) {
     controller.stopAnimation();
-    disableOperationClearAndArrowButtons();
+    TreeView.disableElements(TreeView.getDisableableElements());
     pauseButton.textContent = "Play";
   } else {
     controller.animate();
-    enableOperationClearAndArrowButtons();
+    TreeView.enableElements(TreeView.getDisableableElements());
     pauseButton.textContent = "Pause";
   }
 });

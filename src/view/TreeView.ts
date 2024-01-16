@@ -1,11 +1,7 @@
 import DisplayNode from "./DisplayNode";
-import type DelayedFunction from "./delayedFunctionCall/DelayedFunction";
+import type DelayedFunction from "./DelayedFunction";
 import type TreeShape from "../controller/TreeShape";
-import { assert } from "../../Utils";
-import {
-  disableOperationClearAndArrowButtons,
-  enableOperationClearAndArrowButtons,
-} from "../srcUtils";
+import assert from "../../Assert";
 import type TreeController from "../controller/TreeController";
 
 /**
@@ -65,6 +61,35 @@ export default abstract class TreeView {
    */
   public static centerTree(canvasWidth: number): void {
     TreeView.ROOT_TARGET_X = canvasWidth / 2;
+  }
+
+  public static getDisableableElements(): HTMLElement[] {
+    const insertDiv = document.getElementById("insert");
+    const deleteDiv = document.getElementById("delete");
+    const findDiv = document.getElementById("find");
+    const clearButton = document.getElementById("clearButton");
+    const arrowButton = document.getElementById("arrowButton");
+    assert(
+      insertDiv !== null &&
+        deleteDiv !== null &&
+        findDiv !== null &&
+        clearButton !== null &&
+        arrowButton !== null,
+      "insertDiv, deleteDiv, findDiv, clearButton, or arrowButton not found",
+    );
+    return [insertDiv, deleteDiv, findDiv, clearButton, arrowButton];
+  }
+
+  public static disableElements(elements: HTMLElement[]): void {
+    elements.forEach((element) => {
+      element.classList.add("disabled");
+    });
+  }
+
+  public static enableElements(elements: HTMLElement[]): void {
+    elements.forEach((element) => {
+      element.classList.remove("disabled");
+    });
   }
 
   /**
@@ -249,9 +274,9 @@ export default abstract class TreeView {
     }
 
     if (this.functionQueue.length === 0) {
-      enableOperationClearAndArrowButtons();
+      TreeView.enableElements(TreeView.getDisableableElements());
     } else {
-      disableOperationClearAndArrowButtons();
+      TreeView.disableElements(TreeView.getDisableableElements());
     }
 
     this.currentAnimationId = requestAnimationFrame(() => {

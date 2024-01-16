@@ -1,4 +1,4 @@
-import { assert } from "../../Utils";
+import assert from "../../Assert";
 import type TreeShape from "../controller/TreeShape";
 import type AVLInsertionInformation from "../controller/operationInformation/AVLInsertionInformation";
 import type AVLDeletionInformation from "../controller/operationInformation/deletionInformation/AVLDeletionInformation";
@@ -102,7 +102,8 @@ export default class AVLModel extends BSTModel {
 
     let rotationPath: Array<RotationPathInstruction<DataNode>>;
     if (bstDeletionInformation.type === "2Children") {
-      const { pathToSuccessor } = bstDeletionInformation;
+      const { pathFromTargetsRightChildToSuccessor: pathToSuccessor } =
+        bstDeletionInformation;
       const pathFromRootToSuccessor = pathToTarget
         .map((pathInstruction) => pathInstruction.node)
         .concat(pathToSuccessor.map((pathInstruction) => pathInstruction.node));

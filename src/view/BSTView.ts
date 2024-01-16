@@ -1,10 +1,10 @@
 import DisplayNode from "./DisplayNode";
 import TreeView from "./TreeView";
 import type BSTInsertionInformation from "../controller/operationInformation/BSTInsertionInformation";
-import { assert } from "../../Utils";
+import assert from "../../Assert";
 import type TreeShape from "../controller/TreeShape";
 import type BSTFindInformation from "../controller/operationInformation/BSTFindInformation";
-import type BSTDeletionInformation from "../controller/operationInformation/deletionInformation/BSTDeletionInformation";
+import type BSTDeletionInformationVariant from "../controller/operationInformation/deletionInformation/BSTDeletionInformationVariant";
 import type BSTSecondaryDescription from "../controller/secondaryDescription/BSTSecondaryDescription";
 import type BSTPathInstruction from "../controller/pathInstruction/BSTPathInstruction";
 import { DURATION_MULTIPLIER } from "./Constants";
@@ -65,7 +65,7 @@ export default class BSTView extends TreeView {
   ): void {
     const {
       shape: shapeWithPlaceholder,
-      pathFromRootToTarget: path,
+      pathFromRootToTarget,
       value,
     } = insertionInformation;
     const placeholderNode = shapeWithPlaceholder.inorderTraversal.find((node) =>
@@ -84,7 +84,7 @@ export default class BSTView extends TreeView {
 
     // Animate finding where to insert
     this.pushNodeHighlightingOntoFunctionQueue(
-      path,
+      pathFromRootToTarget,
       BSTView.INSERTION_DESCRIPTIONS.FIND_WHERE_TO_INSERT,
     );
 
@@ -96,7 +96,7 @@ export default class BSTView extends TreeView {
           value,
           shapeWithPlaceholder,
           placeholderNode,
-          path[path.length - 1].node,
+          pathFromRootToTarget[pathFromRootToTarget.length - 1].node,
         );
       },
       framesAfterCall: DisplayNode.MOVE_DURATION_FRAMES,
@@ -113,18 +113,15 @@ export default class BSTView extends TreeView {
    * @param viewDeletionInformation The information the view needs to animate the deletion.
    */
   public delete(
-    viewDeletionInformation: BSTDeletionInformation<DisplayNode>,
+    viewDeletionInformation: BSTDeletionInformationVariant<DisplayNode>,
   ): void {
     switch (viewDeletionInformation.type) {
       // Animation: highlight path to victim, shrink victim node, then move nodes to new target positions
       case "LEQ1Child": {
-        const {
-          shape,
-          pathFromRootToTarget: path,
-          victimNode,
-        } = viewDeletionInformation;
+        const { shape, pathFromRootToTarget, victimNode } =
+          viewDeletionInformation;
         this.pushNodeHighlightingOntoFunctionQueue(
-          path,
+          pathFromRootToTarget,
           BSTView.DELETION_DESCRIPTIONS.FIND_NODE_TO_DELETE,
         );
         this.functionQueue.push({
@@ -149,13 +146,13 @@ export default class BSTView extends TreeView {
       case "2Children": {
         const {
           shape,
-          pathFromRootToTarget: path,
+          pathFromRootToTarget,
           victimNode,
-          pathToSuccessor,
+          pathFromTargetsRightChildToSuccessor,
           successorNode,
         } = viewDeletionInformation;
         this.pushNodeHighlightingOntoFunctionQueue(
-          path,
+          pathFromRootToTarget,
           BSTView.DELETION_DESCRIPTIONS.FIND_NODE_TO_DELETE,
         );
         this.functionQueue.push({
@@ -170,7 +167,7 @@ export default class BSTView extends TreeView {
           description: BSTView.DELETION_DESCRIPTIONS.FIND_SUCCESSOR,
         });
         this.pushNodeHighlightingOntoFunctionQueue(
-          pathToSuccessor,
+          pathFromTargetsRightChildToSuccessor,
           BSTView.FIND_SUCCESSOR_HIGHLIGHT_COLOR,
           BSTView.DELETION_DESCRIPTIONS.FIND_SUCCESSOR,
         );
@@ -201,13 +198,13 @@ export default class BSTView extends TreeView {
             victimNode.unhighlight();
             successorNode.unhighlight();
           },
-          framesAfterCall: 0,
+          framesAfterCall:
+            BSTView.FRAMES_AFTER_HIGHLIGHTING_VICTIM_WITH_TWO_CHILDREN,
           description:
             BSTView.DELETION_DESCRIPTIONS.REPLACE_NODE_WITH_SUCCESSOR,
         });
         this.functionQueue.push({
-          framesToWait:
-            BSTView.FRAMES_AFTER_HIGHLIGHTING_VICTIM_WITH_TWO_CHILDREN,
+          framesToWait: 0,
           func: () => {
             successorNode.startShrinkingIntoNothing();
           },
@@ -226,10 +223,10 @@ export default class BSTView extends TreeView {
       }
       // Animation: highlight path, then do nothing
       case "VictimNotFound": {
-        const { pathFromRootToTarget: path } = viewDeletionInformation;
-        if (path.length !== 0) {
+        const { pathFromRootToTarget } = viewDeletionInformation;
+        if (pathFromRootToTarget.length !== 0) {
           this.pushNodeHighlightingOntoFunctionQueue(
-            path,
+            pathFromRootToTarget,
             BSTView.DELETION_DESCRIPTIONS.FIND_NODE_TO_DELETE,
           );
         }
@@ -251,10 +248,10 @@ export default class BSTView extends TreeView {
    * @param viewFindInformation The information the view needs to animate the find.
    */
   public find(viewFindInformation: BSTFindInformation<DisplayNode>): void {
-    const { pathFromRootToTarget: path, nodeFound } = viewFindInformation;
-    if (path.length !== 0) {
+    const { pathFromRootToTarget, nodeFound } = viewFindInformation;
+    if (pathFromRootToTarget.length !== 0) {
       this.pushNodeHighlightingOntoFunctionQueue(
-        path,
+        pathFromRootToTarget,
         BSTView.FIND_DESCRIPTIONS.FIND_NODE,
       );
     }

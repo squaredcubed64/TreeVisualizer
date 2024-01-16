@@ -1,4 +1,4 @@
-import { assert } from "../../Utils";
+import assert from "../../Assert";
 import { DURATION_MULTIPLIER } from "./Constants";
 
 /**

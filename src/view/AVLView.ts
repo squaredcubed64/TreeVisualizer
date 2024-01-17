@@ -4,16 +4,18 @@ import type AVLDeletionInformation from "../controller/operationInformation/dele
 import type RotationPathInstruction from "../controller/pathInstruction/RotationPathInstruction";
 import type RotationSecondaryDescription from "../controller/secondaryDescription/RotationSecondaryDescription";
 import BSTView from "./BSTView";
-import { DURATION_MULTIPLIER } from "./Constants";
 import DisplayNode from "./DisplayNode";
+import TreeView from "./TreeView";
 
 /**
  * Handles the animation of AVL operations.
  */
 export default class AVLView extends BSTView {
-  private static readonly FRAMES_AFTER_ROTATION = DURATION_MULTIPLIER * 60;
-  private static readonly ROTATION_PATH_HIGHLIGHT_DURATION =
-    DURATION_MULTIPLIER * 120;
+  private static readonly TIME_AFTER_ROTATION_MS =
+    TreeView.DURATION_MULTIPLIER * 1000;
+
+  private static readonly ROTATION_PATH_HIGHLIGHT_DURATION_MS =
+    TreeView.DURATION_MULTIPLIER * 2000;
 
   private static readonly ROTATION_PATH_HIGHLIGHT_COLOR = "red";
   private static readonly ROTATION_PATH_DESCRIPTION =
@@ -79,12 +81,12 @@ export default class AVLView extends BSTView {
       secondaryDescription: string,
     ): void => {
       this.functionQueue.push({
-        framesToWait: 0,
+        timeToWaitMs: 0,
         func: () => {
           this.animateShapeChange(shapeAfterRotation);
         },
-        framesAfterCall:
-          DisplayNode.MOVE_DURATION_FRAMES + AVLView.FRAMES_AFTER_ROTATION,
+        timeAfterCallMs:
+          DisplayNode.MOVE_DURATION_MS + AVLView.TIME_AFTER_ROTATION_MS,
         description: AVLView.ROTATION_PATH_DESCRIPTION,
         secondaryDescription,
       });
@@ -96,14 +98,14 @@ export default class AVLView extends BSTView {
 
       // Highlight the node and explain if a rotation must be performed and why
       this.functionQueue.push({
-        framesToWait: BSTView.FRAMES_BETWEEN_HIGHLIGHTS,
+        timeToWaitMs: BSTView.TIME_BETWEEN_HIGHLIGHTS_MS,
         func: () => {
           node.highlight(
             AVLView.ROTATION_PATH_HIGHLIGHT_COLOR,
-            AVLView.ROTATION_PATH_HIGHLIGHT_DURATION,
+            AVLView.ROTATION_PATH_HIGHLIGHT_DURATION_MS,
           );
         },
-        framesAfterCall: AVLView.ROTATION_PATH_HIGHLIGHT_DURATION,
+        timeAfterCallMs: AVLView.ROTATION_PATH_HIGHLIGHT_DURATION_MS,
         description: AVLView.ROTATION_PATH_DESCRIPTION,
         secondaryDescription:
           AVLView.convertRotationSecondaryDescriptionToString(

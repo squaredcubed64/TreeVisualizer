@@ -9,6 +9,7 @@ import type TreeController from "../controller/TreeController";
  * and handling asynchronous actions, as represented by functions in the functionQueue.
  */
 export default abstract class TreeView {
+  public static readonly DURATION_MULTIPLIER = 0.6;
   protected static ROOT_TARGET_X = 700;
   protected static readonly ROOT_TARGET_Y = 150;
   protected static readonly TARGET_X_GAP = 50;
@@ -19,6 +20,7 @@ export default abstract class TreeView {
   private static readonly ARROW_HEAD_LENGTH = 10;
   private static readonly ARROW_LINE_WIDTH = 2;
   private static readonly DEFAULT_ANIMATION_SPEED_SETTING = 100;
+  private static readonly TIME_BETWEEN_RENDERS_MS = 1000 / 120;
 
   public shape: TreeShape<DisplayNode> = {
     inorderTraversal: [],
@@ -36,6 +38,7 @@ export default abstract class TreeView {
     TreeView.DEFAULT_ANIMATION_SPEED_SETTING;
 
   private readonly controller: TreeController;
+  private lastRenderTimeMs: number = performance.now();
 
   public constructor(controller: TreeController) {
     this.controller = controller;
@@ -211,72 +214,21 @@ export default abstract class TreeView {
     canvas: HTMLCanvasElement,
     context: CanvasRenderingContext2D,
   ): void {
-    context.clearRect(0, 0, canvas.width, canvas.height);
+    const nowMs = performance.now();
+    const deltaMs = nowMs - this.lastRenderTimeMs;
 
-    // Call ready functions in functionQueue
-    while (
-      this.functionQueue.length > 0 &&
-      this.functionQueue[0].framesToWait <= 0
-    ) {
-      if (!this.functionAtFrontOfQueueWasCalled) {
-        const { func, framesAfterCall, description, secondaryDescription } =
-          this.functionQueue[0];
-        func();
-        this.description = description;
-        this.secondaryDescription = secondaryDescription;
+    if (deltaMs >= TreeView.TIME_BETWEEN_RENDERS_MS) {
+      this.render(canvas, context);
 
-        // Keep function at front of queue for framesAfterCall frames, to give the animation time to complete and show the description
-        if (framesAfterCall > 0) {
-          this.functionAtFrontOfQueueWasCalled = true;
-          this.functionQueue[0].framesToWait = framesAfterCall;
-        } else {
-          this.functionQueue.shift();
-        }
-      } else {
-        this.functionAtFrontOfQueueWasCalled = false;
-        this.functionQueue.shift();
-      }
-    }
+      this.lastRenderTimeMs = nowMs;
 
-    if (this.functionQueue.length > 0) {
-      this.functionQueue[0].framesToWait -= this.animationSpeed;
-    }
+      const deltaAdjustedForAnimationSpeedMs = deltaMs * this.animationSpeed;
 
-    // Draw arrows first
-    this.shape.arrows.forEach((pair) => {
-      TreeView.drawArrowFromNodeToNode(pair[0], pair[1], context);
-    });
+      this.updateFunctionQueue(deltaAdjustedForAnimationSpeedMs);
 
-    // Draw nodes
-    this.shape.inorderTraversal.forEach((node) => {
-      node.drawAndUpdate(context, this.animationSpeed);
-    });
-
-    // Update description
-    const animationDescription = document.getElementById(
-      "animationDescription",
-    ) as HTMLParagraphElement;
-    assert(animationDescription !== null, "animationDescription not found");
-    animationDescription.textContent = this.description;
-
-    // Update secondary description
-    const secondaryAnimationDescription = document.getElementById(
-      "secondaryAnimationDescription",
-    ) as HTMLParagraphElement;
-    assert(
-      secondaryAnimationDescription !== null,
-      "secondaryAnimationDescription not found",
-    );
-    if (this.secondaryDescription == null) {
-      secondaryAnimationDescription.textContent = "";
-    } else {
-      secondaryAnimationDescription.textContent = this.secondaryDescription;
-    }
-
-    if (this.functionQueue.length === 0) {
-      TreeView.enableElements(TreeView.getDisableableElements());
-    } else {
-      TreeView.disableElements(TreeView.getDisableableElements());
+      this.shape.inorderTraversal.forEach((node) => {
+        node.update(deltaAdjustedForAnimationSpeedMs);
+      });
     }
 
     this.currentAnimationId = requestAnimationFrame(() => {
@@ -319,25 +271,6 @@ export default abstract class TreeView {
     }
   }
 
-  /*
-    if (distance < nodeRadius) {
-      // Node was clicked
-      const nodePopup = document.getElementById('nodePopup');
-      assert(nodePopup !== null, "nodePopup not found");
-
-      // Update the popup with the node's properties
-      nodePopup.innerHTML = `
-        <p>Property 1: ${node.properties.property1}</p>
-        <p>Property 2: ${node.properties.property2}</p>
-        <!-- Add more properties as needed -->
-      `;
-
-      // Make the popup visible
-      nodePopup.style.display = 'block';
-    }
-  });
-*/
-
   /**
    * Sets the tree's shape to the given shape, and sets the target positions of all nodes in the tree
    * @param newShape The shape the tree gradually changes to
@@ -345,6 +278,85 @@ export default abstract class TreeView {
   protected animateShapeChange(newShape: TreeShape<DisplayNode>): void {
     this.shape = newShape;
     this.setTargetPositions();
+  }
+
+  /**
+   * Calls functions at the front of functionQueue if they are ready, or updates their time if they are not ready
+   * @param deltaMs The number of milliseconds to adjust the functionQueue's time by
+   */
+  private updateFunctionQueue(deltaMs: number): void {
+    // Call ready functions in functionQueue
+    while (
+      this.functionQueue.length > 0 &&
+      this.functionQueue[0].timeToWaitMs <= 0
+    ) {
+      if (!this.functionAtFrontOfQueueWasCalled) {
+        const { func, timeAfterCallMs, description, secondaryDescription } =
+          this.functionQueue[0];
+        func();
+        this.description = description;
+        this.secondaryDescription = secondaryDescription;
+
+        // Keep function at front of queue for timeAfterCallMs, to give the animation time to complete and show the description
+        if (timeAfterCallMs > 0) {
+          this.functionAtFrontOfQueueWasCalled = true;
+          this.functionQueue[0].timeToWaitMs = timeAfterCallMs;
+        } else {
+          this.functionQueue.shift();
+        }
+      } else {
+        this.functionAtFrontOfQueueWasCalled = false;
+        this.functionQueue.shift();
+      }
+    }
+
+    if (this.functionQueue.length > 0) {
+      this.functionQueue[0].timeToWaitMs -= deltaMs;
+    }
+  }
+
+  private render(
+    canvas: HTMLCanvasElement,
+    context: CanvasRenderingContext2D,
+  ): void {
+    context.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Draw arrows first
+    this.shape.arrows.forEach((pair) => {
+      TreeView.drawArrowFromNodeToNode(pair[0], pair[1], context);
+    });
+
+    // Draw nodes
+    this.shape.inorderTraversal.forEach((node) => {
+      node.draw(context);
+    });
+
+    // Update description
+    const animationDescription = document.getElementById(
+      "animationDescription",
+    ) as HTMLParagraphElement;
+    assert(animationDescription !== null, "animationDescription not found");
+    animationDescription.textContent = this.description;
+
+    // Update secondary description
+    const secondaryAnimationDescription = document.getElementById(
+      "secondaryAnimationDescription",
+    ) as HTMLParagraphElement;
+    assert(
+      secondaryAnimationDescription !== null,
+      "secondaryAnimationDescription not found",
+    );
+    if (this.secondaryDescription == null) {
+      secondaryAnimationDescription.textContent = "";
+    } else {
+      secondaryAnimationDescription.textContent = this.secondaryDescription;
+    }
+
+    if (this.functionQueue.length === 0) {
+      TreeView.enableElements(TreeView.getDisableableElements());
+    } else {
+      TreeView.disableElements(TreeView.getDisableableElements());
+    }
   }
 
   /**

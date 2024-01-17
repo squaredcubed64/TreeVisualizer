@@ -7,31 +7,30 @@ import type BSTFindInformation from "../controller/operationInformation/BSTFindI
 import type BSTDeletionInformationVariant from "../controller/operationInformation/deletionInformation/BSTDeletionInformationVariant";
 import type BSTSecondaryDescriptionVariant from "../controller/secondaryDescription/BSTSecondaryDescriptionVariant";
 import type BSTPathInstruction from "../controller/pathInstruction/BSTPathInstruction";
-import { DURATION_MULTIPLIER } from "./Constants";
 
 /**
  * Handles the animation of BST operations.
  */
 export default class BSTView extends TreeView {
-  protected static readonly FRAMES_BETWEEN_HIGHLIGHTS =
-    DURATION_MULTIPLIER * 60;
+  protected static readonly TIME_BETWEEN_HIGHLIGHTS_MS =
+    TreeView.DURATION_MULTIPLIER * 1000;
 
-  private static readonly FRAMES_AFTER_HIGHLIGHTING_VICTIM_WITH_TWO_CHILDREN =
-    DURATION_MULTIPLIER * 60;
+  private static readonly TIME_AFTER_HIGHLIGHTING_VICTIM_WITH_TWO_CHILDREN_MS =
+    TreeView.DURATION_MULTIPLIER * 1000;
 
-  private static readonly FRAMES_BEFORE_REPLACE_WITH_SUCCESSOR =
-    DURATION_MULTIPLIER * 60;
+  private static readonly TIME_BEFORE_REPLACE_WITH_SUCCESSOR_MS =
+    TreeView.DURATION_MULTIPLIER * 1000;
 
-  private static readonly FRAMES_BEFORE_UNHIGHLIGHT_VICTIM =
-    DURATION_MULTIPLIER * 60;
+  private static readonly TIME_BEFORE_UNHIGHLIGHT_VICTIM_MS =
+    TreeView.DURATION_MULTIPLIER * 1000;
 
-  private static readonly FRAMES_AFTER_UNSUCCESSFUL_DELETE =
-    DURATION_MULTIPLIER * 60;
+  private static readonly TIME_AFTER_UNSUCCESSFUL_DELETE_MS =
+    TreeView.DURATION_MULTIPLIER * 1000;
 
-  private static readonly HIGHLIGHT_DURATION_AFTER_SUCCESSFUL_FIND_FRAMES =
-    DURATION_MULTIPLIER * 60;
+  private static readonly HIGHLIGHT_DURATION_AFTER_SUCCESSFUL_FIND_MS =
+    TreeView.DURATION_MULTIPLIER * 1000;
 
-  private static readonly FRAMES_AFTER_FIND = DURATION_MULTIPLIER * 0;
+  private static readonly TIME_AFTER_FIND_MS = TreeView.DURATION_MULTIPLIER * 0;
   private static readonly FIND_SUCCESSOR_HIGHLIGHT_COLOR = "green";
   private static readonly HIGHLIGHT_COLOR_AFTER_SUCCESSFUL_FIND = "green";
   private static readonly INSERTION_DESCRIPTIONS = {
@@ -90,7 +89,7 @@ export default class BSTView extends TreeView {
 
     // Animate inserting
     this.functionQueue.push({
-      framesToWait: 0,
+      timeToWaitMs: 0,
       func: () => {
         this.setupInsertionAnimation(
           value,
@@ -99,7 +98,7 @@ export default class BSTView extends TreeView {
           pathFromRootToTarget[pathFromRootToTarget.length - 1].node,
         );
       },
-      framesAfterCall: DisplayNode.MOVE_DURATION_FRAMES,
+      timeAfterCallMs: DisplayNode.MOVE_DURATION_MS,
       description: BSTView.INSERTION_DESCRIPTIONS.INSERT_NEW_NODE,
     });
   }
@@ -125,19 +124,19 @@ export default class BSTView extends TreeView {
           BSTView.DELETION_DESCRIPTIONS.FIND_NODE_TO_DELETE,
         );
         this.functionQueue.push({
-          framesToWait: 0,
+          timeToWaitMs: 0,
           func: () => {
             victimNode.startShrinkingIntoNothing();
           },
-          framesAfterCall: DisplayNode.SHRINK_DURATION_FRAMES,
+          timeAfterCallMs: DisplayNode.SHRINK_DURATION_MS,
           description: BSTView.DELETION_DESCRIPTIONS.DELETE_NODE,
         });
         this.functionQueue.push({
-          framesToWait: 0,
+          timeToWaitMs: 0,
           func: () => {
             this.animateShapeChange(shape);
           },
-          framesAfterCall: DisplayNode.SHRINK_DURATION_FRAMES,
+          timeAfterCallMs: DisplayNode.SHRINK_DURATION_MS,
           description: BSTView.DELETION_DESCRIPTIONS.DELETE_NODE,
         });
         break;
@@ -156,67 +155,67 @@ export default class BSTView extends TreeView {
           BSTView.DELETION_DESCRIPTIONS.FIND_NODE_TO_DELETE,
         );
         this.functionQueue.push({
-          framesToWait: 0,
+          timeToWaitMs: 0,
           func: () => {
             victimNode.highlight(
               BSTView.FIND_SUCCESSOR_HIGHLIGHT_COLOR,
               Infinity,
             );
           },
-          framesAfterCall: 0,
+          timeAfterCallMs: 0,
           description: BSTView.DELETION_DESCRIPTIONS.FIND_SUCCESSOR,
         });
         this.pushNodeHighlightingOntoFunctionQueue(
           pathFromTargetsRightChildToSuccessor,
-          BSTView.FIND_SUCCESSOR_HIGHLIGHT_COLOR,
           BSTView.DELETION_DESCRIPTIONS.FIND_SUCCESSOR,
+          BSTView.FIND_SUCCESSOR_HIGHLIGHT_COLOR,
         );
         this.functionQueue.push({
-          framesToWait: 0,
+          timeToWaitMs: 0,
           func: () => {
             successorNode.highlight(
               BSTView.FIND_SUCCESSOR_HIGHLIGHT_COLOR,
               Infinity,
             );
           },
-          framesAfterCall: 0,
+          timeAfterCallMs: 0,
           description:
             BSTView.DELETION_DESCRIPTIONS.REPLACE_NODE_WITH_SUCCESSOR,
         });
         this.functionQueue.push({
-          framesToWait: BSTView.FRAMES_BEFORE_REPLACE_WITH_SUCCESSOR,
+          timeToWaitMs: BSTView.TIME_BEFORE_REPLACE_WITH_SUCCESSOR_MS,
           func: () => {
             victimNode.value = successorNode.value;
           },
-          framesAfterCall: 0,
+          timeAfterCallMs: 0,
           description:
             BSTView.DELETION_DESCRIPTIONS.REPLACE_NODE_WITH_SUCCESSOR,
         });
         this.functionQueue.push({
-          framesToWait: BSTView.FRAMES_BEFORE_UNHIGHLIGHT_VICTIM,
+          timeToWaitMs: BSTView.TIME_BEFORE_UNHIGHLIGHT_VICTIM_MS,
           func: () => {
             victimNode.unhighlight();
             successorNode.unhighlight();
           },
-          framesAfterCall:
-            BSTView.FRAMES_AFTER_HIGHLIGHTING_VICTIM_WITH_TWO_CHILDREN,
+          timeAfterCallMs:
+            BSTView.TIME_AFTER_HIGHLIGHTING_VICTIM_WITH_TWO_CHILDREN_MS,
           description:
             BSTView.DELETION_DESCRIPTIONS.REPLACE_NODE_WITH_SUCCESSOR,
         });
         this.functionQueue.push({
-          framesToWait: 0,
+          timeToWaitMs: 0,
           func: () => {
             successorNode.startShrinkingIntoNothing();
           },
-          framesAfterCall: DisplayNode.SHRINK_DURATION_FRAMES,
+          timeAfterCallMs: DisplayNode.SHRINK_DURATION_MS,
           description: BSTView.DELETION_DESCRIPTIONS.DELETE_SUCCESSOR,
         });
         this.functionQueue.push({
-          framesToWait: 0,
+          timeToWaitMs: 0,
           func: () => {
             this.animateShapeChange(shape);
           },
-          framesAfterCall: DisplayNode.MOVE_DURATION_FRAMES,
+          timeAfterCallMs: DisplayNode.MOVE_DURATION_MS,
           description: BSTView.DELETION_DESCRIPTIONS.DELETE_SUCCESSOR,
         });
         break;
@@ -231,9 +230,9 @@ export default class BSTView extends TreeView {
           );
         }
         this.functionQueue.push({
-          framesToWait: BSTView.FRAMES_AFTER_UNSUCCESSFUL_DELETE,
+          timeToWaitMs: BSTView.TIME_AFTER_UNSUCCESSFUL_DELETE_MS,
           func: () => {},
-          framesAfterCall: 0,
+          timeAfterCallMs: 0,
           description: BSTView.DELETION_DESCRIPTIONS.DID_NOT_FIND_NODE,
         });
         break;
@@ -257,23 +256,23 @@ export default class BSTView extends TreeView {
     }
     if (nodeFound != null) {
       this.functionQueue.push({
-        framesToWait: 0,
+        timeToWaitMs: 0,
         func: () => {
           nodeFound.highlight(
             BSTView.HIGHLIGHT_COLOR_AFTER_SUCCESSFUL_FIND,
-            BSTView.HIGHLIGHT_DURATION_AFTER_SUCCESSFUL_FIND_FRAMES,
+            BSTView.HIGHLIGHT_DURATION_AFTER_SUCCESSFUL_FIND_MS,
           );
         },
-        framesAfterCall:
-          BSTView.HIGHLIGHT_DURATION_AFTER_SUCCESSFUL_FIND_FRAMES +
-          BSTView.FRAMES_AFTER_FIND,
+        timeAfterCallMs:
+          BSTView.HIGHLIGHT_DURATION_AFTER_SUCCESSFUL_FIND_MS +
+          BSTView.TIME_AFTER_FIND_MS,
         description: BSTView.FIND_DESCRIPTIONS.FOUND_NODE,
       });
     } else {
       this.functionQueue.push({
-        framesToWait: 0,
+        timeToWaitMs: 0,
         func: () => {},
-        framesAfterCall: BSTView.FRAMES_AFTER_FIND,
+        timeAfterCallMs: BSTView.TIME_AFTER_FIND_MS,
         description: BSTView.FIND_DESCRIPTIONS.DID_NOT_FIND_NODE,
       });
     }
@@ -351,11 +350,11 @@ export default class BSTView extends TreeView {
   ): void {
     for (const { node, secondaryDescription } of path) {
       this.functionQueue.push({
-        framesToWait: BSTView.FRAMES_BETWEEN_HIGHLIGHTS,
+        timeToWaitMs: BSTView.TIME_BETWEEN_HIGHLIGHTS_MS,
         func: () => {
           node.highlight(highlightColor);
         },
-        framesAfterCall: DisplayNode.DEFAULT_HIGHLIGHT_DURATION_FRAMES,
+        timeAfterCallMs: DisplayNode.DEFAULT_HIGHLIGHT_DURATION_MS,
         description,
         secondaryDescription:
           this.convertSecondaryDescriptionToString(secondaryDescription),

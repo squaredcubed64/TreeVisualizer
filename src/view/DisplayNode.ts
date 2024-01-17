@@ -1,16 +1,20 @@
 import assert from "../../Assert";
-import { DURATION_MULTIPLIER } from "./Constants";
+import TreeView from "./TreeView";
 
 /**
  * A node that is drawn on the canvas.
  */
 export default class DisplayNode {
-  public static readonly MOVE_DURATION_FRAMES = 60 * DURATION_MULTIPLIER;
-  public static readonly SHRINK_DURATION_FRAMES = 60 * DURATION_MULTIPLIER;
-  public static readonly DEFAULT_HIGHLIGHT_DURATION_FRAMES =
-    60 * DURATION_MULTIPLIER;
+  public static readonly MOVE_DURATION_MS = 1000 * TreeView.DURATION_MULTIPLIER;
+  public static readonly SHRINK_DURATION_MS =
+    1000 * TreeView.DURATION_MULTIPLIER;
 
-  private static readonly GROW_DURATION_FRAMES = 60 * DURATION_MULTIPLIER;
+  public static readonly DEFAULT_HIGHLIGHT_DURATION_MS =
+    1000 * TreeView.DURATION_MULTIPLIER;
+
+  private static readonly GROW_DURATION_MS =
+    1000 * TreeView.DURATION_MULTIPLIER;
+
   private static readonly BORDER_WIDTH = 1;
   private static readonly HIGHLIGHT_WIDTH = 5;
   private static readonly TEXT_COLOR = "red";
@@ -33,10 +37,10 @@ export default class DisplayNode {
   private targetY: number;
   private highlightColor: string;
   private thickHighlightColor: string | null = null;
-  private framesSinceStartedMoving: number = 0;
-  private framesUntilUnhighlighted: number;
-  private framesSinceStartedGrowing: number = 0;
-  private framesUntilShrunk: number = -1;
+  private timeSinceStartedMovingMs: number = 0;
+  private timeUntilUnhighlightedMs: number;
+  private timeSinceStartedGrowingMs: number = 0;
+  private timeUntilShrunkMs: number = -1;
 
   public constructor(
     x: number,
@@ -153,21 +157,13 @@ export default class DisplayNode {
     return 1 - DisplayNode.easeInOutCurve(progress);
   }
 
-  public drawAndUpdate(
-    context: CanvasRenderingContext2D,
-    animationSpeed: number,
-  ): void {
-    this.draw(context);
-    this.update(animationSpeed);
-  }
-
   /**
-   * Move the node to the given coordinates over MOVE_DURATION_FRAMES frames.
+   * Move the node to the given coordinates over MOVE_DURATION_MS milliseconds.
    * @param targetX The x coordinate to move to
    * @param targetY The y coordinate to move to
    */
   public moveTo(targetX: number, targetY: number): void {
-    this.framesSinceStartedMoving = 0;
+    this.timeSinceStartedMovingMs = 0;
     this.previousX = this.x;
     this.previousY = this.y;
     this.targetX = targetX;
@@ -175,16 +171,16 @@ export default class DisplayNode {
   }
 
   /**
-   * Highlight the node with the given color for the given number of frames.
+   * Highlight the node with the given color for the given length of time.
    * @param color The color to highlight the node with.
-   * @param durationFrames The number of frames to highlight the node for. Can be set to Infinity to keep the node highlighted.
+   * @param durationMs The length of time to highlight the node for. Can be set to Infinity to keep the node highlighted.
    */
   public highlight(
     color: string = DisplayNode.DEFAULT_HIGHLIGHT_COLOR,
-    durationFrames: number = DisplayNode.DEFAULT_HIGHLIGHT_DURATION_FRAMES,
+    durationMs: number = DisplayNode.DEFAULT_HIGHLIGHT_DURATION_MS,
   ): void {
     this.highlightColor = color;
-    this.framesUntilUnhighlighted = durationFrames;
+    this.timeUntilUnhighlightedMs = durationMs;
   }
 
   public thickHighlightIndefinitely(
@@ -201,14 +197,14 @@ export default class DisplayNode {
    * Stop highlighting the node.
    */
   public unhighlight(): void {
-    this.framesUntilUnhighlighted = 0;
+    this.timeUntilUnhighlightedMs = 0;
   }
 
   /**
    * Start decreasing the node's radius. It should be deleted when the radius reaches 0.
    */
   public startShrinkingIntoNothing(): void {
-    this.framesUntilShrunk = DisplayNode.SHRINK_DURATION_FRAMES;
+    this.timeUntilShrunkMs = DisplayNode.SHRINK_DURATION_MS;
   }
 
   public containsPoint(x: number, y: number): boolean {
@@ -217,25 +213,22 @@ export default class DisplayNode {
 
   /**
    * Update the node's position, radius, and time left highlighted based on the given animation speed.
-   * @param animationSpeed The number of frames to advance by. Can be a fraction.
+   * @param deltaMs The length of time to advance by. Can be a fraction.
    */
-  private update(animationSpeed: number): void {
-    this.framesSinceStartedMoving += animationSpeed;
-    this.framesSinceStartedGrowing += animationSpeed;
-    this.framesUntilUnhighlighted = Math.max(
-      this.framesUntilUnhighlighted - animationSpeed,
+  public update(deltaMs: number): void {
+    this.timeSinceStartedMovingMs += deltaMs;
+    this.timeSinceStartedGrowingMs += deltaMs;
+    this.timeUntilUnhighlightedMs = Math.max(
+      this.timeUntilUnhighlightedMs - deltaMs,
       0,
     );
-    if (this.framesUntilShrunk !== -1) {
-      this.framesUntilShrunk = Math.max(
-        this.framesUntilShrunk - animationSpeed,
-        0,
-      );
+    if (this.timeUntilShrunkMs !== -1) {
+      this.timeUntilShrunkMs = Math.max(this.timeUntilShrunkMs - deltaMs, 0);
     }
 
     // motionProgress > 0
     const motionProgress =
-      this.framesSinceStartedMoving / DisplayNode.MOVE_DURATION_FRAMES;
+      this.timeSinceStartedMovingMs / DisplayNode.MOVE_DURATION_MS;
     this.x =
       this.previousX +
       (this.targetX - this.previousX) * DisplayNode.motionCurve(motionProgress);
@@ -244,16 +237,16 @@ export default class DisplayNode {
       (this.targetY - this.previousY) * DisplayNode.motionCurve(motionProgress);
 
     // If it is being deleted
-    if (this.framesUntilShrunk >= 0) {
+    if (this.timeUntilShrunkMs >= 0) {
       const shrinkingProgress =
-        (DisplayNode.SHRINK_DURATION_FRAMES - this.framesUntilShrunk) /
-        DisplayNode.SHRINK_DURATION_FRAMES;
+        (DisplayNode.SHRINK_DURATION_MS - this.timeUntilShrunkMs) /
+        DisplayNode.SHRINK_DURATION_MS;
       this.currentRadius =
         DisplayNode.MAX_RADIUS *
         DisplayNode.radiusShrinkingCurve(shrinkingProgress);
     } else {
       const growthProgress =
-        this.framesSinceStartedGrowing / DisplayNode.GROW_DURATION_FRAMES;
+        this.timeSinceStartedGrowingMs / DisplayNode.GROW_DURATION_MS;
       this.currentRadius =
         DisplayNode.MAX_RADIUS * DisplayNode.radiusGrowthCurve(growthProgress);
     }
@@ -263,7 +256,7 @@ export default class DisplayNode {
    * Draw the node on the canvas.
    * @param context The canvas context to draw on
    */
-  private draw(context: CanvasRenderingContext2D): void {
+  public draw(context: CanvasRenderingContext2D): void {
     // Thick highlight
     if (this.thickHighlightColor !== null) {
       context.beginPath();
@@ -279,7 +272,7 @@ export default class DisplayNode {
     }
 
     // Highlight
-    if (this.framesUntilUnhighlighted > 0) {
+    if (this.timeUntilUnhighlightedMs > 0) {
       context.beginPath();
       context.arc(
         this.x,

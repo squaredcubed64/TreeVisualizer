@@ -1,11 +1,13 @@
 {
   "compilerOptions": {
+    "module": "ES2022",
     "outDir": "./dist",
     "allowJs": true,
     "target": "es5",
     "sourceMap": true,
     "strictNullChecks": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "bundler",
   },
   "include": [
     "./src/**/*",

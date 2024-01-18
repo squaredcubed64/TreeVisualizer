@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "module": "ES2022",
+    "module": "ES2015",
     "outDir": "./dist",
     "allowJs": true,
     "target": "es5",

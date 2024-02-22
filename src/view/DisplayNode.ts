@@ -134,7 +134,7 @@ export default class DisplayNode {
    */
   private static motionCurve(progress: number): number {
     assert(progress >= 0, "progress must be nonnegative");
-    return DisplayNode.strongDampingCurve(progress);
+    return DisplayNode.weakDampingCurve(progress);
   }
 
   /**

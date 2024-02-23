@@ -6,7 +6,7 @@ import assert from "../Assert";
 import type TreeShape from "../src/controller/TreeShape";
 import type BSTSecondaryDescriptionVariant from "../src/controller/secondaryDescription/BSTSecondaryDescriptionVariant";
 import BSTController from "../src/controller/BSTController";
-import TreePathInstruction from "../src/controller/pathInstruction/TreePathInstruction";
+import type TreePathInstruction from "../src/controller/pathInstruction/TreePathInstruction";
 
 class MockBSTController extends BSTController {}
 
@@ -28,8 +28,7 @@ describe("BSTModel", () => {
     const rightChildValue = 7;
     bstModel.insert(parentValue);
     bstModel.insert(leftChildValue);
-    const resultantShape =
-      bstModel.insert(rightChildValue).insertionInformation.shape;
+    const resultantShape = bstModel.insert(rightChildValue).shape;
 
     const parentNode = new DataNode(parentValue);
     const leftChildNode = new DataNode(leftChildValue);
@@ -179,7 +178,9 @@ describe("BSTModel", () => {
     const expectedShape = {
       inorderTraversal: [new DataNode(2), new DataNode(5)],
       layers: [[new DataNode(5)], [new DataNode(2)]],
-      arrows: new Set([[new DataNode(5), new DataNode(2)]]),
+      arrows: new Set([[new DataNode(5), new DataNode(2)]] as Array<
+        [DataNode, DataNode]
+      >),
     };
 
     expect(inorderTraversalAndLayersHaveSameValues(shape, expectedShape)).toBe(
@@ -206,7 +207,7 @@ describe("BSTModel", () => {
       arrows: new Set([
         [new DataNode(5), new DataNode(2)],
         [new DataNode(2), new DataNode(4)],
-      ]) as Set<[DataNode, DataNode]>,
+      ] as Array<[DataNode, DataNode]>),
     };
 
     expect(inorderTraversalAndLayersHaveSameValues(shape, expectedShape)).toBe(
@@ -272,9 +273,9 @@ describe("BSTModel", () => {
     const expectedShape = {
       inorderTraversal: [new DataNode(3), new DataNode(7)],
       layers: [[new DataNode(7)], [new DataNode(3)]],
-      arrows: new Set([[new DataNode(7), new DataNode(3)]]) as Set<
+      arrows: new Set([[new DataNode(7), new DataNode(3)]] as Array<
         [DataNode, DataNode]
-      >,
+      >),
     };
 
     expect(inorderTraversalAndLayersHaveSameValues(shape, expectedShape)).toBe(

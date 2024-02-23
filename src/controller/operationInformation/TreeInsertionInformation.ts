@@ -5,4 +5,5 @@ export default interface TreeInsertionInformation<
   T extends DataNode | DisplayNode,
 > {
   insertedNode: T;
+  insertedValue: number;
 }

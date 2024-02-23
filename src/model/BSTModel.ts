@@ -65,7 +65,7 @@ export default class BSTModel extends TreeModel {
       return {
         shape: this.getShape(),
         pathFromRootToTarget: [],
-        value: this.root.value,
+        insertedValue: this.root.value,
         insertedNode: this.root,
       };
     }
@@ -113,7 +113,7 @@ export default class BSTModel extends TreeModel {
     return {
       shape: this.getShape(),
       pathFromRootToTarget: path,
-      value: insertedNode.value,
+      insertedValue: insertedNode.value,
       insertedNode,
     };
   }

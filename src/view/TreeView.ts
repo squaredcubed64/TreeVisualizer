@@ -299,6 +299,32 @@ export default abstract class TreeView {
   }
 
   /**
+   * Prepares the placeholder node and tells nodes to start moving to new target positions
+   * @param valueToInsert The value to insert into the tree
+   * @param shapeWithPlaceholder The shape of the tree with a placeholder node, which is the node that's being inserted
+   * @param node The node that's being inserted
+   * @param parent The parent of the node that's being inserted
+   * @returns The animation's time taken and description
+   */
+  protected setupInsertionAnimation(
+    valueToInsert: number,
+    shapeWithPlaceholder: TreeShape<DisplayNode>,
+    node: DisplayNode,
+    parent: DisplayNode,
+    directionFromParentToNode: "left" | "right",
+  ): void {
+    node.value = valueToInsert;
+    if (directionFromParentToNode === "left") {
+      node.x = parent.x - TreeView.TARGET_X_GAP;
+    } else {
+      node.x = parent.x + TreeView.TARGET_X_GAP;
+    }
+    node.y = parent.y + TreeView.TARGET_Y_GAP;
+
+    this.animateShapeChange(shapeWithPlaceholder);
+  }
+
+  /**
    * Calls functions at the front of functionQueue if they are ready, or updates their time if they are not ready
    * @param deltaMs The number of milliseconds to adjust the functionQueue's time by
    */
@@ -308,24 +334,22 @@ export default abstract class TreeView {
       this.functionQueue.length > 0 &&
       this.functionQueue[0].timeToWaitMs <= 0
     ) {
-      if (!this.functionAtFrontOfQueueWasCalled) {
-        const { func, timeAfterCallMs, description, secondaryDescription } =
-          this.functionQueue[0];
-        func();
-        this.description = description;
-        this.secondaryDescription = secondaryDescription;
-
-        // Keep function at front of queue for timeAfterCallMs, to give the animation time to complete and show the description
-        if (timeAfterCallMs > 0) {
-          this.functionAtFrontOfQueueWasCalled = true;
-          this.functionQueue[0].timeToWaitMs = timeAfterCallMs;
-        } else {
-          this.functionQueue.shift();
-        }
-      } else {
+      if (this.functionAtFrontOfQueueWasCalled) {
         this.functionAtFrontOfQueueWasCalled = false;
         this.functionQueue.shift();
+      } else {
+        const { func, timeAfterCallMs } = this.functionQueue[0];
+        func();
+
+        // Keep function at front of queue for timeAfterCallMs, to give the animation time to complete and show the description
+        this.functionAtFrontOfQueueWasCalled = true;
+        this.functionQueue[0].timeToWaitMs = timeAfterCallMs;
       }
+    }
+
+    if (this.functionQueue.length > 0) {
+      this.description = this.functionQueue[0].description;
+      this.secondaryDescription = this.functionQueue[0].secondaryDescription;
     }
 
     if (this.functionQueue.length > 0) {

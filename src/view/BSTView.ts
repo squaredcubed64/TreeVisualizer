@@ -1,11 +1,11 @@
 import DisplayNode from "./DisplayNode";
 import TreeView from "./TreeView";
 import type BSTInsertionInformation from "../controller/operationInformation/BSTInsertionInformation";
-import type TreeShape from "../controller/TreeShape";
 import type BSTFindInformation from "../controller/operationInformation/BSTFindInformation";
 import type BSTDeletionInformationVariant from "../controller/operationInformation/deletionInformation/BSTDeletionInformationVariant";
 import type BSTSecondaryDescriptionVariant from "../controller/secondaryDescription/BSTSecondaryDescriptionVariant";
 import type TreePathInstruction from "../controller/pathInstruction/TreePathInstruction";
+import assert from "../../Assert";
 
 /**
  * Handles the animation of BST operations.
@@ -64,12 +64,16 @@ export default class BSTView extends TreeView {
     const {
       shape: shapeWithPlaceholder,
       pathFromRootToTarget,
-      value,
+      insertedValue,
       insertedNode,
     } = insertionInformation;
 
     if (this.shape.inorderTraversal.length === 0) {
-      this.animateSettingRoot(shapeWithPlaceholder, insertedNode, value);
+      this.animateSettingRoot(
+        shapeWithPlaceholder,
+        insertedNode,
+        insertedValue,
+      );
       return;
     }
 
@@ -79,15 +83,20 @@ export default class BSTView extends TreeView {
       BSTView.INSERTION_DESCRIPTIONS.FIND_WHERE_TO_INSERT,
     );
 
+    const insertedNodesParent =
+      pathFromRootToTarget[pathFromRootToTarget.length - 1].node;
+    const directionFromParent =
+      insertedNode.value < insertedNodesParent.value ? "left" : "right";
     // Animate inserting
     this.functionQueue.push({
       timeToWaitMs: 0,
       func: () => {
         this.setupInsertionAnimation(
-          value,
+          insertedValue,
           shapeWithPlaceholder,
           insertedNode,
-          pathFromRootToTarget[pathFromRootToTarget.length - 1].node,
+          insertedNodesParent,
+          directionFromParent,
         );
       },
       timeAfterCallMs: DisplayNode.MOVE_DURATION_MS,
@@ -107,126 +116,14 @@ export default class BSTView extends TreeView {
     viewDeletionInformation: BSTDeletionInformationVariant<DisplayNode>,
   ): void {
     switch (viewDeletionInformation.type) {
-      // Animation: highlight path to victim, shrink victim node, then move nodes to new target positions
-      case "LEQ1Child": {
-        const { shape, pathFromRootToTarget, victimNode } =
-          viewDeletionInformation;
-        this.pushNodeHighlightingOntoFunctionQueue(
-          pathFromRootToTarget,
-          BSTView.DELETION_DESCRIPTIONS.FIND_NODE_TO_DELETE,
-        );
-        this.functionQueue.push({
-          timeToWaitMs: 0,
-          func: () => {
-            victimNode.startShrinkingIntoNothing();
-          },
-          timeAfterCallMs: DisplayNode.SHRINK_DURATION_MS,
-          description: BSTView.DELETION_DESCRIPTIONS.DELETE_NODE,
-        });
-        this.functionQueue.push({
-          timeToWaitMs: 0,
-          func: () => {
-            this.animateShapeChange(shape);
-          },
-          timeAfterCallMs: DisplayNode.SHRINK_DURATION_MS,
-          description: BSTView.DELETION_DESCRIPTIONS.DELETE_NODE,
-        });
+      case "LEQ1Child":
+        this.pushLEQ1ChildDeletion(viewDeletionInformation);
         break;
-      }
-      // Animation: highlight path to victim, keep victim highlighted, highlight path to successor, highlight successor, set the victim's value to the successor's value, unhighlight victim and successor, shrink successor, then move nodes to new target positions
-      case "2Children": {
-        const {
-          shape,
-          pathFromRootToTarget,
-          victimNode,
-          pathFromTargetsRightChildToSuccessor,
-          successorNode,
-        } = viewDeletionInformation;
-        this.pushNodeHighlightingOntoFunctionQueue(
-          pathFromRootToTarget,
-          BSTView.DELETION_DESCRIPTIONS.FIND_NODE_TO_DELETE,
-        );
-        this.functionQueue.push({
-          timeToWaitMs: 0,
-          func: () => {
-            victimNode.highlight(
-              BSTView.FIND_SUCCESSOR_HIGHLIGHT_COLOR,
-              Infinity,
-            );
-          },
-          timeAfterCallMs: 0,
-          description: BSTView.DELETION_DESCRIPTIONS.FIND_SUCCESSOR,
-        });
-        this.pushNodeHighlightingOntoFunctionQueue(
-          pathFromTargetsRightChildToSuccessor,
-          BSTView.DELETION_DESCRIPTIONS.FIND_SUCCESSOR,
-          BSTView.FIND_SUCCESSOR_HIGHLIGHT_COLOR,
-        );
-        this.functionQueue.push({
-          timeToWaitMs: 0,
-          func: () => {
-            successorNode.highlight(
-              BSTView.FIND_SUCCESSOR_HIGHLIGHT_COLOR,
-              Infinity,
-            );
-          },
-          timeAfterCallMs: 0,
-          description:
-            BSTView.DELETION_DESCRIPTIONS.REPLACE_NODE_WITH_SUCCESSOR,
-        });
-        this.functionQueue.push({
-          timeToWaitMs: BSTView.TIME_BEFORE_REPLACE_WITH_SUCCESSOR_MS,
-          func: () => {
-            victimNode.value = successorNode.value;
-          },
-          timeAfterCallMs: 0,
-          description:
-            BSTView.DELETION_DESCRIPTIONS.REPLACE_NODE_WITH_SUCCESSOR,
-        });
-        this.functionQueue.push({
-          timeToWaitMs: BSTView.TIME_BEFORE_UNHIGHLIGHT_VICTIM_MS,
-          func: () => {
-            victimNode.unhighlight();
-            successorNode.unhighlight();
-          },
-          timeAfterCallMs:
-            BSTView.TIME_AFTER_HIGHLIGHTING_VICTIM_WITH_TWO_CHILDREN_MS,
-          description:
-            BSTView.DELETION_DESCRIPTIONS.REPLACE_NODE_WITH_SUCCESSOR,
-        });
-        this.functionQueue.push({
-          timeToWaitMs: 0,
-          func: () => {
-            successorNode.startShrinkingIntoNothing();
-          },
-          timeAfterCallMs: DisplayNode.SHRINK_DURATION_MS,
-          description: BSTView.DELETION_DESCRIPTIONS.DELETE_SUCCESSOR,
-        });
-        this.functionQueue.push({
-          timeToWaitMs: 0,
-          func: () => {
-            this.animateShapeChange(shape);
-          },
-          timeAfterCallMs: DisplayNode.MOVE_DURATION_MS,
-          description: BSTView.DELETION_DESCRIPTIONS.DELETE_SUCCESSOR,
-        });
+      case "2Children":
+        this.push2ChildrenDeletion(viewDeletionInformation);
         break;
-      }
-      // Animation: highlight path, then do nothing
       case "VictimNotFound": {
-        const { pathFromRootToTarget } = viewDeletionInformation;
-        if (pathFromRootToTarget.length !== 0) {
-          this.pushNodeHighlightingOntoFunctionQueue(
-            pathFromRootToTarget,
-            BSTView.DELETION_DESCRIPTIONS.FIND_NODE_TO_DELETE,
-          );
-        }
-        this.functionQueue.push({
-          timeToWaitMs: BSTView.TIME_AFTER_UNSUCCESSFUL_DELETE_MS,
-          func: () => {},
-          timeAfterCallMs: 0,
-          description: BSTView.DELETION_DESCRIPTIONS.DID_NOT_FIND_NODE,
-        });
+        this.pushVictimNotFoundDeletion(viewDeletionInformation);
         break;
       }
     }
@@ -303,31 +200,6 @@ export default class BSTView extends TreeView {
   }
 
   /**
-   * Prepares the placeholder node and tells nodes to start moving to new target positions
-   * @param valueToInsert The value to insert into the tree
-   * @param shapeWithPlaceholder The shape of the tree with a placeholder node, which is the node that's being inserted
-   * @param placeholderNode The node that's being inserted
-   * @param parent The parent of the node that's being inserted
-   * @returns The animation's time taken and description
-   */
-  private setupInsertionAnimation(
-    valueToInsert: number,
-    shapeWithPlaceholder: TreeShape<DisplayNode>,
-    placeholderNode: DisplayNode,
-    parent: DisplayNode,
-  ): void {
-    placeholderNode.value = valueToInsert;
-    if (placeholderNode.value < parent.value) {
-      placeholderNode.x = parent.x - TreeView.TARGET_X_GAP;
-    } else {
-      placeholderNode.x = parent.x + TreeView.TARGET_X_GAP;
-    }
-    placeholderNode.y = parent.y + TreeView.TARGET_Y_GAP;
-
-    this.animateShapeChange(shapeWithPlaceholder);
-  }
-
-  /**
    * Pushes methods onto functionQueue to highlight nodes along path
    * @param path The path to highlight nodes in
    * @param description The description to display when highlighting the nodes
@@ -342,15 +214,172 @@ export default class BSTView extends TreeView {
   ): void {
     for (const { node, secondaryDescription } of path) {
       this.functionQueue.push({
-        timeToWaitMs: BSTView.TIME_BETWEEN_HIGHLIGHTS_MS,
+        timeToWaitMs: 0,
         func: () => {
           node.highlight(highlightColor);
         },
-        timeAfterCallMs: DisplayNode.DEFAULT_HIGHLIGHT_DURATION_MS,
+        timeAfterCallMs:
+          DisplayNode.DEFAULT_HIGHLIGHT_DURATION_MS +
+          BSTView.TIME_BETWEEN_HIGHLIGHTS_MS,
         description,
         secondaryDescription:
           this.convertSecondaryDescriptionToString(secondaryDescription),
       });
     }
+  }
+
+  /**
+   * Animation: highlight path to victim, shrink victim node, then move nodes to new target positions
+   */
+  private pushLEQ1ChildDeletion(
+    viewDeletionInformation: BSTDeletionInformationVariant<DisplayNode>,
+  ): void {
+    assert(
+      viewDeletionInformation.type === "LEQ1Child",
+      "Type should be LEQ1Child.",
+    );
+
+    const { shape, pathFromRootToTarget, victimNode } = viewDeletionInformation;
+
+    this.pushNodeHighlightingOntoFunctionQueue(
+      pathFromRootToTarget,
+      BSTView.DELETION_DESCRIPTIONS.FIND_NODE_TO_DELETE,
+    );
+
+    this.functionQueue.push({
+      timeToWaitMs: 0,
+      func: () => {
+        victimNode.startShrinkingIntoNothing();
+      },
+      timeAfterCallMs: DisplayNode.SHRINK_DURATION_MS,
+      description: BSTView.DELETION_DESCRIPTIONS.DELETE_NODE,
+    });
+
+    this.functionQueue.push({
+      timeToWaitMs: 0,
+      func: () => {
+        this.animateShapeChange(shape);
+      },
+      timeAfterCallMs: DisplayNode.SHRINK_DURATION_MS,
+      description: BSTView.DELETION_DESCRIPTIONS.DELETE_NODE,
+    });
+  }
+
+  /**
+   * Animation: highlight path to victim, keep victim highlighted, highlight path to successor, highlight successor, set the victim's value to the successor's value, unhighlight victim and successor, shrink successor, then move nodes to new target positions
+   */
+  private push2ChildrenDeletion(
+    viewDeletionInformation: BSTDeletionInformationVariant<DisplayNode>,
+  ): void {
+    assert(
+      viewDeletionInformation.type === "2Children",
+      "Type should be 2Children.",
+    );
+
+    const {
+      shape,
+      pathFromRootToTarget,
+      victimNode,
+      pathFromTargetsRightChildToSuccessor,
+      successorNode,
+    } = viewDeletionInformation;
+
+    this.pushNodeHighlightingOntoFunctionQueue(
+      pathFromRootToTarget,
+      BSTView.DELETION_DESCRIPTIONS.FIND_NODE_TO_DELETE,
+    );
+
+    this.functionQueue.push({
+      timeToWaitMs: 0,
+      func: () => {
+        victimNode.highlight(BSTView.FIND_SUCCESSOR_HIGHLIGHT_COLOR, Infinity);
+      },
+      timeAfterCallMs: 0,
+      description: BSTView.DELETION_DESCRIPTIONS.FIND_SUCCESSOR,
+    });
+
+    this.pushNodeHighlightingOntoFunctionQueue(
+      pathFromTargetsRightChildToSuccessor,
+      BSTView.DELETION_DESCRIPTIONS.FIND_SUCCESSOR,
+      BSTView.FIND_SUCCESSOR_HIGHLIGHT_COLOR,
+    );
+
+    this.functionQueue.push({
+      timeToWaitMs: 0,
+      func: () => {
+        successorNode.highlight(
+          BSTView.FIND_SUCCESSOR_HIGHLIGHT_COLOR,
+          Infinity,
+        );
+      },
+      timeAfterCallMs: 0,
+      description: BSTView.DELETION_DESCRIPTIONS.REPLACE_NODE_WITH_SUCCESSOR,
+    });
+
+    this.functionQueue.push({
+      timeToWaitMs: BSTView.TIME_BEFORE_REPLACE_WITH_SUCCESSOR_MS,
+      func: () => {
+        victimNode.value = successorNode.value;
+      },
+      timeAfterCallMs: 0,
+      description: BSTView.DELETION_DESCRIPTIONS.REPLACE_NODE_WITH_SUCCESSOR,
+    });
+
+    this.functionQueue.push({
+      timeToWaitMs: BSTView.TIME_BEFORE_UNHIGHLIGHT_VICTIM_MS,
+      func: () => {
+        victimNode.unhighlight();
+        successorNode.unhighlight();
+      },
+      timeAfterCallMs:
+        BSTView.TIME_AFTER_HIGHLIGHTING_VICTIM_WITH_TWO_CHILDREN_MS,
+      description: BSTView.DELETION_DESCRIPTIONS.REPLACE_NODE_WITH_SUCCESSOR,
+    });
+
+    this.functionQueue.push({
+      timeToWaitMs: 0,
+      func: () => {
+        successorNode.startShrinkingIntoNothing();
+      },
+      timeAfterCallMs: DisplayNode.SHRINK_DURATION_MS,
+      description: BSTView.DELETION_DESCRIPTIONS.DELETE_SUCCESSOR,
+    });
+
+    this.functionQueue.push({
+      timeToWaitMs: 0,
+      func: () => {
+        this.animateShapeChange(shape);
+      },
+      timeAfterCallMs: DisplayNode.MOVE_DURATION_MS,
+      description: BSTView.DELETION_DESCRIPTIONS.DELETE_SUCCESSOR,
+    });
+  }
+
+  /**
+   * Animation: highlight path, then do nothing
+   */
+  private pushVictimNotFoundDeletion(
+    viewDeletionInformation: BSTDeletionInformationVariant<DisplayNode>,
+  ): void {
+    assert(
+      viewDeletionInformation.type === "VictimNotFound",
+      "Type should be VictimNotFound.",
+    );
+
+    const { pathFromRootToTarget } = viewDeletionInformation;
+
+    if (pathFromRootToTarget.length !== 0) {
+      this.pushNodeHighlightingOntoFunctionQueue(
+        pathFromRootToTarget,
+        BSTView.DELETION_DESCRIPTIONS.FIND_NODE_TO_DELETE,
+      );
+    }
+
+    this.functionQueue.push({
+      timeToWaitMs: BSTView.TIME_AFTER_UNSUCCESSFUL_DELETE_MS,
+      func: () => {},
+      timeAfterCallMs: 0,
+      description: BSTView.DELETION_DESCRIPTIONS.DID_NOT_FIND_NODE,
+    });
   }
 }

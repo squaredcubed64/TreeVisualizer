@@ -1,6 +1,6 @@
 import type TreeShape from "../controller/TreeShape";
 import type HeapInsertionInformation from "../controller/operationInformation/HeapInsertionInformation";
-import type HeapPathInstruction from "../controller/pathInstruction/HeapPathInstruction";
+import type SwapPathInstruction from "../controller/pathInstruction/HeapPathInstruction";
 import DataNode from "./DataNode";
 import TreeModel from "./TreeModel";
 
@@ -17,7 +17,7 @@ export default class HeapModel extends TreeModel {
     const insertedNode = this.nodes[this.nodes.length - 1];
 
     // at each step, we need node, parent, nodeValue, parentValue, and the resultant shape
-    const swapPath: Array<HeapPathInstruction<DataNode>> = [];
+    const swapPath: Array<SwapPathInstruction<DataNode>> = [];
     let currIndex = this.nodes.length - 1;
     while (currIndex > 0) {
       const parentIndex = HeapModel.getParentIndex(currIndex);
@@ -54,6 +54,7 @@ export default class HeapModel extends TreeModel {
       shapeAfterInitialInsertion,
       swapPath,
       insertedNode,
+      insertedValue: value,
     };
   }
 

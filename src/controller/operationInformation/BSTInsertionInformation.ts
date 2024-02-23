@@ -17,6 +17,4 @@ export default interface BSTInsertionInformation<
     TreePathInstruction<T, BSTInsertionSecondaryDescription>
   >;
   shape: TreeShape<T>;
-  // todo attempt to remove
-  value: number;
 }

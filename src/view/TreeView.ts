@@ -163,6 +163,10 @@ export default abstract class TreeView {
     );
   }
 
+  public abstract insert(insertionInformation: any): void;
+  public abstract delete(deletionInformation: any): void;
+  public abstract find(findInformation: any): void;
+
   /**
    * Sets the target positions of all nodes in the tree, based on the tree's shape
    */
@@ -278,6 +282,27 @@ export default abstract class TreeView {
   protected animateShapeChange(newShape: TreeShape<DisplayNode>): void {
     this.shape = newShape;
     this.setTargetPositions();
+  }
+
+  protected findPlaceholderNode(
+    shapeWithPlaceholder: TreeShape<DisplayNode>,
+  ): DisplayNode {
+    const placeholderNode = shapeWithPlaceholder.inorderTraversal.find((node) =>
+      isNaN(node.x),
+    );
+    assert(placeholderNode != null, "Placeholder node not found");
+    return placeholderNode;
+  }
+
+  protected animateSettingRoot(
+    shapeWithPlaceholder: TreeShape<DisplayNode>,
+    placeholderNode: DisplayNode,
+    value: number,
+  ): void {
+    placeholderNode.value = value;
+    placeholderNode.x = TreeView.ROOT_TARGET_X;
+    placeholderNode.y = TreeView.ROOT_TARGET_Y;
+    this.animateShapeChange(shapeWithPlaceholder);
   }
 
   /**

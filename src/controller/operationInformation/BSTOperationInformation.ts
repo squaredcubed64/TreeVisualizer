@@ -1,6 +1,6 @@
 import type DataNode from "../../model/DataNode";
 import type DisplayNode from "../../view/DisplayNode";
-import type BSTPathInstruction from "../pathInstruction/BSTPathInstruction";
+import type TreePathInstruction from "../pathInstruction/TreePathInstruction";
 import type BSTFindSecondaryDescription from "../secondaryDescription/BSTFindSecondaryDescription";
 import type BSTInsertionSecondaryDescription from "../secondaryDescription/BSTInsertionSecondaryDescription";
 
@@ -15,7 +15,7 @@ export default interface BSTOperationInformation<
    * unless the target node was not found or the operation is insert (which has no target node)
    */
   pathFromRootToTarget: Array<
-    BSTPathInstruction<
+    TreePathInstruction<
       T,
       BSTInsertionSecondaryDescription | BSTFindSecondaryDescription
     >

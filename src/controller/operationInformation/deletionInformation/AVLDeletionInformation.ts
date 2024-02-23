@@ -6,6 +6,7 @@ import type BSTDeletionInformationVariant from "./BSTDeletionInformationVariant"
 /**
  * The info the view needs to animate the deletion of a node.
  */
+// todo change to interface for consistency
 type AVLDeletionInformation<T extends DataNode | DisplayNode> =
   BSTDeletionInformationVariant<T> & {
     rotationPath: Array<RotationPathInstruction<T>>;

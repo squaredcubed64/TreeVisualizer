@@ -12,7 +12,10 @@ export default abstract class TreeModel {
   public arrowDirection: ArrowDirection = ArrowDirection.PARENT_TO_CHILD;
   protected root: DataNode | null = null;
 
-  public abstract insert(value: number): any;
+  public abstract insert(value: number): {
+    insertionInformation: any;
+    insertedNode: DataNode;
+  };
   public abstract delete(value: number): any;
   public abstract find(value: number): any;
 

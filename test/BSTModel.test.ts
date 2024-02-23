@@ -4,9 +4,9 @@ import ArrowDirection from "../src/controller/ArrowDirection";
 import { describe, it, expect, beforeEach } from "vitest";
 import assert from "../Assert";
 import type TreeShape from "../src/controller/TreeShape";
-import type BSTPathInstruction from "../src/controller/pathInstruction/BSTPathInstruction";
 import type BSTSecondaryDescriptionVariant from "../src/controller/secondaryDescription/BSTSecondaryDescriptionVariant";
 import BSTController from "../src/controller/BSTController";
+import TreePathInstruction from "../src/controller/pathInstruction/TreePathInstruction";
 
 class MockBSTController extends BSTController {}
 
@@ -179,9 +179,7 @@ describe("BSTModel", () => {
     const expectedShape = {
       inorderTraversal: [new DataNode(2), new DataNode(5)],
       layers: [[new DataNode(5)], [new DataNode(2)]],
-      arrows: new Set([[new DataNode(5), new DataNode(2)]]) as Set<
-        [DataNode, DataNode]
-      >,
+      arrows: new Set([[new DataNode(5), new DataNode(2)]]),
     };
 
     expect(inorderTraversalAndLayersHaveSameValues(shape, expectedShape)).toBe(
@@ -298,7 +296,7 @@ describe("BSTModel", () => {
   });
 
   function pathsHaveSameValues(
-    path1: Array<BSTPathInstruction<DataNode, BSTSecondaryDescriptionVariant>>,
+    path1: Array<TreePathInstruction<DataNode, BSTSecondaryDescriptionVariant>>,
     path2: DataNode[],
   ): boolean {
     if (path1.length !== path2.length) {

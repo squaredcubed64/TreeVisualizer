@@ -6,7 +6,7 @@ import type TreeShape from "../controller/TreeShape";
 import type BSTFindInformation from "../controller/operationInformation/BSTFindInformation";
 import type BSTDeletionInformationVariant from "../controller/operationInformation/deletionInformation/BSTDeletionInformationVariant";
 import type BSTSecondaryDescriptionVariant from "../controller/secondaryDescription/BSTSecondaryDescriptionVariant";
-import type BSTPathInstruction from "../controller/pathInstruction/BSTPathInstruction";
+import type TreePathInstruction from "../controller/pathInstruction/TreePathInstruction";
 
 /**
  * Handles the animation of BST operations.
@@ -67,17 +67,10 @@ export default class BSTView extends TreeView {
       pathFromRootToTarget,
       value,
     } = insertionInformation;
-    const placeholderNode = shapeWithPlaceholder.inorderTraversal.find((node) =>
-      isNaN(node.x),
-    );
-    assert(placeholderNode != null, "Placeholder node not found");
+    const placeholderNode = this.findPlaceholderNode(shapeWithPlaceholder);
 
-    // If the tree is empty, set the root without animating
     if (this.shape.inorderTraversal.length === 0) {
-      placeholderNode.value = value;
-      placeholderNode.x = TreeView.ROOT_TARGET_X;
-      placeholderNode.y = TreeView.ROOT_TARGET_Y;
-      this.animateShapeChange(shapeWithPlaceholder);
+      this.animateSettingRoot(shapeWithPlaceholder, placeholderNode, value);
       return;
     }
 
@@ -344,7 +337,7 @@ export default class BSTView extends TreeView {
   private pushNodeHighlightingOntoFunctionQueue<
     S extends BSTSecondaryDescriptionVariant,
   >(
-    path: Array<BSTPathInstruction<DisplayNode, S>>,
+    path: Array<TreePathInstruction<DisplayNode, S>>,
     description: string,
     highlightColor?: string,
   ): void {

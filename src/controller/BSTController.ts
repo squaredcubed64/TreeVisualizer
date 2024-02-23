@@ -4,12 +4,11 @@ import BSTModel from "../model/BSTModel";
 import BSTView from "../view/BSTView";
 import type ArrowDirection from "./ArrowDirection";
 import type BSTInsertionInformation from "./operationInformation/BSTInsertionInformation";
-import type BSTPathInstruction from "./pathInstruction/BSTPathInstruction";
 import type BSTFindInformation from "./operationInformation/BSTFindInformation";
 import type BSTSecondaryDescriptionVariant from "./secondaryDescription/BSTSecondaryDescriptionVariant";
-import TreeView from "../view/TreeView";
 import TreeController from "./TreeController";
 import type BSTDeletionInformationVariant from "./operationInformation/deletionInformation/BSTDeletionInformationVariant";
+import type TreePathInstruction from "./pathInstruction/TreePathInstruction";
 
 /**
  * The controller for the BST. It is responsible for translating the model's return types into the view's parameter types
@@ -25,38 +24,6 @@ export default class BSTController extends TreeController {
 
   public getArrowDirection(): ArrowDirection {
     return this.model.arrowDirection;
-  }
-
-  /**
-   * Inserts a value into the model and updates the view accordingly.
-   * @param value The value to insert
-   */
-  public insert(value: number): void {
-    const { insertionInformation, insertedNode } = this.model.insert(value);
-
-    // A placeholder for the node that's being inserted. The view will update this upon insertion.
-    const placeholderNode = TreeView.makePlaceholderNode();
-    this.dataNodeToDisplayNode.set(insertedNode, placeholderNode);
-
-    this.view.insert(this.translateInsertionInformation(insertionInformation));
-  }
-
-  /**
-   * Deletes a value from the model and updates the view accordingly.
-   * @param value The value to delete
-   */
-  public delete(value: number): void {
-    const deletionInformation = this.model.delete(value);
-    this.view.delete(this.translateDeletionInformation(deletionInformation));
-  }
-
-  /**
-   * Finds a value in the model and updates the view accordingly.
-   * @param value The value to find
-   */
-  public find(value: number): void {
-    const findInformation = this.model.find(value);
-    this.view.find(this.translateFindInformation(findInformation));
   }
 
   protected translateInsertionInformation(
@@ -112,7 +79,7 @@ export default class BSTController extends TreeController {
     }
   }
 
-  private translateFindInformation(
+  protected translateFindInformation(
     findInformation: BSTFindInformation<DataNode>,
   ): BSTFindInformation<DisplayNode> {
     const { pathFromRootToTarget, nodeFound } = findInformation;
@@ -123,8 +90,8 @@ export default class BSTController extends TreeController {
   }
 
   private translatePath<S extends BSTSecondaryDescriptionVariant>(
-    path: Array<BSTPathInstruction<DataNode, S>>,
-  ): Array<BSTPathInstruction<DisplayNode, S>> {
+    path: Array<TreePathInstruction<DataNode, S>>,
+  ): Array<TreePathInstruction<DisplayNode, S>> {
     return path.map((pathInstruction) => {
       const { node, secondaryDescription } = pathInstruction;
       return { node: this.translateNode(node), secondaryDescription };

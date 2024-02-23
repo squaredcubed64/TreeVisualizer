@@ -14,6 +14,38 @@ export default abstract class TreeController {
     TreeView.centerTree(canvasWidth);
   }
 
+  /**
+   * Inserts a value into the model and updates the view accordingly.
+   * @param value The value to insert
+   */
+  public insert(value: number): void {
+    const { insertionInformation, insertedNode } = this.model.insert(value);
+
+    // A placeholder for the node that's being inserted. The view will update this upon insertion.
+    const placeholderNode = TreeView.makePlaceholderNode();
+    this.dataNodeToDisplayNode.set(insertedNode, placeholderNode);
+
+    this.view.insert(this.translateInsertionInformation(insertionInformation));
+  }
+
+  /**
+   * Deletes a value from the model and updates the view accordingly.
+   * @param value The value to delete
+   */
+  public delete(value: number): void {
+    const deletionInformation = this.model.delete(value);
+    this.view.delete(this.translateDeletionInformation(deletionInformation));
+  }
+
+  /**
+   * Finds a value in the model and updates the view accordingly.
+   * @param value The value to find
+   */
+  public find(value: number): void {
+    const findInformation = this.model.find(value);
+    this.view.find(this.translateFindInformation(findInformation));
+  }
+
   public setAnimationSpeedSetting(animationSpeedSetting: number): void {
     this.view.setAnimationSpeedSetting(animationSpeedSetting);
   }
@@ -96,4 +128,14 @@ export default abstract class TreeController {
       ),
     );
   }
+
+  protected abstract translateInsertionInformation(
+    insertionInformation: any,
+  ): any;
+
+  protected abstract translateDeletionInformation(
+    deletionInformation: any,
+  ): any;
+
+  protected abstract translateFindInformation(findInformation: any): any;
 }

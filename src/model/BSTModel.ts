@@ -1,6 +1,5 @@
 import DataNode from "./DataNode";
 import type BSTInsertionInformation from "../controller/operationInformation/BSTInsertionInformation";
-import type BSTPathInstruction from "../controller/pathInstruction/BSTPathInstruction";
 import type BSTDeletionInformationLEQ1Child from "../controller/operationInformation/deletionInformation/BSTDeletionInformationLEQ1Child";
 import type BSTDeletionInformation2Children from "../controller/operationInformation/deletionInformation/BSTDeletionInformation2Children";
 import assert from "../../Assert";
@@ -10,6 +9,7 @@ import type BSTInsertionSecondaryDescription from "../controller/secondaryDescri
 import TreeModel from "./TreeModel";
 import type BSTFindInformation from "../controller/operationInformation/BSTFindInformation";
 import type BSTDeletionInformationVariant from "../controller/operationInformation/deletionInformation/BSTDeletionInformationVariant";
+import type TreePathInstruction from "../controller/pathInstruction/TreePathInstruction";
 
 /**
  * A Binary Search Tree data structure that calculates information the view needs for animations.
@@ -24,7 +24,7 @@ export default class BSTModel extends TreeModel {
     successor: DataNode;
     successorParent: DataNode;
     pathToSuccessor: Array<
-      BSTPathInstruction<DataNode, BSTSuccessorSecondaryDescription>
+      TreePathInstruction<DataNode, BSTSuccessorSecondaryDescription>
     >;
   } {
     assert(
@@ -34,7 +34,7 @@ export default class BSTModel extends TreeModel {
     let successor = node.right;
     let successorParent = node;
     const pathToSuccessor: Array<
-      BSTPathInstruction<DataNode, BSTSuccessorSecondaryDescription>
+      TreePathInstruction<DataNode, BSTSuccessorSecondaryDescription>
     > = [];
 
     // Find the node with the minimum value (AKA successor) in the right subtree
@@ -62,7 +62,7 @@ export default class BSTModel extends TreeModel {
     insertionInformation: BSTInsertionInformation<DataNode>;
     insertedNode: DataNode;
   } {
-    // If the tree is empty, insert without any animation
+    // If the tree is empty, simply set the root to the new node
     if (this.root == null) {
       this.root = new DataNode(value);
       return {
@@ -77,7 +77,7 @@ export default class BSTModel extends TreeModel {
 
     // Find the path to where the new node will be inserted
     const path: Array<
-      BSTPathInstruction<DataNode, BSTInsertionSecondaryDescription>
+      TreePathInstruction<DataNode, BSTInsertionSecondaryDescription>
     > = [];
     let currNode: DataNode | null = this.root;
     while (currNode != null) {
@@ -137,7 +137,7 @@ export default class BSTModel extends TreeModel {
 
     // Find the path the tree takes to find the node to delete
     const path: Array<
-      BSTPathInstruction<DataNode, BSTFindSecondaryDescription>
+      TreePathInstruction<DataNode, BSTFindSecondaryDescription>
     > = [];
     let currNode: DataNode | null = this.root;
     let currParent: DataNode | null = null;
@@ -238,7 +238,7 @@ export default class BSTModel extends TreeModel {
   public find(value: number): BSTFindInformation<DataNode> {
     // Find the path the tree takes to find the node to delete
     const path: Array<
-      BSTPathInstruction<DataNode, BSTFindSecondaryDescription>
+      TreePathInstruction<DataNode, BSTFindSecondaryDescription>
     > = [];
     let currNode: DataNode | null = this.root;
     while (currNode != null && currNode.value !== value) {

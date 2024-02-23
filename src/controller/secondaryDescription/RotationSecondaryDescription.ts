@@ -1,7 +1,10 @@
+import type TreeSecondaryDescription from "./TreeSecondaryDescription";
+
 /**
  * The info needed to explain why an AVL tree rotation is or is not necessary at a node.
  */
-export default interface RotationSecondaryDescription {
+export default interface RotationSecondaryDescription
+  extends TreeSecondaryDescription {
   type: "rotation";
   leftHeight: number;
   rightHeight: number;

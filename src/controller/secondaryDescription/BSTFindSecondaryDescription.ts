@@ -1,7 +1,10 @@
+import type TreeSecondaryDescription from "./TreeSecondaryDescription";
+
 /**
  * The secondary description for finding the target node in find() and delete().
  */
-export default interface BSTFindSecondaryDescription {
+export default interface BSTFindSecondaryDescription
+  extends TreeSecondaryDescription {
   type: "find";
   /**
    * The direction taken at this node.

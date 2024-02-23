@@ -58,19 +58,14 @@ export default class BSTModel extends TreeModel {
    * @param value The value to insert
    * @returns The information needed to animate the insertion and the inserted node
    */
-  public insert(value: number): {
-    insertionInformation: BSTInsertionInformation<DataNode>;
-    insertedNode: DataNode;
-  } {
+  public insert(value: number): BSTInsertionInformation<DataNode> {
     // If the tree is empty, simply set the root to the new node
     if (this.root == null) {
       this.root = new DataNode(value);
       return {
-        insertionInformation: {
-          shape: this.getShape(),
-          pathFromRootToTarget: [],
-          value: this.root.value,
-        },
+        shape: this.getShape(),
+        pathFromRootToTarget: [],
+        value: this.root.value,
         insertedNode: this.root,
       };
     }
@@ -116,11 +111,9 @@ export default class BSTModel extends TreeModel {
     }
 
     return {
-      insertionInformation: {
-        shape: this.getShape(),
-        pathFromRootToTarget: path,
-        value: insertedNode.value,
-      },
+      shape: this.getShape(),
+      pathFromRootToTarget: path,
+      value: insertedNode.value,
       insertedNode,
     };
   }

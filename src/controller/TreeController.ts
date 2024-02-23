@@ -4,6 +4,7 @@ import type TreeModel from "../model/TreeModel";
 import type DisplayNode from "../view/DisplayNode";
 import TreeView from "../view/TreeView";
 import type TreeShape from "./TreeShape";
+import type TreeInsertionInformation from "./operationInformation/TreeInsertionInformation";
 
 export default abstract class TreeController {
   protected readonly dataNodeToDisplayNode = new Map<DataNode, DisplayNode>();
@@ -19,11 +20,14 @@ export default abstract class TreeController {
    * @param value The value to insert
    */
   public insert(value: number): void {
-    const { insertionInformation, insertedNode } = this.model.insert(value);
+    const insertionInformation = this.model.insert(value);
 
     // A placeholder for the node that's being inserted. The view will update this upon insertion.
     const placeholderNode = TreeView.makePlaceholderNode();
-    this.dataNodeToDisplayNode.set(insertedNode, placeholderNode);
+    this.dataNodeToDisplayNode.set(
+      insertionInformation.insertedNode,
+      placeholderNode,
+    );
 
     this.view.insert(this.translateInsertionInformation(insertionInformation));
   }
@@ -130,8 +134,8 @@ export default abstract class TreeController {
   }
 
   protected abstract translateInsertionInformation(
-    insertionInformation: any,
-  ): any;
+    insertionInformation: TreeInsertionInformation<DataNode>,
+  ): TreeInsertionInformation<DisplayNode>;
 
   protected abstract translateDeletionInformation(
     deletionInformation: any,

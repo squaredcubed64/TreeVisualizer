@@ -1,7 +1,6 @@
 import DisplayNode from "./DisplayNode";
 import TreeView from "./TreeView";
 import type BSTInsertionInformation from "../controller/operationInformation/BSTInsertionInformation";
-import assert from "../../Assert";
 import type TreeShape from "../controller/TreeShape";
 import type BSTFindInformation from "../controller/operationInformation/BSTFindInformation";
 import type BSTDeletionInformationVariant from "../controller/operationInformation/deletionInformation/BSTDeletionInformationVariant";
@@ -66,11 +65,11 @@ export default class BSTView extends TreeView {
       shape: shapeWithPlaceholder,
       pathFromRootToTarget,
       value,
+      insertedNode,
     } = insertionInformation;
-    const placeholderNode = this.findPlaceholderNode(shapeWithPlaceholder);
 
     if (this.shape.inorderTraversal.length === 0) {
-      this.animateSettingRoot(shapeWithPlaceholder, placeholderNode, value);
+      this.animateSettingRoot(shapeWithPlaceholder, insertedNode, value);
       return;
     }
 
@@ -87,7 +86,7 @@ export default class BSTView extends TreeView {
         this.setupInsertionAnimation(
           value,
           shapeWithPlaceholder,
-          placeholderNode,
+          insertedNode,
           pathFromRootToTarget[pathFromRootToTarget.length - 1].node,
         );
       },

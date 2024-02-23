@@ -3,6 +3,7 @@ import type DelayedFunction from "./DelayedFunction";
 import type TreeShape from "../controller/TreeShape";
 import assert from "../../Assert";
 import type TreeController from "../controller/TreeController";
+import type TreeInsertionInformation from "../controller/operationInformation/TreeInsertionInformation";
 
 /**
  * Provides tree animation functionality, such as calculating where nodes should be, drawing nodes and arrows,
@@ -163,7 +164,9 @@ export default abstract class TreeView {
     );
   }
 
-  public abstract insert(insertionInformation: any): void;
+  public abstract insert(
+    insertionInformation: TreeInsertionInformation<DisplayNode>,
+  ): void;
   public abstract delete(deletionInformation: any): void;
   public abstract find(findInformation: any): void;
 
@@ -282,16 +285,6 @@ export default abstract class TreeView {
   protected animateShapeChange(newShape: TreeShape<DisplayNode>): void {
     this.shape = newShape;
     this.setTargetPositions();
-  }
-
-  protected findPlaceholderNode(
-    shapeWithPlaceholder: TreeShape<DisplayNode>,
-  ): DisplayNode {
-    const placeholderNode = shapeWithPlaceholder.inorderTraversal.find((node) =>
-      isNaN(node.x),
-    );
-    assert(placeholderNode != null, "Placeholder node not found");
-    return placeholderNode;
   }
 
   protected animateSettingRoot(

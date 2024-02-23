@@ -29,11 +29,13 @@ export default class BSTController extends TreeController {
   protected translateInsertionInformation(
     insertionInformation: BSTInsertionInformation<DataNode>,
   ): BSTInsertionInformation<DisplayNode> {
-    const { shape, pathFromRootToTarget, value } = insertionInformation;
+    const { shape, pathFromRootToTarget, value, insertedNode } =
+      insertionInformation;
     return {
       shape: this.translateShape(shape),
       pathFromRootToTarget: this.translatePath(pathFromRootToTarget),
       value,
+      insertedNode: this.translateNode(insertedNode),
     };
   }
 

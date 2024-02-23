@@ -11,10 +11,7 @@ export default class HeapModel extends TreeModel {
     return Math.floor((index - 1) / 2);
   }
 
-  public insert(value: number): {
-    insertionInformation: HeapInsertionInformation<DataNode>;
-    insertedNode: DataNode;
-  } {
+  public insert(value: number): HeapInsertionInformation<DataNode> {
     this.nodes.push(new DataNode(value));
     const shapeAfterInitialInsertion = this.getShape();
     const insertedNode = this.nodes[this.nodes.length - 1];
@@ -54,10 +51,8 @@ export default class HeapModel extends TreeModel {
     }
 
     return {
-      insertionInformation: {
-        shapeAfterInitialInsertion,
-        swapPath,
-      },
+      shapeAfterInitialInsertion,
+      swapPath,
       insertedNode,
     };
   }

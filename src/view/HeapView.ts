@@ -1,4 +1,4 @@
-import type HeapInsertionInformation from "../controller/operationInformation/HeapInsertionInformation";
+/* import type HeapInsertionInformation from "../controller/operationInformation/HeapInsertionInformation";
 import type DisplayNode from "./DisplayNode";
 import TreeView from "./TreeView";
 
@@ -25,3 +25,4 @@ export default class HeapView extends TreeView {
     throw new Error("Method not implemented.");
   }
 }
+*/

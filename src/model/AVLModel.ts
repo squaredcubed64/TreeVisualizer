@@ -74,21 +74,14 @@ export default class AVLModel extends BSTModel {
    * @param value The value to insert
    * @returns The information needed to animate the insertion and the inserted node
    */
-  public insert(value: number): {
-    insertionInformation: AVLInsertionInformation<DataNode>;
-    insertedNode: DataNode;
-  } {
-    const { insertionInformation: bstInsertionInformation, insertedNode } =
-      super.insert(value);
+  public insert(value: number): AVLInsertionInformation<DataNode> {
+    const bstInsertionInformation = super.insert(value);
     const { pathFromRootToTarget } = bstInsertionInformation;
 
     const rotationPath = this.rebalanceAlongPath(
       pathFromRootToTarget.map((pathInstruction) => pathInstruction.node),
     );
-    return {
-      insertionInformation: { ...bstInsertionInformation, rotationPath },
-      insertedNode,
-    };
+    return { ...bstInsertionInformation, rotationPath };
   }
 
   /**

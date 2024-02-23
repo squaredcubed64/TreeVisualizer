@@ -2,6 +2,7 @@ import assert from "../../Assert";
 import ArrowDirection from "../controller/ArrowDirection";
 import type TreeController from "../controller/TreeController";
 import type TreeShape from "../controller/TreeShape";
+import type TreeInsertionInformation from "../controller/operationInformation/TreeInsertionInformation";
 import type DataNode from "./DataNode";
 
 /**
@@ -12,10 +13,7 @@ export default abstract class TreeModel {
   public arrowDirection: ArrowDirection = ArrowDirection.PARENT_TO_CHILD;
   protected root: DataNode | null = null;
 
-  public abstract insert(value: number): {
-    insertionInformation: any;
-    insertedNode: DataNode;
-  };
+  public abstract insert(value: number): TreeInsertionInformation<DataNode>;
   public abstract delete(value: number): any;
   public abstract find(value: number): any;
 

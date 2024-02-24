@@ -3,6 +3,7 @@ import type DataNode from "../model/DataNode";
 import type TreeModel from "../model/TreeModel";
 import type DisplayNode from "../view/DisplayNode";
 import TreeView from "../view/TreeView";
+import type ArrowDirection from "./ArrowDirection";
 import type TreeShape from "./TreeShape";
 import type TreeInsertionInformation from "./operationInformation/TreeInsertionInformation";
 
@@ -48,6 +49,15 @@ export default abstract class TreeController {
   public find(value: number): void {
     const findInformation = this.model.find(value);
     this.view.find(this.translateFindInformation(findInformation));
+  }
+
+  public setArrowDirection(arrowDirection: ArrowDirection): void {
+    this.model.arrowDirection = arrowDirection;
+    this.view.setArrows(this.translateArrows(this.model.getArrows()));
+  }
+
+  public getArrowDirection(): ArrowDirection {
+    return this.model.arrowDirection;
   }
 
   public setAnimationSpeedSetting(animationSpeedSetting: number): void {
@@ -140,9 +150,22 @@ export default abstract class TreeController {
     );
   }
 
-  protected abstract translateInsertionInformation(
+  protected translateInsertionInformation(
     insertionInformation: TreeInsertionInformation<DataNode>,
-  ): TreeInsertionInformation<DisplayNode>;
+  ): TreeInsertionInformation<DisplayNode> {
+    const {
+      insertedValue,
+      insertedNode,
+      insertedNodesParent,
+      directionFromParentToNode,
+    } = insertionInformation;
+    return {
+      insertedValue,
+      insertedNode: this.translateNode(insertedNode),
+      insertedNodesParent: this.translateNodeOrNull(insertedNodesParent),
+      directionFromParentToNode,
+    };
+  }
 
   protected abstract translateDeletionInformation(
     deletionInformation: any,

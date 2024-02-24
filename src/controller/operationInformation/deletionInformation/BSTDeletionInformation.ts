@@ -2,7 +2,7 @@ import type BSTFindSecondaryDescription from "../../secondaryDescription/BSTFind
 import type BSTOperationInformation from "../BSTOperationInformation";
 import type DataNode from "../../../model/DataNode";
 import type DisplayNode from "../../../view/DisplayNode";
-import type TreePathInstruction from "../../pathInstruction/TreePathInstruction";
+import type BSTPathInstruction from "../../pathInstruction/BSTPathInstruction";
 
 /**
  * This interface is not used directly. Rather, it is extended by interfaces that represent each deletion case.
@@ -12,6 +12,6 @@ export default interface BSTDeletionInformation<
 > extends BSTOperationInformation<T> {
   type: string;
   pathFromRootToTarget: Array<
-    TreePathInstruction<T, BSTFindSecondaryDescription>
+    BSTPathInstruction<T, BSTFindSecondaryDescription>
   >;
 }

@@ -79,6 +79,7 @@ export default class AVLView extends BSTView {
     rotationPath: Array<RotationPathInstruction<DisplayNode>>,
   ): void {
     /* // Pause for a bit before going back up the tree
+    this.pushPause(...)
     this.functionQueue.push({
       func: () => {},
       timeAfterCallMs: BSTView.TIME_BETWEEN_HIGHLIGHTS_MS,

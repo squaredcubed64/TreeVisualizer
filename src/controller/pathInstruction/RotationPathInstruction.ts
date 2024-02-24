@@ -11,9 +11,10 @@ import type TreePathInstruction from "./TreePathInstruction";
  */
 export default interface RotationPathInstruction<
   T extends DataNode | DisplayNode,
-> extends TreePathInstruction<T, RotationSecondaryDescription> {
+> extends TreePathInstruction<T> {
   /**
    * An empty array means no rotation. A single element array means a single rotation. A two element array means a double rotation.
    */
   shapesAfterRotation: [] | [TreeShape<T>] | [TreeShape<T>, TreeShape<T>];
+  secondaryDescription: RotationSecondaryDescription;
 }

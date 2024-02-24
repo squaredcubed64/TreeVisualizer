@@ -9,7 +9,7 @@ import type BSTInsertionSecondaryDescription from "../controller/secondaryDescri
 import TreeModel from "./TreeModel";
 import type BSTFindInformation from "../controller/operationInformation/BSTFindInformation";
 import type BSTDeletionInformationVariant from "../controller/operationInformation/deletionInformation/BSTDeletionInformationVariant";
-import type TreePathInstruction from "../controller/pathInstruction/TreePathInstruction";
+import type BSTPathInstruction from "../controller/pathInstruction/BSTPathInstruction";
 
 /**
  * A Binary Search Tree data structure that calculates information the view needs for animations.
@@ -24,7 +24,7 @@ export default class BSTModel extends TreeModel {
     successor: DataNode;
     successorParent: DataNode;
     pathToSuccessor: Array<
-      TreePathInstruction<DataNode, BSTSuccessorSecondaryDescription>
+      BSTPathInstruction<DataNode, BSTSuccessorSecondaryDescription>
     >;
   } {
     assert(
@@ -34,7 +34,7 @@ export default class BSTModel extends TreeModel {
     let successor = node.right;
     let successorParent = node;
     const pathToSuccessor: Array<
-      TreePathInstruction<DataNode, BSTSuccessorSecondaryDescription>
+      BSTPathInstruction<DataNode, BSTSuccessorSecondaryDescription>
     > = [];
 
     // Find the node with the minimum value (AKA successor) in the right subtree
@@ -74,7 +74,7 @@ export default class BSTModel extends TreeModel {
 
     // Find the path to where the new node will be inserted
     const path: Array<
-      TreePathInstruction<DataNode, BSTInsertionSecondaryDescription>
+      BSTPathInstruction<DataNode, BSTInsertionSecondaryDescription>
     > = [];
     let currNode: DataNode | null = this.root;
     while (currNode != null) {
@@ -138,7 +138,7 @@ export default class BSTModel extends TreeModel {
 
     // Find the path the tree takes to find the node to delete
     const path: Array<
-      TreePathInstruction<DataNode, BSTFindSecondaryDescription>
+      BSTPathInstruction<DataNode, BSTFindSecondaryDescription>
     > = [];
     let currNode: DataNode | null = this.root;
     let currParent: DataNode | null = null;
@@ -239,7 +239,7 @@ export default class BSTModel extends TreeModel {
   public find(value: number): BSTFindInformation<DataNode> {
     // Find the path the tree takes to find the node to delete
     const path: Array<
-      TreePathInstruction<DataNode, BSTFindSecondaryDescription>
+      BSTPathInstruction<DataNode, BSTFindSecondaryDescription>
     > = [];
     let currNode: DataNode | null = this.root;
     while (currNode != null && currNode.value !== value) {

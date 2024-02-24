@@ -3,15 +3,17 @@ import BSTController from "./controller/BSTController";
 import assert from "../Assert";
 import AVLController from "./controller/AVLController";
 import TreeView from "./view/TreeView";
+import HeapController from "./controller/HeapController";
+import TreeController from "./controller/TreeController";
 
 // Make canvas fill the screen
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
 window.addEventListener("resize", () => {
   resizeCanvas(canvas);
-  BSTController.centerTree(canvas.width);
+  TreeController.centerTree(canvas.width);
 });
 resizeCanvas(canvas);
-BSTController.centerTree(canvas.width);
+TreeController.centerTree(canvas.width);
 
 // Helpers
 function resizeCanvas(canvas: HTMLCanvasElement): void {
@@ -20,13 +22,14 @@ function resizeCanvas(canvas: HTMLCanvasElement): void {
 }
 
 // Initialize controller
-let controller: BSTController = new BSTController();
-let treeType = BSTController;
-function setControllerToNew<T extends BSTController>(
-  ControllerType: new (...args: any[]) => T,
+let controller: TreeController = new BSTController();
+let treeType: new (...args: any[]) => TreeController = BSTController;
+function setControllerToNew(
+  ControllerType: new (...args: any[]) => TreeController,
 ): void {
   controller = new ControllerType();
 }
+// todo remove this line
 setControllerToNew(treeType);
 controller.animate();
 
@@ -106,7 +109,7 @@ clearButton.addEventListener("click", () => {
  * Delete the current controller, clear the canvas, and create a new controller of type newControllerType with the same animation speed setting and arrow direction
  * @param newControllerType The type of controller to use after clearing
  */
-function resetController<T extends BSTController>(
+function resetController<T extends TreeController>(
   newControllerType: new () => T,
 ): void {
   const animationSpeedSetting = controller.getAnimationSpeedSetting();
@@ -183,6 +186,8 @@ treeTypeDropdown.addEventListener("change", () => {
     treeType = BSTController;
   } else if (selectedTreeType === "avl") {
     treeType = AVLController;
+  } else if (selectedTreeType === "heap") {
+    treeType = HeapController;
   }
   resetController(treeType);
 });

@@ -5,6 +5,6 @@ export default interface SwapSecondaryDescription
   extends TreeSecondaryDescription {
   type: "insert";
   result: "swap" | "heap property satisfied";
-  nodeValue: number;
-  parentValue: number;
+  initialNodeValue: number;
+  initialParentValue: number;
 }

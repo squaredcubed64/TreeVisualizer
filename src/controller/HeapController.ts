@@ -1,32 +1,66 @@
-// import DataNode from "../model/DataNode";
-// import DisplayNode from "../view/DisplayNode";
-// import TreeView from "../view/TreeView";
-// import TreeController from "./TreeController";
-// import HeapInsertionInformation from "./operationInformation/HeapInsertionInformation";
+import type DataNode from "../model/DataNode";
+import HeapModel from "../model/HeapModel";
+import type DisplayNode from "../view/DisplayNode";
+import HeapView from "../view/HeapView";
+import TreeController from "./TreeController";
+import type HeapInsertionInformation from "./operationInformation/HeapInsertionInformation";
+import type HeapDeletionInformation from "./operationInformation/deletionInformation/HeapDeletionInformation";
+import type SwapPathInstruction from "./pathInstruction/SwapPathInstruction";
 
-// export default class HeapController extends TreeController {
-//   /**
-//    * Inserts a value into the model and updates the view accordingly.
-//    * @param value The value to insert
-//    */
-//   public insert(value: number): void {
-//     const { insertionInformation, insertedNode } = this.model.insert(value);
+export default class HeapController extends TreeController {
+  protected readonly model: HeapModel = new HeapModel(this);
+  protected readonly view: HeapView = new HeapView(this);
 
-//     // A placeholder for the node that's being inserted. The view will update this upon insertion.
-//     const placeholderNode = TreeView.makePlaceholderNode();
-//     this.dataNodeToDisplayNode.set(insertedNode, placeholderNode);
+  protected translateInsertionInformation(
+    insertionInformation: HeapInsertionInformation<DataNode>,
+  ): HeapInsertionInformation<DisplayNode> {
+    const translatedTreeInsertionInformation =
+      super.translateInsertionInformation(insertionInformation);
+    const { shapeAfterInitialInsertion, swapPath, didSwapToRoot } =
+      insertionInformation;
 
-//     this.view.insert(this.translateInsertionInformation(insertionInformation));
-//   }
+    return {
+      ...translatedTreeInsertionInformation,
+      shapeAfterInitialInsertion: this.translateShape(
+        shapeAfterInitialInsertion,
+      ),
+      swapPath: this.translatePath(swapPath),
+      didSwapToRoot,
+    };
+  }
 
-//   protected translateInsertionInformation(
-//     insertionInformation: HeapInsertionInformation<DataNode>,
-//   ): HeapInsertionInformation<DisplayNode> {
-//     const { shapeAfterInitialInsertion, swapPath } = insertionInformation;
-//     return {
-//       shape: this.translateShape(shape),
-//       pathFromRootToTarget: this.translatePath(pathFromRootToTarget),
-//       value,
-//     };
-//   }
-// }
+  protected translatePath(
+    path: Array<SwapPathInstruction<DataNode>>,
+  ): Array<SwapPathInstruction<DisplayNode>> {
+    return path.map((pathInstruction) =>
+      this.translatePathInstruction(pathInstruction),
+    );
+  }
+
+  protected translatePathInstruction(
+    pathInstruction: SwapPathInstruction<DataNode>,
+  ): SwapPathInstruction<DisplayNode> {
+    const { node, parent, secondaryDescription } = pathInstruction;
+    return {
+      node: this.translateNode(node),
+      parent: this.translateNode(parent),
+      secondaryDescription,
+    };
+  }
+
+  protected translateDeletionInformation(
+    deletionInformation: HeapDeletionInformation<DataNode>,
+  ): HeapDeletionInformation<DisplayNode> {
+    const { lorem } = deletionInformation;
+    return {
+      lorem: this.translateNode(lorem),
+    };
+  }
+
+  // Heap's find() (aka peek()) is trivial enough that the model need not provide any information.
+  protected translateFindInformation(
+    findInformation: Record<string, unknown>,
+  ): Record<string, unknown> {
+    return {};
+  }
+}

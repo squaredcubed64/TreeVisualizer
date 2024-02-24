@@ -16,29 +16,32 @@ export default class AVLController extends BSTController {
   protected readonly view: AVLView = new AVLView(this);
 
   protected translateInsertionInformation(
-    modelInsertionInformation: AVLInsertionInformation<DataNode>,
+    insertionInformation: AVLInsertionInformation<DataNode>,
   ): AVLInsertionInformation<DisplayNode> {
-    const translatedModelInsertionInformation =
-      super.translateInsertionInformation(modelInsertionInformation);
+    const translatedBSTInsertionInformation =
+      super.translateInsertionInformation(insertionInformation);
     const translatedRotationPath = this.translateRotationPath(
-      modelInsertionInformation.rotationPath,
+      insertionInformation.rotationPath,
     );
+
     return {
-      ...translatedModelInsertionInformation,
+      ...translatedBSTInsertionInformation,
       rotationPath: translatedRotationPath,
     };
   }
 
   protected translateDeletionInformation(
-    modelDeletionInformation: AVLDeletionInformation<DataNode>,
+    deletionInformation: AVLDeletionInformation<DataNode>,
   ): AVLDeletionInformation<DisplayNode> {
-    const translatedModelDeletionInformation =
-      super.translateDeletionInformation(modelDeletionInformation);
-    const translatedRotationPath = this.translateRotationPath(
-      modelDeletionInformation.rotationPath,
+    const translatedBSTDeletionInformation = super.translateDeletionInformation(
+      deletionInformation,
     );
+    const translatedRotationPath = this.translateRotationPath(
+      deletionInformation.rotationPath,
+    );
+
     return {
-      ...translatedModelDeletionInformation,
+      ...translatedBSTDeletionInformation,
       rotationPath: translatedRotationPath,
     };
   }

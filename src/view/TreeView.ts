@@ -411,6 +411,14 @@ export default abstract class TreeView {
     });
   }
 
+  protected pushPause(pauseTimeMs: number, description: string): void {
+    this.functionQueue.push({
+      func: () => {},
+      timeAfterCallMs: pauseTimeMs,
+      description,
+    });
+  }
+
   /**
    * Calls functions at the front of functionQueue if they are ready, or updates their time if they are not ready
    * @param deltaMs The number of milliseconds to adjust the functionQueue's time by

@@ -3,7 +3,7 @@ import type BSTSuccessorSecondaryDescription from "../../secondaryDescription/BS
 import type TreeShape from "../../TreeShape";
 import type DataNode from "../../../model/DataNode";
 import type DisplayNode from "../../../view/DisplayNode";
-import type TreePathInstruction from "../../pathInstruction/TreePathInstruction";
+import type BSTPathInstruction from "../../pathInstruction/BSTPathInstruction";
 
 /**
  * The info the view needs to animate BST deletion when the victim has 2 children.
@@ -15,7 +15,7 @@ export default interface BSTDeletionInformation2Children<
   shape: TreeShape<T>;
   victimNode: T;
   pathFromTargetsRightChildToSuccessor: Array<
-    TreePathInstruction<T, BSTSuccessorSecondaryDescription>
+    BSTPathInstruction<T, BSTSuccessorSecondaryDescription>
   >;
   successorNode: T;
 }

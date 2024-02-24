@@ -2,13 +2,12 @@ import type DataNode from "../model/DataNode";
 import type DisplayNode from "../view/DisplayNode";
 import BSTModel from "../model/BSTModel";
 import BSTView from "../view/BSTView";
-import type ArrowDirection from "./ArrowDirection";
 import type BSTInsertionInformation from "./operationInformation/BSTInsertionInformation";
 import type BSTFindInformation from "./operationInformation/BSTFindInformation";
-import type BSTSecondaryDescriptionVariant from "./secondaryDescription/BSTSecondaryDescriptionVariant";
 import TreeController from "./TreeController";
 import type BSTDeletionInformationVariant from "./operationInformation/deletionInformation/BSTDeletionInformationVariant";
-import type TreePathInstruction from "./pathInstruction/TreePathInstruction";
+import type BSTPathInstruction from "./pathInstruction/BSTPathInstruction";
+import type BSTSecondaryDescriptionVariant from "./secondaryDescription/BSTSecondaryDescriptionVariant";
 
 /**
  * The controller for the BST. It is responsible for translating the model's return types into the view's parameter types
@@ -17,33 +16,35 @@ export default class BSTController extends TreeController {
   protected readonly model: BSTModel = new BSTModel(this);
   protected readonly view: BSTView = new BSTView(this);
 
-  public setArrowDirection(arrowDirection: ArrowDirection): void {
-    this.model.arrowDirection = arrowDirection;
-    this.view.setArrows(this.translateArrows(this.model.getArrows()));
-  }
-
-  public getArrowDirection(): ArrowDirection {
-    return this.model.arrowDirection;
-  }
-
   protected translateInsertionInformation(
     insertionInformation: BSTInsertionInformation<DataNode>,
   ): BSTInsertionInformation<DisplayNode> {
-    const {
-      shape,
-      pathFromRootToTarget,
-      insertedValue,
-      insertedNode,
-      insertedNodesParent,
-      directionFromParentToNode,
-    } = insertionInformation;
+    const translatedTreeInsertionInformation =
+      super.translateInsertionInformation(insertionInformation);
+    const { shape, pathFromRootToTarget } = insertionInformation;
+
     return {
+      ...translatedTreeInsertionInformation,
       shape: this.translateShape(shape),
       pathFromRootToTarget: this.translatePath(pathFromRootToTarget),
-      insertedValue,
-      insertedNode: this.translateNode(insertedNode),
-      insertedNodesParent: this.translateNodeOrNull(insertedNodesParent),
-      directionFromParentToNode,
+    };
+  }
+
+  protected translatePath<T extends BSTSecondaryDescriptionVariant>(
+    path: Array<BSTPathInstruction<DataNode, T>>,
+  ): Array<BSTPathInstruction<DisplayNode, T>> {
+    return path.map((pathInstruction) =>
+      this.translatePathInstruction(pathInstruction),
+    );
+  }
+
+  protected translatePathInstruction<T extends BSTSecondaryDescriptionVariant>(
+    pathInstruction: BSTPathInstruction<DataNode, T>,
+  ): BSTPathInstruction<DisplayNode, T> {
+    const { node, secondaryDescription } = pathInstruction;
+    return {
+      node: this.translateNode(node),
+      secondaryDescription,
     };
   }
 
@@ -97,14 +98,5 @@ export default class BSTController extends TreeController {
       pathFromRootToTarget: this.translatePath(pathFromRootToTarget),
       nodeFound: nodeFound !== null ? this.translateNode(nodeFound) : null,
     };
-  }
-
-  private translatePath<S extends BSTSecondaryDescriptionVariant>(
-    path: Array<TreePathInstruction<DataNode, S>>,
-  ): Array<TreePathInstruction<DisplayNode, S>> {
-    return path.map((pathInstruction) => {
-      const { node, secondaryDescription } = pathInstruction;
-      return { node: this.translateNode(node), secondaryDescription };
-    });
   }
 }

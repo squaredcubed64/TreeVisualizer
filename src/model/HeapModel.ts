@@ -5,7 +5,7 @@ import DataNode from "./DataNode";
 import TreeModel from "./TreeModel";
 
 export default class HeapModel extends TreeModel {
-  private readonly nodes: DataNode[];
+  private readonly nodes: DataNode[] = [];
 
   private static getParentIndex(index: number): number {
     return Math.floor((index - 1) / 2);
@@ -24,8 +24,8 @@ export default class HeapModel extends TreeModel {
       const parentIndex = HeapModel.getParentIndex(currIndex);
       const node = this.nodes[currIndex];
       const parent = this.nodes[parentIndex];
-      const nodeValue = node.value;
-      const parentValue = parent.value;
+      const initialNodeValue = node.value;
+      const initialParentValue = parent.value;
 
       const didSwap = node.value < parent.value;
       if (didSwap) {
@@ -38,10 +38,9 @@ export default class HeapModel extends TreeModel {
         secondaryDescription: {
           type: "insert",
           result: didSwap ? "swap" : "heap property satisfied",
-          nodeValue,
-          parentValue,
+          initialNodeValue,
+          initialParentValue,
         },
-        shapeAfterSwap: this.getShape(),
       });
 
       if (didSwap) {
@@ -51,11 +50,21 @@ export default class HeapModel extends TreeModel {
       }
     }
 
+    let directionFromParentToNode: "root" | "left" | "right" = "left";
+    if (this.nodes.length === 1) {
+      directionFromParentToNode = "root";
+    } else if (this.nodes.length % 2 === 1) {
+      console.log("right");
+      directionFromParentToNode = "right";
+    }
+
     return {
       shapeAfterInitialInsertion,
       swapPath,
       insertedNode,
+      insertedNodesParent: this.getParent(insertedNode),
       insertedValue: value,
+      directionFromParentToNode,
       didSwapToRoot: currIndex === 0,
     };
   }
@@ -69,6 +78,7 @@ export default class HeapModel extends TreeModel {
   }
 
   protected getShape(): TreeShape<DataNode> {
+    this.root = this.nodes[0];
     this.updateLinksFromParentsToChildren();
     return super.getShape();
   }
@@ -91,5 +101,13 @@ export default class HeapModel extends TreeModel {
         node.right = this.nodes[rightChildIndex];
       }
     }
+  }
+
+  private getParent(node: DataNode): DataNode | null {
+    const index = this.nodes.indexOf(node);
+    if (index === 0) {
+      return null;
+    }
+    return this.nodes[HeapModel.getParentIndex(index)];
   }
 }

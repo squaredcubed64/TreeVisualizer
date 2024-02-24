@@ -14,15 +14,6 @@ export default class BSTView extends TreeView {
   protected static readonly TIME_BETWEEN_HIGHLIGHTS_MS =
     TreeView.DURATION_MULTIPLIER * 1000;
 
-  private static readonly TIME_AFTER_HIGHLIGHTING_VICTIM_WITH_TWO_CHILDREN_MS =
-    TreeView.DURATION_MULTIPLIER * 1000;
-
-  private static readonly TIME_AFTER_HIGHLIGHT_SUCCESSOR_MS =
-    TreeView.DURATION_MULTIPLIER * 1000;
-
-  private static readonly TIME_AFTER_REPLACE_NODE_WITH_SUCCESSOR_MS =
-    TreeView.DURATION_MULTIPLIER * 1000;
-
   private static readonly TIME_AFTER_UNSUCCESSFUL_DELETE_MS =
     TreeView.DURATION_MULTIPLIER * 1000;
 
@@ -302,34 +293,13 @@ export default class BSTView extends TreeView {
       BSTView.FIND_SUCCESSOR_HIGHLIGHT_COLOR,
     );
 
-    this.functionQueue.push({
-      func: () => {
-        successorNode.highlight(
-          BSTView.FIND_SUCCESSOR_HIGHLIGHT_COLOR,
-          Infinity,
-        );
-      },
-      timeAfterCallMs: BSTView.TIME_AFTER_HIGHLIGHT_SUCCESSOR_MS,
-      description: BSTView.DELETION_DESCRIPTIONS.REPLACE_NODE_WITH_SUCCESSOR,
-    });
-
-    this.functionQueue.push({
-      func: () => {
-        victimNode.value = successorNode.value;
-      },
-      timeAfterCallMs: BSTView.TIME_AFTER_REPLACE_NODE_WITH_SUCCESSOR_MS,
-      description: BSTView.DELETION_DESCRIPTIONS.REPLACE_NODE_WITH_SUCCESSOR,
-    });
-
-    this.functionQueue.push({
-      func: () => {
-        victimNode.unhighlight();
-        successorNode.unhighlight();
-      },
-      timeAfterCallMs:
-        BSTView.TIME_AFTER_HIGHLIGHTING_VICTIM_WITH_TWO_CHILDREN_MS,
-      description: BSTView.DELETION_DESCRIPTIONS.REPLACE_NODE_WITH_SUCCESSOR,
-    });
+    this.pushReplaceOrSwapValues(
+      "replace",
+      successorNode,
+      victimNode,
+      BSTView.FIND_SUCCESSOR_HIGHLIGHT_COLOR,
+      BSTView.DELETION_DESCRIPTIONS.REPLACE_NODE_WITH_SUCCESSOR,
+    );
 
     this.functionQueue.push({
       func: () => {

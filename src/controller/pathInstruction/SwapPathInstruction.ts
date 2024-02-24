@@ -1,11 +1,11 @@
 import type DataNode from "../../model/DataNode";
 import type DisplayNode from "../../view/DisplayNode";
 import type TreeShape from "../TreeShape";
-import type HeapInsertionSecondaryDescription from "../secondaryDescription/HeapInsertionSecondaryDescription";
+import type SwapSecondaryDescription from "../secondaryDescription/SwapSecondaryDescription";
 import type TreePathInstruction from "./TreePathInstruction";
 
 export default interface SwapPathInstruction<T extends DataNode | DisplayNode>
-  extends TreePathInstruction<T, HeapInsertionSecondaryDescription> {
+  extends TreePathInstruction<T, SwapSecondaryDescription> {
   parent: T;
   shapeAfterSwap: TreeShape<T>;
 }

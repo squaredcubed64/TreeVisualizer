@@ -1,6 +1,7 @@
 import assert from "../../Assert";
 import type HeapInsertionInformation from "../controller/operationInformation/HeapInsertionInformation";
-import type SwapPathInstruction from "../controller/pathInstruction/HeapPathInstruction";
+import type SwapPathInstruction from "../controller/pathInstruction/SwapPathInstruction";
+import SwapSecondaryDescription from "../controller/secondaryDescription/SwapSecondaryDescription";
 import type DisplayNode from "./DisplayNode";
 import TreeView from "./TreeView";
 
@@ -45,12 +46,28 @@ export default class HeapView extends TreeView {
   ): void {
     for (const swapInstruction of swapPath) {
       const { node, parent, shapeAfterSwap } = swapInstruction;
-      this.functionQueue.push({
-        timeToWaitMs: 0,
-        func: () => {
-          sw;
-        },
-      });
+      this.pushReplaceOrSwapValues(
+        "replace",
+        node,
+        parent,
+        HeapView.SWAP_VALUES_HIGHLIGHT_COLOR,
+        HeapView.SWAP_VALUES_DESCRIPTION,
+      );
+    }
+  }
+
+  private convertSecondaryDescriptionToString(
+    secondaryDescription: SwapSecondaryDescription,
+  ): string {
+    switch (secondaryDescription.type) {
+      case "insert":
+        switch (secondaryDescription.result) {
+          case "swap":
+            return `Go left because ${secondaryDescription.targetValue} < ${secondaryDescription.nodeValue}`;
+          case "heap property satisfied":
+            return `Go right because ${secondaryDescription.targetValue} >= ${secondaryDescription.nodeValue}`;
+        }
+        break;
     }
   }
 }

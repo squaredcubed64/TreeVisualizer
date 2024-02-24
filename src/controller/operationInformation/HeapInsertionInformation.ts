@@ -1,7 +1,7 @@
 import type TreeShape from "../TreeShape";
 import type DisplayNode from "../../view/DisplayNode";
 import type DataNode from "../../model/DataNode";
-import type SwapPathInstruction from "../pathInstruction/HeapPathInstruction";
+import type SwapPathInstruction from "../pathInstruction/SwapPathInstruction";
 import type TreeInsertionInformation from "./TreeInsertionInformation";
 
 export default interface HeapInsertionInformation<
@@ -9,4 +9,5 @@ export default interface HeapInsertionInformation<
 > extends TreeInsertionInformation<T> {
   shapeAfterInitialInsertion: TreeShape<T>;
   swapPath: Array<SwapPathInstruction<T>>;
+  didSwapToRoot: boolean;
 }

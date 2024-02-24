@@ -1,6 +1,6 @@
 import type TreeShape from "../controller/TreeShape";
 import type HeapInsertionInformation from "../controller/operationInformation/HeapInsertionInformation";
-import type SwapPathInstruction from "../controller/pathInstruction/HeapPathInstruction";
+import type SwapPathInstruction from "../controller/pathInstruction/SwapPathInstruction";
 import DataNode from "./DataNode";
 import TreeModel from "./TreeModel";
 
@@ -19,6 +19,7 @@ export default class HeapModel extends TreeModel {
     // at each step, we need node, parent, nodeValue, parentValue, and the resultant shape
     const swapPath: Array<SwapPathInstruction<DataNode>> = [];
     let currIndex = this.nodes.length - 1;
+
     while (currIndex > 0) {
       const parentIndex = HeapModel.getParentIndex(currIndex);
       const node = this.nodes[currIndex];
@@ -26,10 +27,9 @@ export default class HeapModel extends TreeModel {
       const nodeValue = node.value;
       const parentValue = parent.value;
 
-      let didSwap = false;
-      if (node.value < parent.value) {
+      const didSwap = node.value < parent.value;
+      if (didSwap) {
         this.swapValues(currIndex, parentIndex);
-        didSwap = true;
       }
 
       swapPath.push({
@@ -37,6 +37,7 @@ export default class HeapModel extends TreeModel {
         parent,
         secondaryDescription: {
           type: "insert",
+          result: didSwap ? "swap" : "heap property satisfied",
           nodeValue,
           parentValue,
         },
@@ -55,6 +56,7 @@ export default class HeapModel extends TreeModel {
       swapPath,
       insertedNode,
       insertedValue: value,
+      didSwapToRoot: currIndex === 0,
     };
   }
 

@@ -25,6 +25,15 @@ export default abstract class TreeView {
   private static readonly TIME_AFTER_SET_ROOT_MS =
     TreeView.DURATION_MULTIPLIER * 1000;
 
+  private static readonly TIME_BEFORE_REPLACE_OR_SWAP_VALUES_MS =
+    TreeView.DURATION_MULTIPLIER * 1000;
+
+  private static readonly TIME_AFTER_REPLACE_OR_SWAP_VALUES_MS =
+    TreeView.DURATION_MULTIPLIER * 1000;
+
+  private static readonly TIME_AFTER_UNHIGHLIGHTING_CHANGED_NODES_MS =
+    TreeView.DURATION_MULTIPLIER * 1000;
+
   private static readonly SET_ROOT_DESCRIPTION =
     "The tree is empty. Setting the root node.";
 
@@ -334,6 +343,48 @@ export default abstract class TreeView {
     node.y = parent.y + TreeView.TARGET_Y_GAP;
 
     this.animateShapeChange(shapeWithPlaceholder);
+  }
+
+  protected pushReplaceOrSwapValues(
+    type: "replace" | "swap",
+    fromNode: DisplayNode,
+    toNode: DisplayNode,
+    highlightColor: string,
+    description: string,
+    secondaryDescription?: string,
+  ): void {
+    this.functionQueue.push({
+      func: () => {
+        fromNode.highlight(highlightColor, Infinity);
+        toNode.highlight(highlightColor, Infinity);
+      },
+      timeAfterCallMs: TreeView.TIME_BEFORE_REPLACE_OR_SWAP_VALUES_MS,
+      description,
+      secondaryDescription,
+    });
+
+    this.functionQueue.push({
+      func: () => {
+        if (type === "replace") {
+          toNode.value = fromNode.value;
+        } else {
+          [toNode.value, fromNode.value] = [fromNode.value, toNode.value];
+        }
+      },
+      timeAfterCallMs: TreeView.TIME_AFTER_REPLACE_OR_SWAP_VALUES_MS,
+      description,
+      secondaryDescription,
+    });
+
+    this.functionQueue.push({
+      func: () => {
+        fromNode.unhighlight();
+        toNode.unhighlight();
+      },
+      timeAfterCallMs: TreeView.TIME_AFTER_UNHIGHLIGHTING_CHANGED_NODES_MS,
+      description,
+      secondaryDescription,
+    });
   }
 
   /**

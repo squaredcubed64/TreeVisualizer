@@ -17,10 +17,10 @@ export default class BSTView extends TreeView {
   private static readonly TIME_AFTER_HIGHLIGHTING_VICTIM_WITH_TWO_CHILDREN_MS =
     TreeView.DURATION_MULTIPLIER * 1000;
 
-  private static readonly TIME_BEFORE_REPLACE_WITH_SUCCESSOR_MS =
+  private static readonly TIME_AFTER_HIGHLIGHT_SUCCESSOR_MS =
     TreeView.DURATION_MULTIPLIER * 1000;
 
-  private static readonly TIME_BEFORE_UNHIGHLIGHT_VICTIM_MS =
+  private static readonly TIME_AFTER_REPLACE_NODE_WITH_SUCCESSOR_MS =
     TreeView.DURATION_MULTIPLIER * 1000;
 
   private static readonly TIME_AFTER_UNSUCCESSFUL_DELETE_MS =
@@ -85,18 +85,21 @@ export default class BSTView extends TreeView {
 
     const insertedNodesParent =
       pathFromRootToTarget[pathFromRootToTarget.length - 1].node;
-    const directionFromParent =
-      insertedNode.value < insertedNodesParent.value ? "left" : "right";
+
+    let directionFromParentToNode: "left" | "right" = "left";
+    if (insertedValue >= insertedNodesParent.value) {
+      directionFromParentToNode = "right";
+    }
+
     // Animate inserting
     this.functionQueue.push({
-      timeToWaitMs: 0,
       func: () => {
         this.setupInsertionAnimation(
           insertedValue,
           shapeWithPlaceholder,
           insertedNode,
           insertedNodesParent,
-          directionFromParent,
+          directionFromParentToNode,
         );
       },
       timeAfterCallMs: DisplayNode.MOVE_DURATION_MS,
@@ -122,10 +125,11 @@ export default class BSTView extends TreeView {
       case "2Children":
         this.push2ChildrenDeletion(viewDeletionInformation);
         break;
-      case "VictimNotFound": {
+      case "VictimNotFound":
         this.pushVictimNotFoundDeletion(viewDeletionInformation);
         break;
-      }
+      default:
+        throw new Error("Invalid type of deletion information.");
     }
   }
 
@@ -145,7 +149,6 @@ export default class BSTView extends TreeView {
     }
     if (nodeFound != null) {
       this.functionQueue.push({
-        timeToWaitMs: 0,
         func: () => {
           nodeFound.highlight(
             BSTView.HIGHLIGHT_COLOR_AFTER_SUCCESSFUL_FIND,
@@ -159,7 +162,6 @@ export default class BSTView extends TreeView {
       });
     } else {
       this.functionQueue.push({
-        timeToWaitMs: 0,
         func: () => {},
         timeAfterCallMs: BSTView.TIME_AFTER_FIND_MS,
         description: BSTView.FIND_DESCRIPTIONS.DID_NOT_FIND_NODE,
@@ -214,7 +216,6 @@ export default class BSTView extends TreeView {
   ): void {
     for (const { node, secondaryDescription } of path) {
       this.functionQueue.push({
-        timeToWaitMs: 0,
         func: () => {
           node.highlight(highlightColor);
         },
@@ -247,7 +248,6 @@ export default class BSTView extends TreeView {
     );
 
     this.functionQueue.push({
-      timeToWaitMs: 0,
       func: () => {
         victimNode.startShrinkingIntoNothing();
       },
@@ -256,7 +256,6 @@ export default class BSTView extends TreeView {
     });
 
     this.functionQueue.push({
-      timeToWaitMs: 0,
       func: () => {
         this.animateShapeChange(shape);
       },
@@ -290,7 +289,6 @@ export default class BSTView extends TreeView {
     );
 
     this.functionQueue.push({
-      timeToWaitMs: 0,
       func: () => {
         victimNode.highlight(BSTView.FIND_SUCCESSOR_HIGHLIGHT_COLOR, Infinity);
       },
@@ -305,28 +303,25 @@ export default class BSTView extends TreeView {
     );
 
     this.functionQueue.push({
-      timeToWaitMs: 0,
       func: () => {
         successorNode.highlight(
           BSTView.FIND_SUCCESSOR_HIGHLIGHT_COLOR,
           Infinity,
         );
       },
-      timeAfterCallMs: 0,
+      timeAfterCallMs: BSTView.TIME_AFTER_HIGHLIGHT_SUCCESSOR_MS,
       description: BSTView.DELETION_DESCRIPTIONS.REPLACE_NODE_WITH_SUCCESSOR,
     });
 
     this.functionQueue.push({
-      timeToWaitMs: BSTView.TIME_BEFORE_REPLACE_WITH_SUCCESSOR_MS,
       func: () => {
         victimNode.value = successorNode.value;
       },
-      timeAfterCallMs: 0,
+      timeAfterCallMs: BSTView.TIME_AFTER_REPLACE_NODE_WITH_SUCCESSOR_MS,
       description: BSTView.DELETION_DESCRIPTIONS.REPLACE_NODE_WITH_SUCCESSOR,
     });
 
     this.functionQueue.push({
-      timeToWaitMs: BSTView.TIME_BEFORE_UNHIGHLIGHT_VICTIM_MS,
       func: () => {
         victimNode.unhighlight();
         successorNode.unhighlight();
@@ -337,7 +332,6 @@ export default class BSTView extends TreeView {
     });
 
     this.functionQueue.push({
-      timeToWaitMs: 0,
       func: () => {
         successorNode.startShrinkingIntoNothing();
       },
@@ -346,7 +340,6 @@ export default class BSTView extends TreeView {
     });
 
     this.functionQueue.push({
-      timeToWaitMs: 0,
       func: () => {
         this.animateShapeChange(shape);
       },
@@ -376,9 +369,8 @@ export default class BSTView extends TreeView {
     }
 
     this.functionQueue.push({
-      timeToWaitMs: BSTView.TIME_AFTER_UNSUCCESSFUL_DELETE_MS,
       func: () => {},
-      timeAfterCallMs: 0,
+      timeAfterCallMs: BSTView.TIME_AFTER_UNSUCCESSFUL_DELETE_MS,
       description: BSTView.DELETION_DESCRIPTIONS.DID_NOT_FIND_NODE,
     });
   }

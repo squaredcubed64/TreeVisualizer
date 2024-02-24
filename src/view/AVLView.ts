@@ -50,9 +50,11 @@ export default class AVLView extends BSTView {
     viewInsertionInformation: AVLInsertionInformation<DisplayNode>,
   ): void {
     super.insert(viewInsertionInformation);
-    this.pushRotationPathOntoFunctionQueue(
-      viewInsertionInformation.rotationPath,
-    );
+    if (viewInsertionInformation.rotationPath.length > 0) {
+      this.pushRotationPathOntoFunctionQueue(
+        viewInsertionInformation.rotationPath,
+      );
+    }
   }
 
   /**
@@ -75,22 +77,12 @@ export default class AVLView extends BSTView {
   private pushRotationPathOntoFunctionQueue(
     rotationPath: Array<RotationPathInstruction<DisplayNode>>,
   ): void {
-    // Helper
-    const pushRotationOntoFunctionQueue = (
-      shapeAfterRotation: TreeShape<DisplayNode>,
-      secondaryDescription: string,
-    ): void => {
-      this.functionQueue.push({
-        timeToWaitMs: 0,
-        func: () => {
-          this.animateShapeChange(shapeAfterRotation);
-        },
-        timeAfterCallMs:
-          DisplayNode.MOVE_DURATION_MS + AVLView.TIME_AFTER_ROTATION_MS,
-        description: AVLView.ROTATION_PATH_DESCRIPTION,
-        secondaryDescription,
-      });
-    };
+    // Pause for a bit before going back up the tree
+    this.functionQueue.push({
+      func: () => {},
+      timeAfterCallMs: BSTView.TIME_BETWEEN_HIGHLIGHTS_MS,
+      description: AVLView.ROTATION_PATH_DESCRIPTION,
+    });
 
     for (const rotationPathInstruction of rotationPath) {
       const { node, shapesAfterRotation, secondaryDescription } =
@@ -98,14 +90,15 @@ export default class AVLView extends BSTView {
 
       // Highlight the node and explain if a rotation must be performed and why
       this.functionQueue.push({
-        timeToWaitMs: BSTView.TIME_BETWEEN_HIGHLIGHTS_MS,
         func: () => {
           node.highlight(
             AVLView.ROTATION_PATH_HIGHLIGHT_COLOR,
             AVLView.ROTATION_PATH_HIGHLIGHT_DURATION_MS,
           );
         },
-        timeAfterCallMs: AVLView.ROTATION_PATH_HIGHLIGHT_DURATION_MS,
+        timeAfterCallMs:
+          AVLView.ROTATION_PATH_HIGHLIGHT_DURATION_MS +
+          BSTView.TIME_BETWEEN_HIGHLIGHTS_MS,
         description: AVLView.ROTATION_PATH_DESCRIPTION,
         secondaryDescription:
           AVLView.convertRotationSecondaryDescriptionToString(
@@ -115,14 +108,35 @@ export default class AVLView extends BSTView {
 
       // Animate the rotation(s)
       if (shapesAfterRotation.length === 1) {
-        pushRotationOntoFunctionQueue(shapesAfterRotation[0], "Rotation");
+        this.pushRotationOntoFunctionQueue(
+          shapesAfterRotation[0],
+          "Perform a rotation.",
+        );
       } else if (shapesAfterRotation.length === 2) {
-        pushRotationOntoFunctionQueue(shapesAfterRotation[0], "First rotation");
-        pushRotationOntoFunctionQueue(
+        this.pushRotationOntoFunctionQueue(
+          shapesAfterRotation[0],
+          "Perform the first rotation.",
+        );
+        this.pushRotationOntoFunctionQueue(
           shapesAfterRotation[1],
-          "Second rotation",
+          "Perform the second rotation.",
         );
       }
     }
+  }
+
+  private pushRotationOntoFunctionQueue(
+    shapeAfterRotation: TreeShape<DisplayNode>,
+    secondaryDescription: string,
+  ): void {
+    this.functionQueue.push({
+      func: () => {
+        this.animateShapeChange(shapeAfterRotation);
+      },
+      timeAfterCallMs:
+        DisplayNode.MOVE_DURATION_MS + AVLView.TIME_AFTER_ROTATION_MS,
+      description: AVLView.ROTATION_PATH_DESCRIPTION,
+      secondaryDescription,
+    });
   }
 }

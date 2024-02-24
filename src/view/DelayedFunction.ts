@@ -8,9 +8,9 @@
  */
 export default interface DelayedFunction {
   /**
-   * The time between reaching the front of the queue and being called
+   * The time between reaching the front of the queue and being called. Very rarely used.
    */
-  timeToWaitMs: number;
+  timeToWaitMs?: number;
   /**
    * The function to call
    */

@@ -22,6 +22,11 @@ export default abstract class TreeView {
   private static readonly ARROW_LINE_WIDTH = 2;
   private static readonly DEFAULT_ANIMATION_SPEED_SETTING = 100;
   private static readonly TIME_BETWEEN_RENDERS_MS = 1000 / 120;
+  private static readonly TIME_AFTER_SET_ROOT_MS =
+    TreeView.DURATION_MULTIPLIER * 1000;
+
+  private static readonly SET_ROOT_DESCRIPTION =
+    "The tree is empty. Setting the root node.";
 
   public shape: TreeShape<DisplayNode> = {
     inorderTraversal: [],
@@ -295,7 +300,14 @@ export default abstract class TreeView {
     placeholderNode.value = value;
     placeholderNode.x = TreeView.ROOT_TARGET_X;
     placeholderNode.y = TreeView.ROOT_TARGET_Y;
-    this.animateShapeChange(shapeWithPlaceholder);
+    this.functionQueue.push({
+      timeToWaitMs: 0,
+      func: () => {
+        this.animateShapeChange(shapeWithPlaceholder);
+      },
+      timeAfterCallMs: TreeView.TIME_AFTER_SET_ROOT_MS,
+      description: TreeView.SET_ROOT_DESCRIPTION,
+    });
   }
 
   /**
@@ -329,11 +341,22 @@ export default abstract class TreeView {
    * @param deltaMs The number of milliseconds to adjust the functionQueue's time by
    */
   private updateFunctionQueue(deltaMs: number): void {
+    for (const delayedFunction of this.functionQueue) {
+      if (delayedFunction.timeToWaitMs === undefined) {
+        delayedFunction.timeToWaitMs = 0;
+      }
+    }
+
     // Call ready functions in functionQueue
-    while (
-      this.functionQueue.length > 0 &&
-      this.functionQueue[0].timeToWaitMs <= 0
-    ) {
+    while (this.functionQueue.length > 0) {
+      assert(
+        this.functionQueue[0].timeToWaitMs !== undefined,
+        "timeToWaitMs is undefined",
+      );
+      if (this.functionQueue[0].timeToWaitMs > 0) {
+        break;
+      }
+
       if (this.functionAtFrontOfQueueWasCalled) {
         this.functionAtFrontOfQueueWasCalled = false;
         this.functionQueue.shift();
@@ -353,6 +376,10 @@ export default abstract class TreeView {
     }
 
     if (this.functionQueue.length > 0) {
+      assert(
+        this.functionQueue[0].timeToWaitMs !== undefined,
+        "timeToWaitMs is undefined",
+      );
       this.functionQueue[0].timeToWaitMs -= deltaMs;
     }
   }

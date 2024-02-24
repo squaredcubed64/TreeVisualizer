@@ -50,6 +50,7 @@ export default class AVLView extends BSTView {
     viewInsertionInformation: AVLInsertionInformation<DisplayNode>,
   ): void {
     super.insert(viewInsertionInformation);
+    console.log(viewInsertionInformation.rotationPath);
     if (viewInsertionInformation.rotationPath.length > 0) {
       this.pushRotationPathOntoFunctionQueue(
         viewInsertionInformation.rotationPath,
@@ -77,12 +78,12 @@ export default class AVLView extends BSTView {
   private pushRotationPathOntoFunctionQueue(
     rotationPath: Array<RotationPathInstruction<DisplayNode>>,
   ): void {
-    // Pause for a bit before going back up the tree
+    /* // Pause for a bit before going back up the tree
     this.functionQueue.push({
       func: () => {},
       timeAfterCallMs: BSTView.TIME_BETWEEN_HIGHLIGHTS_MS,
       description: AVLView.ROTATION_PATH_DESCRIPTION,
-    });
+    }); */
 
     for (const rotationPathInstruction of rotationPath) {
       const { node, shapesAfterRotation, secondaryDescription } =

@@ -91,10 +91,10 @@ export default class AVLModel extends BSTModel {
    */
   public delete(value: number): AVLDeletionInformation<DataNode> {
     const bstDeletionInformation = super.delete(value);
-    const { pathFromRootToTarget } = bstDeletionInformation;
+    const { pathFromRootToTarget, type } = bstDeletionInformation;
 
     let rotationPath: Array<RotationPathInstruction<DataNode>>;
-    if (bstDeletionInformation.type === "2Children") {
+    if (type === "2Children") {
       const { pathFromTargetsRightChildToSuccessor } = bstDeletionInformation;
       const pathFromRootToSuccessor = pathFromRootToTarget
         .map((pathInstruction) => pathInstruction.node)
@@ -103,11 +103,17 @@ export default class AVLModel extends BSTModel {
             (pathInstruction) => pathInstruction.node,
           ),
         );
+      // Don't rebalance the deleted node
+      pathFromRootToSuccessor.pop();
       rotationPath = this.rebalanceAlongPath(pathFromRootToSuccessor);
-    } else {
+    } else if (type === "LEQ1Child") {
+      // Don't rebalance the deleted node
+      pathFromRootToTarget.pop();
       rotationPath = this.rebalanceAlongPath(
         pathFromRootToTarget.map((pathInstruction) => pathInstruction.node),
       );
+    } else {
+      rotationPath = [];
     }
 
     return { ...bstDeletionInformation, rotationPath };

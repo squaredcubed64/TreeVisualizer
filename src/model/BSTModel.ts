@@ -65,8 +65,10 @@ export default class BSTModel extends TreeModel {
       return {
         shape: this.getShape(),
         pathFromRootToTarget: [],
-        insertedValue: this.root.value,
         insertedNode: this.root,
+        insertedNodesParent: null,
+        insertedValue: this.root.value,
+        directionFromParentToNode: "root",
       };
     }
 
@@ -102,19 +104,25 @@ export default class BSTModel extends TreeModel {
     }
 
     // Insert the new node
+    let directionFromParentToNode;
     const parentNode = path[path.length - 1].node;
     const insertedNode = new DataNode(value);
+
     if (value < parentNode.value) {
       parentNode.left = insertedNode;
+      directionFromParentToNode = "left";
     } else {
       parentNode.right = insertedNode;
+      directionFromParentToNode = "right";
     }
 
     return {
       shape: this.getShape(),
       pathFromRootToTarget: path,
-      insertedValue: insertedNode.value,
       insertedNode,
+      insertedNodesParent: parentNode,
+      insertedValue: insertedNode.value,
+      directionFromParentToNode,
     };
   }
 

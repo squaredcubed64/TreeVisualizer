@@ -37,6 +37,8 @@ export default abstract class TreeView {
   private static readonly SET_ROOT_DESCRIPTION =
     "The tree is empty. Setting the root node.";
 
+  private static readonly INSERT_NEW_NODE_DESCRIPTION = "Insert the new node.";
+
   public shape: TreeShape<DisplayNode> = {
     inorderTraversal: [],
     layers: [],
@@ -212,7 +214,7 @@ export default abstract class TreeView {
       this.animationSpeed = Infinity;
     } else {
       this.animationSpeed =
-        1.03 **
+        1.02 **
         (animationSpeedSetting - TreeView.DEFAULT_ANIMATION_SPEED_SETTING);
     }
   }
@@ -319,15 +321,37 @@ export default abstract class TreeView {
     });
   }
 
+  protected pushInsertionItself(
+    valueToInsert: number,
+    shapeWithPlaceholder: TreeShape<DisplayNode>,
+    node: DisplayNode,
+    parent: DisplayNode,
+    directionFromParentToNode: "left" | "right",
+  ): void {
+    this.functionQueue.push({
+      func: () => {
+        this.animateInsertionItself(
+          valueToInsert,
+          shapeWithPlaceholder,
+          node,
+          parent,
+          directionFromParentToNode,
+        );
+      },
+      timeAfterCallMs: DisplayNode.MOVE_DURATION_MS,
+      description: TreeView.INSERT_NEW_NODE_DESCRIPTION,
+    });
+  }
+
   /**
-   * Prepares the placeholder node and tells nodes to start moving to new target positions
+   * Animates the insertion of the new node
    * @param valueToInsert The value to insert into the tree
    * @param shapeWithPlaceholder The shape of the tree with a placeholder node, which is the node that's being inserted
    * @param node The node that's being inserted
    * @param parent The parent of the node that's being inserted
    * @returns The animation's time taken and description
    */
-  protected setupInsertionAnimation(
+  protected animateInsertionItself(
     valueToInsert: number,
     shapeWithPlaceholder: TreeShape<DisplayNode>,
     node: DisplayNode,

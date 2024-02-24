@@ -25,7 +25,6 @@ export default class BSTView extends TreeView {
   private static readonly HIGHLIGHT_COLOR_AFTER_SUCCESSFUL_FIND = "green";
   private static readonly INSERTION_DESCRIPTIONS = {
     FIND_WHERE_TO_INSERT: "Find where to insert the new node.",
-    INSERT_NEW_NODE: "Insert the new node.",
   };
 
   private static readonly DELETION_DESCRIPTIONS = {
@@ -57,9 +56,11 @@ export default class BSTView extends TreeView {
       pathFromRootToTarget,
       insertedValue,
       insertedNode,
+      insertedNodesParent,
+      directionFromParentToNode,
     } = insertionInformation;
 
-    if (this.shape.inorderTraversal.length === 0) {
+    if (directionFromParentToNode === "root") {
       this.animateSettingRoot(
         shapeWithPlaceholder,
         insertedNode,
@@ -67,6 +68,10 @@ export default class BSTView extends TreeView {
       );
       return;
     }
+    assert(
+      insertedNodesParent != null,
+      "Parent only be null if the root is being set",
+    );
 
     // Animate finding where to insert
     this.pushNodeHighlightingOntoFunctionQueue(
@@ -74,28 +79,14 @@ export default class BSTView extends TreeView {
       BSTView.INSERTION_DESCRIPTIONS.FIND_WHERE_TO_INSERT,
     );
 
-    const insertedNodesParent =
-      pathFromRootToTarget[pathFromRootToTarget.length - 1].node;
-
-    let directionFromParentToNode: "left" | "right" = "left";
-    if (insertedValue >= insertedNodesParent.value) {
-      directionFromParentToNode = "right";
-    }
-
     // Animate inserting
-    this.functionQueue.push({
-      func: () => {
-        this.setupInsertionAnimation(
-          insertedValue,
-          shapeWithPlaceholder,
-          insertedNode,
-          insertedNodesParent,
-          directionFromParentToNode,
-        );
-      },
-      timeAfterCallMs: DisplayNode.MOVE_DURATION_MS,
-      description: BSTView.INSERTION_DESCRIPTIONS.INSERT_NEW_NODE,
-    });
+    this.pushInsertionItself(
+      insertedValue,
+      shapeWithPlaceholder,
+      insertedNode,
+      insertedNodesParent,
+      directionFromParentToNode,
+    );
   }
 
   /**

@@ -88,6 +88,13 @@ export default abstract class TreeController {
     return displayNode;
   }
 
+  protected translateNodeOrNull(dataNode: DataNode | null): DisplayNode | null {
+    if (dataNode === null) {
+      return null;
+    }
+    return this.translateNode(dataNode);
+  }
+
   protected reverseTranslateNode(displayNode: DisplayNode): DataNode {
     let result: DataNode | undefined;
 

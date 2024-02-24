@@ -5,5 +5,7 @@ export default interface TreeInsertionInformation<
   T extends DataNode | DisplayNode,
 > {
   insertedNode: T;
+  insertedNodesParent: T | null;
   insertedValue: number;
+  directionFromParentToNode: "left" | "right" | "root";
 }

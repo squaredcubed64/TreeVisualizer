@@ -1,36 +1,49 @@
 import assert from "../../Assert";
 import type HeapInsertionInformation from "../controller/operationInformation/HeapInsertionInformation";
 import type SwapPathInstruction from "../controller/pathInstruction/SwapPathInstruction";
-import SwapSecondaryDescription from "../controller/secondaryDescription/SwapSecondaryDescription";
+import type SwapSecondaryDescription from "../controller/secondaryDescription/SwapSecondaryDescription";
 import type DisplayNode from "./DisplayNode";
 import TreeView from "./TreeView";
 
 export default class HeapView extends TreeView {
+  private static readonly SWAP_VALUES_HIGHLIGHT_COLOR = "green";
+  private static readonly SWAP_VALUES_DESCRIPTION =
+    "Swap values until the heap property is satisfied.";
+
   public insert(
     insertionInformation: HeapInsertionInformation<DisplayNode>,
   ): void {
     const {
       shapeAfterInitialInsertion,
       swapPath,
-      insertedNode,
       insertedValue,
+      insertedNode,
+      insertedNodesParent,
+      directionFromParentToNode,
     } = insertionInformation;
 
-    if (this.shape.inorderTraversal.length === 0) {
+    if (directionFromParentToNode === "root") {
       this.animateSettingRoot(
         shapeAfterInitialInsertion,
         insertedNode,
         insertedValue,
       );
+      return;
     }
-
     assert(
-      swapPath[0].node === insertedNode,
-      "First node in swap path must be the inserted node.",
+      insertedNodesParent != null,
+      "Parent only be null if the root is being set",
     );
-    const insertedNodesParent = swapPath[0].parent;
 
-    this.setupSwapPathAnimation(swapPath);
+    this.pushInsertionItself(
+      insertedValue,
+      shapeAfterInitialInsertion,
+      insertedNode,
+      insertedNodesParent,
+      directionFromParentToNode,
+    );
+
+    this.pushSwapPathAnimation(swapPath);
   }
 
   public delete(deletionInformation: any): void {
@@ -41,17 +54,17 @@ export default class HeapView extends TreeView {
     throw new Error("Method not implemented.");
   }
 
-  private setupSwapPathAnimation(
+  private pushSwapPathAnimation(
     swapPath: Array<SwapPathInstruction<DisplayNode>>,
   ): void {
-    for (const swapInstruction of swapPath) {
-      const { node, parent, shapeAfterSwap } = swapInstruction;
+    for (const { node, parent, secondaryDescription } of swapPath) {
       this.pushReplaceOrSwapValues(
         "replace",
         node,
         parent,
         HeapView.SWAP_VALUES_HIGHLIGHT_COLOR,
         HeapView.SWAP_VALUES_DESCRIPTION,
+        this.convertSecondaryDescriptionToString(secondaryDescription),
       );
     }
   }
@@ -63,9 +76,9 @@ export default class HeapView extends TreeView {
       case "insert":
         switch (secondaryDescription.result) {
           case "swap":
-            return `Go left because ${secondaryDescription.targetValue} < ${secondaryDescription.nodeValue}`;
+            return `Swap because ${secondaryDescription.nodeValue} < ${secondaryDescription.parentValue}`;
           case "heap property satisfied":
-            return `Go right because ${secondaryDescription.targetValue} >= ${secondaryDescription.nodeValue}`;
+            return `Don't swap because ${secondaryDescription.nodeValue} >= ${secondaryDescription.parentValue}`;
         }
         break;
     }

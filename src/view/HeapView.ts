@@ -1,20 +1,27 @@
 import assert from "../../Assert";
 import type HeapInsertionInformation from "../controller/operationInformation/HeapInsertionInformation";
+import type HeapDeletionInformation from "../controller/operationInformation/deletionInformation/HeapDeletionInformation";
 import type SwapPathInstruction from "../controller/pathInstruction/SwapPathInstruction";
 import type SwapSecondaryDescription from "../controller/secondaryDescription/SwapSecondaryDescription";
 import type DisplayNode from "./DisplayNode";
 import TreeView from "./TreeView";
 
 export default class HeapView extends TreeView {
+  private static readonly SWAPPED_TO_ROOT_PAUSE_DURATION_MS =
+    TreeView.DURATION_MULTIPLIER * 1000;
+
+  private static readonly TIME_AFTER_ATTEMPT_TO_DELETE_FROM_EMPTY_HEAP_MS =
+    TreeView.DURATION_MULTIPLIER * 1000;
+
   private static readonly SWAP_VALUES_HIGHLIGHT_COLOR = "green";
   private static readonly SWAP_VALUES_DESCRIPTION =
     "Swap values until the heap property is satisfied.";
 
-  private static readonly SWAPPED_TO_ROOT_PAUSE_DURATION_MS =
-    TreeView.DURATION_MULTIPLIER * 1000;
-
-  private static readonly SWAPPED_tO_ROOT_DESCRIPTION =
+  private static readonly SWAPPED_TO_ROOT_DESCRIPTION =
     "The inserted value has been swapped to the root, so the heap property is satisfied.";
+
+  private static readonly ATTEMPT_TO_DELETE_FROM_EMPTY_HEAP_DESCRIPTION =
+    "Cannot delete from an empty heap.";
 
   public insert(
     insertionInformation: HeapInsertionInformation<DisplayNode>,
@@ -55,13 +62,27 @@ export default class HeapView extends TreeView {
     if (didSwapToRoot) {
       this.pushPause(
         HeapView.SWAPPED_TO_ROOT_PAUSE_DURATION_MS,
-        HeapView.SWAPPED_tO_ROOT_DESCRIPTION,
+        HeapView.SWAPPED_TO_ROOT_DESCRIPTION,
       );
     }
   }
 
-  public delete(deletionInformation: any): void {
-    throw new Error("Method not implemented.");
+  public delete(
+    deletionInformation: HeapDeletionInformation<DisplayNode>,
+  ): void {
+    if (this.shape.inorderTraversal.length === 0) {
+      this.functionQueue.push({
+        func: () => {},
+        timeAfterCallMs:
+          HeapView.TIME_AFTER_ATTEMPT_TO_DELETE_FROM_EMPTY_HEAP_MS,
+        description: HeapView.ATTEMPT_TO_DELETE_FROM_EMPTY_HEAP_DESCRIPTION,
+      });
+    }
+
+    const { shapeAfterInitialDeletion, swapPath, didSwapToLeaf } =
+      deletionInformation;
+
+    
   }
 
   public find(findInformation: any): void {

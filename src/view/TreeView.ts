@@ -323,7 +323,7 @@ export default abstract class TreeView {
 
   protected pushInsertionItself(
     valueToInsert: number,
-    shapeWithPlaceholder: TreeShape<DisplayNode>,
+    shapeAfterInsertion: TreeShape<DisplayNode>,
     node: DisplayNode,
     parent: DisplayNode,
     directionFromParentToNode: "left" | "right",
@@ -332,7 +332,7 @@ export default abstract class TreeView {
       func: () => {
         this.animateInsertionItself(
           valueToInsert,
-          shapeWithPlaceholder,
+          shapeAfterInsertion,
           node,
           parent,
           directionFromParentToNode,
@@ -343,17 +343,39 @@ export default abstract class TreeView {
     });
   }
 
+  protected pushDeletionItself(
+    node: DisplayNode,
+    shapeAfterDeletion: TreeShape<DisplayNode>,
+    description: string,
+  ): void {
+    this.functionQueue.push({
+      func: () => {
+        node.startShrinkingIntoNothing();
+      },
+      timeAfterCallMs: DisplayNode.SHRINK_DURATION_MS,
+      description,
+    });
+
+    this.functionQueue.push({
+      func: () => {
+        this.animateShapeChange(shapeAfterDeletion);
+      },
+      timeAfterCallMs: DisplayNode.MOVE_DURATION_MS,
+      description,
+    });
+  }
+
   /**
    * Animates the insertion of the new node
    * @param valueToInsert The value to insert into the tree
-   * @param shapeWithPlaceholder The shape of the tree with a placeholder node, which is the node that's being inserted
+   * @param shapeAfterInsertion The shape of the tree. It includes a placeholder node, which is the node that's being inserted
    * @param node The node that's being inserted
    * @param parent The parent of the node that's being inserted
    * @returns The animation's time taken and description
    */
   protected animateInsertionItself(
     valueToInsert: number,
-    shapeWithPlaceholder: TreeShape<DisplayNode>,
+    shapeAfterInsertion: TreeShape<DisplayNode>,
     node: DisplayNode,
     parent: DisplayNode,
     directionFromParentToNode: "left" | "right",
@@ -366,7 +388,7 @@ export default abstract class TreeView {
     }
     node.y = parent.y + TreeView.TARGET_Y_GAP;
 
-    this.animateShapeChange(shapeWithPlaceholder);
+    this.animateShapeChange(shapeAfterInsertion);
   }
 
   protected pushReplaceOrSwapValues(

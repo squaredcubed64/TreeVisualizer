@@ -4,8 +4,8 @@ import type BSTInsertionInformation from "../controller/operationInformation/BST
 import type BSTFindInformation from "../controller/operationInformation/BSTFindInformation";
 import type BSTDeletionInformationVariant from "../controller/operationInformation/deletionInformation/BSTDeletionInformationVariant";
 import type BSTSecondaryDescriptionVariant from "../controller/secondaryDescription/BSTSecondaryDescriptionVariant";
-import type TreePathInstruction from "../controller/pathInstruction/TreePathInstruction";
 import assert from "../../Assert";
+import type BSTPathInstruction from "../controller/pathInstruction/BSTPathInstruction";
 
 /**
  * Handles the animation of BST operations.
@@ -192,7 +192,7 @@ export default class BSTView extends TreeView {
   private pushNodeHighlightingOntoFunctionQueue<
     S extends BSTSecondaryDescriptionVariant,
   >(
-    path: Array<TreePathInstruction<DisplayNode, S>>,
+    path: Array<BSTPathInstruction<DisplayNode, S>>,
     description: string,
     highlightColor?: string,
   ): void {
@@ -229,21 +229,11 @@ export default class BSTView extends TreeView {
       BSTView.DELETION_DESCRIPTIONS.FIND_NODE_TO_DELETE,
     );
 
-    this.functionQueue.push({
-      func: () => {
-        victimNode.startShrinkingIntoNothing();
-      },
-      timeAfterCallMs: DisplayNode.SHRINK_DURATION_MS,
-      description: BSTView.DELETION_DESCRIPTIONS.DELETE_NODE,
-    });
-
-    this.functionQueue.push({
-      func: () => {
-        this.animateShapeChange(shape);
-      },
-      timeAfterCallMs: DisplayNode.SHRINK_DURATION_MS,
-      description: BSTView.DELETION_DESCRIPTIONS.DELETE_NODE,
-    });
+    this.pushDeletionItself(
+      victimNode,
+      shape,
+      BSTView.DELETION_DESCRIPTIONS.DELETE_NODE,
+    );
   }
 
   /**
@@ -292,21 +282,11 @@ export default class BSTView extends TreeView {
       BSTView.DELETION_DESCRIPTIONS.REPLACE_NODE_WITH_SUCCESSOR,
     );
 
-    this.functionQueue.push({
-      func: () => {
-        successorNode.startShrinkingIntoNothing();
-      },
-      timeAfterCallMs: DisplayNode.SHRINK_DURATION_MS,
-      description: BSTView.DELETION_DESCRIPTIONS.DELETE_SUCCESSOR,
-    });
-
-    this.functionQueue.push({
-      func: () => {
-        this.animateShapeChange(shape);
-      },
-      timeAfterCallMs: DisplayNode.MOVE_DURATION_MS,
-      description: BSTView.DELETION_DESCRIPTIONS.DELETE_SUCCESSOR,
-    });
+    this.pushDeletionItself(
+      successorNode,
+      shape,
+      BSTView.DELETION_DESCRIPTIONS.DELETE_SUCCESSOR,
+    );
   }
 
   /**

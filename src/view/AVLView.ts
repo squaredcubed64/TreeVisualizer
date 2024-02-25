@@ -50,7 +50,6 @@ export default class AVLView extends BSTView {
     viewInsertionInformation: AVLInsertionInformation<DisplayNode>,
   ): void {
     super.insert(viewInsertionInformation);
-    console.log(viewInsertionInformation.rotationPath);
     if (viewInsertionInformation.rotationPath.length > 0) {
       this.pushRotationPathOntoFunctionQueue(
         viewInsertionInformation.rotationPath,

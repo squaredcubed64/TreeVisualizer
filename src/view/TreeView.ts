@@ -30,9 +30,6 @@ export default abstract class TreeView {
   private static readonly TIME_BEFORE_REPLACE_OR_SWAP_VALUES_MS =
     TreeView.DURATION_MULTIPLIER * 1000;
 
-  private static readonly TIME_AFTER_REPLACE_OR_SWAP_VALUES_MS =
-    TreeView.DURATION_MULTIPLIER * 1000;
-
   private static readonly TIME_AFTER_UNHIGHLIGHTING_CHANGED_NODES_MS =
     TreeView.DURATION_MULTIPLIER * 1000;
 
@@ -420,12 +417,14 @@ export default abstract class TreeView {
     this.functionQueue.push({
       func: () => {
         if (type === "replace") {
-          toNode.value = fromNode.value;
+          toNode.setValue(fromNode.value);
         } else if (type === "swap") {
-          [toNode.value, fromNode.value] = [fromNode.value, toNode.value];
+          const tempValue = fromNode.value;
+          fromNode.setValue(toNode.value);
+          toNode.setValue(tempValue);
         }
       },
-      timeAfterCallMs: TreeView.TIME_AFTER_REPLACE_OR_SWAP_VALUES_MS,
+      timeAfterCallMs: DisplayNode.VALUE_CHANGE_DURATION_MS,
       description,
       secondaryDescription,
     });

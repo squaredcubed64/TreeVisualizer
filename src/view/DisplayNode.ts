@@ -1,6 +1,12 @@
 import assert from "../../Assert";
 import TreeView from "./TreeView";
 
+interface RGB {
+  r: number;
+  g: number;
+  b: number;
+}
+
 /**
  * A node that is drawn on the canvas.
  */
@@ -12,13 +18,17 @@ export default class DisplayNode {
   public static readonly DEFAULT_HIGHLIGHT_DURATION_MS =
     1000 * TreeView.DURATION_MULTIPLIER;
 
+  public static readonly VALUE_CHANGE_DURATION_MS =
+    TreeView.DURATION_MULTIPLIER * 1000;
+
   public static readonly MAX_RADIUS = 30;
   private static readonly GROW_DURATION_MS =
     1000 * TreeView.DURATION_MULTIPLIER;
 
   private static readonly BORDER_WIDTH = 1;
   private static readonly HIGHLIGHT_WIDTH = 5;
-  private static readonly TEXT_COLOR = "red";
+  private static readonly TEXT_COLOR: RGB = { r: 255, g: 0, b: 0 };
+  private static readonly TEXT_FLASH_COLOR: RGB = { r: 255, g: 255, b: 255 };
   private static readonly TEXT_FONT = "16px Arial";
   private static readonly TEXT_Y_OFFSET = 2;
   private static readonly MIN_RADIUS_TO_DRAW_TEXT = 10;
@@ -42,6 +52,7 @@ export default class DisplayNode {
   private timeSinceStartedMovingMs: number = 0;
   private timeUntilUnhighlightedMs: number;
   private timeSinceStartedGrowingMs: number = 0;
+  private timeSinceSetValueMs: number = Infinity;
   private timeUntilShrunkMs: number = -1;
   private realTimeSinceHighlightedMs: number = 0;
 
@@ -227,6 +238,7 @@ export default class DisplayNode {
 
     this.timeSinceStartedMovingMs += multipliedDeltaMs;
     this.timeSinceStartedGrowingMs += multipliedDeltaMs;
+    this.timeSinceSetValueMs += multipliedDeltaMs;
     this.timeUntilUnhighlightedMs = Math.max(
       this.timeUntilUnhighlightedMs - multipliedDeltaMs,
       0,
@@ -301,8 +313,17 @@ export default class DisplayNode {
     context.stroke();
 
     // Add text
+    const textFlashColorWeight = Math.max(
+      1 - this.timeSinceSetValueMs / DisplayNode.VALUE_CHANGE_DURATION_MS,
+      0,
+    );
+    const textColor = this.getWeightedAverageColor(
+      DisplayNode.TEXT_COLOR,
+      DisplayNode.TEXT_FLASH_COLOR,
+      textFlashColorWeight,
+    );
     if (this.currentRadius >= DisplayNode.MIN_RADIUS_TO_DRAW_TEXT) {
-      context.fillStyle = DisplayNode.TEXT_COLOR;
+      context.fillStyle = textColor;
       context.textAlign = "center";
       context.textBaseline = "middle";
       context.font = DisplayNode.TEXT_FONT;
@@ -312,6 +333,23 @@ export default class DisplayNode {
         this.y + DisplayNode.TEXT_Y_OFFSET,
       );
     }
+  }
+
+  public setValue(value: number): void {
+    this.value = value;
+    this.timeSinceSetValueMs = 0;
+  }
+
+  private getWeightedAverageColor(
+    color1: RGB,
+    color2: RGB,
+    color2Weight: number,
+  ): string {
+    const color1Weight = 1 - color2Weight;
+    const r = Math.round(color1.r * color1Weight + color2.r * color2Weight);
+    const g = Math.round(color1.g * color1Weight + color2.g * color2Weight);
+    const b = Math.round(color1.b * color1Weight + color2.b * color2Weight);
+    return `rgb(${r}, ${g}, ${b})`;
   }
 
   /**

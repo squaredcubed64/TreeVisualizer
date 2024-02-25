@@ -24,6 +24,8 @@ export default class DisplayNode {
   private static readonly DEFAULT_HIGHLIGHT_COLOR = "blue";
   private static readonly DEFAULT_THICK_HIGHLIGHT_COLOR = "gold";
   private static readonly MAX_RADIUS = 30;
+  private static readonly HIGHLIGHT_THICKNESS_WAVE_AMPLITUDE = 2;
+  private static readonly HIGHLIGHT_THICKNESS_WAVELENGTH_MS = 1500;
 
   public x: number;
   public y: number;
@@ -41,6 +43,7 @@ export default class DisplayNode {
   private timeUntilUnhighlightedMs: number;
   private timeSinceStartedGrowingMs: number = 0;
   private timeUntilShrunkMs: number = -1;
+  private realTimeSinceHighlightedMs: number = 0;
 
   public constructor(
     x: number,
@@ -180,6 +183,7 @@ export default class DisplayNode {
     durationMs: number = DisplayNode.DEFAULT_HIGHLIGHT_DURATION_MS,
   ): void {
     this.highlightColor = color;
+    this.realTimeSinceHighlightedMs = 0;
     this.timeUntilUnhighlightedMs = durationMs;
   }
 
@@ -214,16 +218,24 @@ export default class DisplayNode {
   /**
    * Update the node's position, radius, and time left highlighted based on the given animation speed.
    * @param deltaMs The length of time to advance by. Can be a fraction.
+   * @param speedMultiplier Multiplier for deltaMs. 1 is normal speed.
    */
-  public update(deltaMs: number): void {
-    this.timeSinceStartedMovingMs += deltaMs;
-    this.timeSinceStartedGrowingMs += deltaMs;
+  public update(deltaMs: number, speedMultiplier: number): void {
+    this.realTimeSinceHighlightedMs += deltaMs;
+
+    const multipliedDeltaMs = deltaMs * speedMultiplier;
+
+    this.timeSinceStartedMovingMs += multipliedDeltaMs;
+    this.timeSinceStartedGrowingMs += multipliedDeltaMs;
     this.timeUntilUnhighlightedMs = Math.max(
-      this.timeUntilUnhighlightedMs - deltaMs,
+      this.timeUntilUnhighlightedMs - multipliedDeltaMs,
       0,
     );
     if (this.timeUntilShrunkMs !== -1) {
-      this.timeUntilShrunkMs = Math.max(this.timeUntilShrunkMs - deltaMs, 0);
+      this.timeUntilShrunkMs = Math.max(
+        this.timeUntilShrunkMs - multipliedDeltaMs,
+        0,
+      );
     }
 
     // motionProgress > 0
@@ -257,16 +269,16 @@ export default class DisplayNode {
    * @param context The canvas context to draw on
    */
   public draw(context: CanvasRenderingContext2D): void {
+    const highlightRadius =
+      this.currentRadius +
+      DisplayNode.HIGHLIGHT_WIDTH +
+      this.getDeltaHighlightThickness();
+    const thickHighlightRadius = highlightRadius + DisplayNode.HIGHLIGHT_WIDTH;
+
     // Thick highlight
     if (this.thickHighlightColor !== null) {
       context.beginPath();
-      context.arc(
-        this.x,
-        this.y,
-        this.currentRadius + DisplayNode.HIGHLIGHT_WIDTH * 2,
-        0,
-        Math.PI * 2,
-      );
+      context.arc(this.x, this.y, thickHighlightRadius, 0, Math.PI * 2);
       context.fillStyle = this.thickHighlightColor;
       context.fill();
     }
@@ -274,13 +286,7 @@ export default class DisplayNode {
     // Highlight
     if (this.timeUntilUnhighlightedMs > 0) {
       context.beginPath();
-      context.arc(
-        this.x,
-        this.y,
-        this.currentRadius + DisplayNode.HIGHLIGHT_WIDTH,
-        0,
-        Math.PI * 2,
-      );
+      context.arc(this.x, this.y, highlightRadius, 0, Math.PI * 2);
       context.fillStyle = this.highlightColor;
       context.fill();
     }
@@ -306,5 +312,18 @@ export default class DisplayNode {
         this.y + DisplayNode.TEXT_Y_OFFSET,
       );
     }
+  }
+
+  /**
+   * Used to facilitate oscillation of highlight thicknesses.
+   */
+  private getDeltaHighlightThickness(): number {
+    return (
+      DisplayNode.HIGHLIGHT_THICKNESS_WAVE_AMPLITUDE *
+      Math.sin(
+        (2 * Math.PI * this.realTimeSinceHighlightedMs) /
+          DisplayNode.HIGHLIGHT_THICKNESS_WAVELENGTH_MS,
+      )
+    );
   }
 }

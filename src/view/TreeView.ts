@@ -246,12 +246,10 @@ export default abstract class TreeView {
 
       this.lastRenderTimeMs = nowMs;
 
-      const deltaAdjustedForAnimationSpeedMs = deltaMs * this.animationSpeed;
-
-      this.updateFunctionQueue(deltaAdjustedForAnimationSpeedMs);
+      this.updateFunctionQueue(deltaMs * this.animationSpeed);
 
       this.shape.inorderTraversal.forEach((node) => {
-        node.update(deltaAdjustedForAnimationSpeedMs);
+        node.update(deltaMs, this.animationSpeed);
       });
     }
 

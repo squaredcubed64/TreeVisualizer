@@ -157,27 +157,27 @@ export default class BSTView extends TreeView {
       case "insert":
         switch (secondaryDescription.direction) {
           case "left":
-            return `Go left because ${secondaryDescription.targetValue} < ${secondaryDescription.nodeValue}`;
+            return `Go left because ${secondaryDescription.targetValue} < ${secondaryDescription.nodeValue}.`;
           case "right":
-            return `Go right because ${secondaryDescription.targetValue} >= ${secondaryDescription.nodeValue}`;
+            return `Go right because ${secondaryDescription.targetValue} ≥ ${secondaryDescription.nodeValue}.`;
         }
         break;
       case "find":
         switch (secondaryDescription.direction) {
           case "left":
-            return `Go left because ${secondaryDescription.targetValue} < ${secondaryDescription.nodeValue}`;
+            return `Go left because ${secondaryDescription.targetValue} < ${secondaryDescription.nodeValue}.`;
           case "right":
-            return `Go right because ${secondaryDescription.targetValue} > ${secondaryDescription.nodeValue}`;
+            return `Go right because ${secondaryDescription.targetValue} > ${secondaryDescription.nodeValue}.`;
           case "stop":
-            return `Stop because ${secondaryDescription.targetValue} = ${secondaryDescription.nodeValue}`;
+            return `Stop because ${secondaryDescription.targetValue} = ${secondaryDescription.nodeValue}.`;
         }
         break;
       case "successor":
         switch (secondaryDescription.direction) {
           case "left":
-            return "Go left because there is a left child";
+            return "Go left because there is a left child.";
           case "stop":
-            return "Stop because there is no left child";
+            return "Stop because there is no left child.";
         }
     }
   }

@@ -13,10 +13,10 @@ export default class HeapView extends TreeView {
   private static readonly TIME_AFTER_ATTEMPT_TO_DELETE_FROM_EMPTY_HEAP_MS =
     TreeView.DURATION_MULTIPLIER * 1000;
 
-  private static readonly TIME_AFTER_DELETE_FROM_SINGLETON_HEAP_MS =
+  private static readonly SWAPPED_TO_LEAF_PAUSE_DURATION_MS =
     TreeView.DURATION_MULTIPLIER * 1000;
 
-  private static readonly SWAPPED_TO_LEAF_PAUSE_DURATION_MS =
+  private static readonly TIME_AFTER_ATTEMPT_TO_FIND_IN_EMPTY_HEAP_MS =
     TreeView.DURATION_MULTIPLIER * 1000;
 
   private static readonly SWAP_VALUES_HIGHLIGHT_COLOR = "green";
@@ -43,6 +43,9 @@ export default class HeapView extends TreeView {
     "Now that the leaf's value has been copied to the root, the leaf can be deleted.";
 
   private static readonly FOUND_ROOT_DESCRIPTION_START = "The root's value is ";
+
+  private static readonly ATTEMPT_TO_FIND_IN_EMPTY_HEAP_DESCRIPTION =
+    "Cannot find in an empty heap.";
 
   public insert(
     insertionInformation: HeapInsertionInformation<DisplayNode>,
@@ -137,6 +140,15 @@ export default class HeapView extends TreeView {
   }
 
   public find(findInformation: Record<string, unknown>): void {
+    if (this.shape.inorderTraversal.length === 0) {
+      this.functionQueue.push({
+        func: () => {},
+        timeAfterCallMs: HeapView.TIME_AFTER_ATTEMPT_TO_FIND_IN_EMPTY_HEAP_MS,
+        description: HeapView.ATTEMPT_TO_FIND_IN_EMPTY_HEAP_DESCRIPTION,
+      });
+      return;
+    }
+
     const root = this.shape.layers[0][0];
     this.functionQueue.push({
       func: () => {
@@ -170,9 +182,9 @@ export default class HeapView extends TreeView {
       case "delete":
         switch (secondaryDescription.result) {
           case "swap":
-            return `Swap because ${secondaryDescription.initialNodeValue} < ${secondaryDescription.initialParentValue}`;
+            return `Swap because ${secondaryDescription.initialNodeValue} < ${secondaryDescription.initialParentValue}.`;
           case "none":
-            return `Don't swap because ${secondaryDescription.initialNodeValue} >= ${secondaryDescription.initialParentValue}`;
+            return `Don't swap because ${secondaryDescription.initialNodeValue} ≥ ${secondaryDescription.initialParentValue}.`;
         }
         break;
     }

@@ -175,6 +175,30 @@ pauseButton.addEventListener("click", () => {
   }
 });
 
+// todo make sure this saves properly but lets haep always delete/find
+let savedDeletedValue = deleteInput.value;
+let savedFindValue = deleteInput.value;
+
+function hideDeleteAndFindInputs(): void {
+  deleteInput.style.display = "none";
+  findInput.style.display = "none";
+  deleteButton.style.flex = "1";
+  findButton.style.flex = "1";
+  savedDeletedValue = deleteInput.value;
+  savedFindValue = findInput.value;
+  deleteInput.value = "0";
+  findInput.value = "0";
+}
+
+function showDeleteAndFindInputs(): void {
+  deleteInput.style.display = "flex";
+  findInput.style.display = "flex";
+  deleteButton.style.flex = "0.35";
+  findButton.style.flex = "0.35";
+  deleteInput.value = savedDeletedValue;
+  findInput.value = savedFindValue;
+}
+
 // Change the tree type upon changing treeTypeDropdown
 const treeTypeDropdown = document.getElementById(
   "treeTypeDropdown",
@@ -183,10 +207,13 @@ assert(treeTypeDropdown !== null, "treeTypeDropdown not found");
 treeTypeDropdown.addEventListener("change", () => {
   const selectedTreeType = treeTypeDropdown.value;
   if (selectedTreeType === "bst") {
+    showDeleteAndFindInputs();
     treeType = BSTController;
   } else if (selectedTreeType === "avl") {
+    showDeleteAndFindInputs();
     treeType = AVLController;
   } else if (selectedTreeType === "heap") {
+    hideDeleteAndFindInputs();
     treeType = HeapController;
   }
   resetController(treeType);

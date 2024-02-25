@@ -3,7 +3,7 @@ import type HeapInsertionInformation from "../controller/operationInformation/He
 import type HeapDeletionInformation from "../controller/operationInformation/deletionInformation/HeapDeletionInformation";
 import type SwapPathInstruction from "../controller/pathInstruction/SwapPathInstruction";
 import type SwapSecondaryDescription from "../controller/secondaryDescription/SwapSecondaryDescription";
-import type DisplayNode from "./DisplayNode";
+import DisplayNode from "./DisplayNode";
 import TreeView from "./TreeView";
 
 export default class HeapView extends TreeView {
@@ -13,9 +13,19 @@ export default class HeapView extends TreeView {
   private static readonly TIME_AFTER_ATTEMPT_TO_DELETE_FROM_EMPTY_HEAP_MS =
     TreeView.DURATION_MULTIPLIER * 1000;
 
+  private static readonly TIME_AFTER_DELETE_FROM_SINGLETON_HEAP_MS =
+    TreeView.DURATION_MULTIPLIER * 1000;
+
+  private static readonly SWAPPED_TO_LEAF_PAUSE_DURATION_MS =
+    TreeView.DURATION_MULTIPLIER * 1000;
+
   private static readonly SWAP_VALUES_HIGHLIGHT_COLOR = "green";
+  private static readonly REPLACE_ROOT_VALUE_HIGHLIGHT_COLOR = "green";
   private static readonly SWAP_VALUES_DESCRIPTION =
     "Swap values until the heap property is satisfied.";
+
+  private static readonly REPLACE_ROOT_VALUE_DESCRIPTION =
+    "Replace the root value with the last value in the heap.";
 
   private static readonly SWAPPED_TO_ROOT_DESCRIPTION =
     "The inserted value has been swapped to the root, so the heap property is satisfied.";
@@ -23,11 +33,22 @@ export default class HeapView extends TreeView {
   private static readonly ATTEMPT_TO_DELETE_FROM_EMPTY_HEAP_DESCRIPTION =
     "Cannot delete from an empty heap.";
 
+  private static readonly DELETE_FROM_SINGLETON_HEAP_DESCRIPTION =
+    "The heap only has one value, so it is deleted.";
+
+  private static readonly SWAPPED_TO_LEAF_DESCRIPTION =
+    "The value has been swapped to a leaf, so the heap property is satisfied.";
+
+  private static readonly DELETE_LEAF_DESCRIPTION =
+    "Now that the leaf's value has been copied to the root, the leaf can be deleted.";
+
+  private static readonly FOUND_ROOT_DESCRIPTION_START = "The root's value is ";
+
   public insert(
     insertionInformation: HeapInsertionInformation<DisplayNode>,
   ): void {
     const {
-      shapeAfterInitialInsertion,
+      shapeAfterInsertion,
       swapPath,
       didSwapToRoot,
       insertedValue,
@@ -37,11 +58,7 @@ export default class HeapView extends TreeView {
     } = insertionInformation;
 
     if (directionFromParentToNode === "root") {
-      this.animateSettingRoot(
-        shapeAfterInitialInsertion,
-        insertedNode,
-        insertedValue,
-      );
+      this.animateSettingRoot(shapeAfterInsertion, insertedNode, insertedValue);
       return;
     }
     assert(
@@ -51,7 +68,7 @@ export default class HeapView extends TreeView {
 
     this.pushInsertionItself(
       insertedValue,
-      shapeAfterInitialInsertion,
+      shapeAfterInsertion,
       insertedNode,
       insertedNodesParent,
       directionFromParentToNode,
@@ -70,23 +87,64 @@ export default class HeapView extends TreeView {
   public delete(
     deletionInformation: HeapDeletionInformation<DisplayNode>,
   ): void {
-    if (this.shape.inorderTraversal.length === 0) {
+    const {
+      deletedNode,
+      rootAfterDeletion,
+      shapeAfterDeletion,
+      swapPath,
+      didSwapToLeaf,
+    } = deletionInformation;
+
+    if (deletedNode == null) {
       this.functionQueue.push({
         func: () => {},
         timeAfterCallMs:
           HeapView.TIME_AFTER_ATTEMPT_TO_DELETE_FROM_EMPTY_HEAP_MS,
         description: HeapView.ATTEMPT_TO_DELETE_FROM_EMPTY_HEAP_DESCRIPTION,
       });
+      return;
+    } else if (rootAfterDeletion == null) {
+      this.pushDeletionItself(
+        deletedNode,
+        shapeAfterDeletion,
+        HeapView.DELETE_FROM_SINGLETON_HEAP_DESCRIPTION,
+      );
+      return;
     }
 
-    const { shapeAfterInitialDeletion, swapPath, didSwapToLeaf } =
-      deletionInformation;
+    this.pushReplaceOrSwapValues(
+      "replace",
+      deletedNode,
+      rootAfterDeletion,
+      HeapView.REPLACE_ROOT_VALUE_HIGHLIGHT_COLOR,
+      HeapView.REPLACE_ROOT_VALUE_DESCRIPTION,
+    );
 
-    
+    this.pushDeletionItself(
+      deletedNode,
+      shapeAfterDeletion,
+      HeapView.DELETE_LEAF_DESCRIPTION,
+    );
+
+    this.pushSwapPathAnimation(swapPath);
+
+    if (didSwapToLeaf) {
+      this.pushPause(
+        HeapView.SWAPPED_TO_LEAF_PAUSE_DURATION_MS,
+        HeapView.SWAPPED_TO_LEAF_DESCRIPTION,
+      );
+    }
   }
 
-  public find(findInformation: any): void {
-    throw new Error("Method not implemented.");
+  public find(findInformation: Record<string, unknown>): void {
+    const root = this.shape.layers[0][0];
+    this.functionQueue.push({
+      func: () => {
+        root.highlight(TreeView.HIGHLIGHT_COLOR_AFTER_SUCCESSFUL_FIND);
+      },
+      timeAfterCallMs: DisplayNode.DEFAULT_HIGHLIGHT_DURATION_MS,
+      description: HeapView.FOUND_ROOT_DESCRIPTION_START + root.value + ".",
+    });
   }
 
   private pushSwapPathAnimation(
@@ -94,7 +152,7 @@ export default class HeapView extends TreeView {
   ): void {
     for (const { node, parent, secondaryDescription } of swapPath) {
       this.pushReplaceOrSwapValues(
-        "swap",
+        secondaryDescription.result,
         node,
         parent,
         HeapView.SWAP_VALUES_HIGHLIGHT_COLOR,
@@ -109,10 +167,11 @@ export default class HeapView extends TreeView {
   ): string {
     switch (secondaryDescription.type) {
       case "insert":
+      case "delete":
         switch (secondaryDescription.result) {
           case "swap":
             return `Swap because ${secondaryDescription.initialNodeValue} < ${secondaryDescription.initialParentValue}`;
-          case "heap property satisfied":
+          case "none":
             return `Don't swap because ${secondaryDescription.initialNodeValue} >= ${secondaryDescription.initialParentValue}`;
         }
         break;

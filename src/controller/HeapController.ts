@@ -16,14 +16,12 @@ export default class HeapController extends TreeController {
   ): HeapInsertionInformation<DisplayNode> {
     const translatedTreeInsertionInformation =
       super.translateInsertionInformation(insertionInformation);
-    const { shapeAfterInitialInsertion, swapPath, didSwapToRoot } =
+    const { shapeAfterInsertion, swapPath, didSwapToRoot } =
       insertionInformation;
 
     return {
       ...translatedTreeInsertionInformation,
-      shapeAfterInitialInsertion: this.translateShape(
-        shapeAfterInitialInsertion,
-      ),
+      shapeAfterInsertion: this.translateShape(shapeAfterInsertion),
       swapPath: this.translatePath(swapPath),
       didSwapToRoot,
     };
@@ -51,13 +49,26 @@ export default class HeapController extends TreeController {
   protected translateDeletionInformation(
     deletionInformation: HeapDeletionInformation<DataNode>,
   ): HeapDeletionInformation<DisplayNode> {
-    const { lorem } = deletionInformation;
+    const {
+      deletedNode,
+      rootAfterDeletion: root,
+      shapeAfterDeletion,
+      swapPath,
+      didSwapToLeaf,
+    } = deletionInformation;
+
     return {
-      lorem: this.translateNode(lorem),
+      deletedNode: this.translateNodeOrNull(deletedNode),
+      rootAfterDeletion: this.translateNodeOrNull(root),
+      shapeAfterDeletion: this.translateShape(shapeAfterDeletion),
+      swapPath: this.translatePath(swapPath),
+      didSwapToLeaf,
     };
   }
 
-  // Heap's find() (aka peek()) is trivial enough that the model need not provide any information.
+  /**
+   * Note: Heap's find() (aka peek()) is trivial enough that the model need not provide any information.
+   */
   protected translateFindInformation(
     findInformation: Record<string, unknown>,
   ): Record<string, unknown> {

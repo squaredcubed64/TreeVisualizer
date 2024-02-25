@@ -15,6 +15,7 @@ export default abstract class TreeView {
   protected static readonly ROOT_TARGET_Y = 150;
   protected static readonly TARGET_X_GAP = 50;
   protected static readonly TARGET_Y_GAP = 75;
+  protected static readonly HIGHLIGHT_COLOR_AFTER_SUCCESSFUL_FIND = "orange";
   private static readonly FILL_COLOR = "pink";
   private static readonly STROKE_COLOR = "red";
   private static readonly ARROW_HEAD_ANGLE = Math.PI / 6;
@@ -392,7 +393,7 @@ export default abstract class TreeView {
   }
 
   protected pushReplaceOrSwapValues(
-    type: "replace" | "swap",
+    type: "replace" | "swap" | "none",
     fromNode: DisplayNode,
     toNode: DisplayNode,
     highlightColor: string,
@@ -413,7 +414,7 @@ export default abstract class TreeView {
       func: () => {
         if (type === "replace") {
           toNode.value = fromNode.value;
-        } else {
+        } else if (type === "swap") {
           [toNode.value, fromNode.value] = [fromNode.value, toNode.value];
         }
       },

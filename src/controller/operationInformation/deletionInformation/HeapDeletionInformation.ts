@@ -6,7 +6,9 @@ import type SwapPathInstruction from "../../pathInstruction/SwapPathInstruction"
 export default interface HeapDeletionInformation<
   T extends DataNode | DisplayNode,
 > {
-  shapeAfterInitialDeletion: TreeShape<T>;
+  deletedNode: T | null;
+  rootAfterDeletion: T | null;
+  shapeAfterDeletion: TreeShape<T>;
   swapPath: Array<SwapPathInstruction<T>>;
   didSwapToLeaf: boolean;
 }

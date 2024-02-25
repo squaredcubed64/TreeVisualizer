@@ -22,7 +22,6 @@ export default class BSTView extends TreeView {
 
   private static readonly TIME_AFTER_FIND_MS = TreeView.DURATION_MULTIPLIER * 0;
   private static readonly FIND_SUCCESSOR_HIGHLIGHT_COLOR = "green";
-  private static readonly HIGHLIGHT_COLOR_AFTER_SUCCESSFUL_FIND = "green";
   private static readonly INSERTION_DESCRIPTIONS = {
     FIND_WHERE_TO_INSERT: "Find where to insert the new node.",
   };
@@ -133,7 +132,7 @@ export default class BSTView extends TreeView {
       this.functionQueue.push({
         func: () => {
           nodeFound.highlight(
-            BSTView.HIGHLIGHT_COLOR_AFTER_SUCCESSFUL_FIND,
+            TreeView.HIGHLIGHT_COLOR_AFTER_SUCCESSFUL_FIND,
             BSTView.HIGHLIGHT_DURATION_AFTER_SUCCESSFUL_FIND_MS,
           );
         },

@@ -7,7 +7,7 @@ import type TreeInsertionInformation from "./TreeInsertionInformation";
 export default interface HeapInsertionInformation<
   T extends DataNode | DisplayNode,
 > extends TreeInsertionInformation<T> {
-  shapeAfterInitialInsertion: TreeShape<T>;
+  shapeAfterInsertion: TreeShape<T>;
   swapPath: Array<SwapPathInstruction<T>>;
   didSwapToRoot: boolean;
 }

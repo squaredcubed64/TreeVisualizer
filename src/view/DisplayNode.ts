@@ -12,6 +12,7 @@ export default class DisplayNode {
   public static readonly DEFAULT_HIGHLIGHT_DURATION_MS =
     1000 * TreeView.DURATION_MULTIPLIER;
 
+  public static readonly MAX_RADIUS = 30;
   private static readonly GROW_DURATION_MS =
     1000 * TreeView.DURATION_MULTIPLIER;
 
@@ -23,7 +24,6 @@ export default class DisplayNode {
   private static readonly MIN_RADIUS_TO_DRAW_TEXT = 10;
   private static readonly DEFAULT_HIGHLIGHT_COLOR = "blue";
   private static readonly DEFAULT_THICK_HIGHLIGHT_COLOR = "gold";
-  private static readonly MAX_RADIUS = 30;
   private static readonly HIGHLIGHT_THICKNESS_WAVE_AMPLITUDE = 2;
   private static readonly HIGHLIGHT_THICKNESS_WAVELENGTH_MS = 1500;
 

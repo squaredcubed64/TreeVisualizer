@@ -16,8 +16,9 @@ export default abstract class TreeView {
   protected static readonly TARGET_X_GAP = 50;
   protected static readonly TARGET_Y_GAP = 75;
   protected static readonly HIGHLIGHT_COLOR_AFTER_SUCCESSFUL_FIND = "orange";
-  private static readonly FILL_COLOR = "pink";
-  private static readonly STROKE_COLOR = "red";
+  private static readonly NODE_FILL_COLOR = "pink";
+  private static readonly NODE_OUTLINE_COLOR = "red";
+  private static readonly ARROW_COLOR = "red";
   private static readonly ARROW_HEAD_ANGLE = Math.PI / 6;
   private static readonly ARROW_HEAD_LENGTH = 10;
   private static readonly ARROW_LINE_WIDTH = 2;
@@ -70,8 +71,8 @@ export default abstract class TreeView {
     return new DisplayNode(
       NaN,
       NaN,
-      TreeView.FILL_COLOR,
-      TreeView.STROKE_COLOR,
+      TreeView.NODE_FILL_COLOR,
+      TreeView.NODE_OUTLINE_COLOR,
       NaN,
     );
   }
@@ -115,17 +116,14 @@ export default abstract class TreeView {
 
   /**
    * Draws an arrow from (fromX, fromY) to (toX, toY)
-   * @param fromX x coordinate of the start of the arrow
-   * @param fromY y coordinate of the start of the arrow
-   * @param toX x coordinate of the end of the arrow
-   * @param toY y coordinate of the end of the arrow
-   * @param context The canvas context to draw on
    */
   private static drawArrow(
     fromX: number,
     fromY: number,
     toX: number,
     toY: number,
+    lineWidth: number,
+    opacity: number,
     context: CanvasRenderingContext2D,
   ): void {
     const dx = toX - fromX;
@@ -133,9 +131,12 @@ export default abstract class TreeView {
     const angle = Math.atan2(dy, dx);
 
     context.beginPath();
-    context.lineWidth = TreeView.ARROW_LINE_WIDTH;
+    context.strokeStyle = TreeView.ARROW_COLOR;
+    context.lineWidth = lineWidth;
+    context.globalAlpha = opacity;
     context.moveTo(fromX, fromY);
     context.lineTo(toX, toY);
+
     context.lineTo(
       toX -
         TreeView.ARROW_HEAD_LENGTH *
@@ -144,6 +145,7 @@ export default abstract class TreeView {
         TreeView.ARROW_HEAD_LENGTH *
           Math.sin(angle - TreeView.ARROW_HEAD_ANGLE),
     );
+
     context.moveTo(toX, toY);
     context.lineTo(
       toX -
@@ -154,6 +156,7 @@ export default abstract class TreeView {
           Math.sin(angle + TreeView.ARROW_HEAD_ANGLE),
     );
     context.stroke();
+    context.globalAlpha = 1;
   }
 
   /**
@@ -172,11 +175,17 @@ export default abstract class TreeView {
     const dist = Math.hypot(dx, dy);
     const xOffsetFromCenter = (dx * toNode.currentRadius) / dist;
     const yOffsetFromCenter = (dy * toNode.currentRadius) / dist;
+    const arrowVisibilityMultiplier =
+      (fromNode.currentRadius * toNode.currentRadius) /
+      DisplayNode.MAX_RADIUS ** 2;
+
     TreeView.drawArrow(
       fromNode.x,
       fromNode.y,
       toNode.x - xOffsetFromCenter,
       toNode.y - yOffsetFromCenter,
+      TreeView.ARROW_LINE_WIDTH * arrowVisibilityMultiplier,
+      arrowVisibilityMultiplier,
       context,
     );
   }
